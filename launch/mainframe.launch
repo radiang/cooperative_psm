@@ -1,0 +1,28 @@
+<launch>
+<arg name="rvizconfig" default="$(find psm_coop)/rviz/PSM2s.rviz" />
+
+
+<!-- Set the number of PSMs and the names, the nodes psm_controller and psm_listener uses these parameters -->
+
+<rosparam param="number">3</rosparam>
+<rosparam param="name">['one','two','three']</rosparam>
+
+	 <node pkg="teleop_twist_keyboard" type="teleop_psm.py" name="teleop" output="screen"/>
+
+    <node pkg="psm_coop" type="mainframe.py"
+          name="psm_controller" output="screen">
+         
+     </node>
+
+     <node pkg="psm_coop" type="psm_tf_listener.py"
+          name="psm_listener" output="screen" >
+     </node>
+
+     <!--node
+       name="rviz"
+       pkg="rviz"
+       type="rviz"
+       args="-d $(arg rvizconfig)"
+       required="true"    /-->
+
+</launch>

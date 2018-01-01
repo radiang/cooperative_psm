@@ -1,0 +1,18 @@
+<launch>
+<arg name="rvizconfig" default="$(find psm_coop)/rviz/PSM2s.rviz" />
+	 <node pkg="teleop_twist_keyboard" type="teleop_psm.py" name="teleop" output="screen"/>
+
+     <node pkg="psm_coop" type="coop.py"
+          name="broadcaster" output="screen" />
+
+     <node pkg="psm_coop" type="psm_tf_listener.py"
+          name="listener_fixed" output="screen" />
+
+     <!--node
+       name="rviz"
+       pkg="rviz"
+       type="rviz"
+       args="-d $(arg rvizconfig)"
+       required="true"    /-->
+
+</launch>
