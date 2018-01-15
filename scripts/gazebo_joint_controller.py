@@ -1,40 +1,40 @@
 #!/usr/bin/env python
  
 import roslib
-roslib.load_manifest('learning_tf')
+#roslib.load_manifest('learning_tf')
 import rospy
 import math
 import tf
+import numpy as np
 import geometry_msgs.msg as gm
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Header
+from std_msgs.msg import Float64
+
+class gazebo_wrapper():
+    def __init__(self):
+        self.name = rospy.get_param('/name')
+        self.num = rospy.get_param('/number')
+        self.gazebo_on = rospy.get_param('/gazebo_on')
+        self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
+        self.numdict = {'one':0, 'two':1, 'three':2, 'four':3}
+
+        rospy.init_node('gazebo_controllerwrapper', anonymous=True)
+
+
+        self.j=[]
+        self.j.append([None]*3)
+        self.j.append([None]*3)
+        self.j.append([None]*3)
+
+        for i in range(self.num):
+            rospy.Subscriber('/' + self.name[i], JointState, self.callback)
+            self.j[i][0]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_yaw_joint/SetPositionTarget',Float64, queue_size=10)
+            self.j[i][1]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_pitch_joint_1/SetPositionTarget',Float64, queue_size=10)
+            self.j[i][2]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_insertion_joint/SetPositionTarget',Float64, queue_size=10)
+        rospy.spin()
+
+    def callback(self,data):
+        self.j[self.numdict[data.header.frame_id]][int(data.velocity[0])].publish(data.position[0])
+        
 if __name__ == '__main__':
-    rospy.init_node('gazebo_joint_controller')
-
-    a= rospy.Publisher('/psm/poses', gm.PoseStamped,queue_size=1)
-
-
-    r = rospy.Rate(800)
-    message = gm.PoseStamped()
-    while not rospy.is_shutdown():
-        for i in range(num):
-
-            try:
-                #(trans,rot) = listener.lookupTransform('/world' ,'/' + name[i] + '_tool_wrist_sca_shaft_link', rospy.Time(0))
-                (trans,rot) = listener.lookupTransform('/world' ,'/'+name[i]+'_tool_tf', rospy.Time(0))
-                #print(trans)
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                continue
-            message.header.frame_id = name[i]
-            message.pose.position.x = trans[0]
-            message.pose.position.y = trans[1]
-            message.pose.position.z = trans[2]
-
-            #print(trans,rospy.Time(0))
-            # cmd = geometry_msgs.msg.Twist()
-            # cmd.linear.x = trans[0]
-            # cmd.linear.y = trans[1]
-            # cmd.linear.z = trans[2]
-            a.publish(message)
-            #print(message)
-            r.sleep()
+    a = gazebo_wrapper()

@@ -5,7 +5,7 @@
   <description>The dVrk coop control package</description>
 
   <maintainer email="ragondokaryono@wpi.edu">Radian Azhar</maintainer>
-  <license>CISST</license>
+  <license>radian</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rospy</build_depend>

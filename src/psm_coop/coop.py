@@ -10,12 +10,14 @@ from tf import TransformListener
 import geometry_msgs.msg as gm
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
+from gazebo_msgs.srv import GetLinkState
 
 class psm(object):
     #global number
     number = 0
-    def __init__(self, name): 
+    def __init__(self, name, gazebo_on): 
         self.name = name
+        self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
         self.joint_names = [self.name + '_outer_yaw_joint', self.name + '_outer_pitch_joint_1', self.name + '_outer_insertion_joint']
         self.p_rcm = []
         self.p_tool = []
@@ -30,22 +32,48 @@ class psm(object):
                     
         while (not (self.p_rcm and self.p_tool)): 
             try:
-                (self.p_rcm, self.rot_rcm) = self.listener.lookupTransform('/world','/' + self.name + '_remote_center_link', rospy.Time(0))
-                (self.p_tool,self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_tool_wrist_sca_shaft_link', rospy.Time(0))
+                if (gazebo_on == 0):
+                    (self.p_rcm, self.rot_rcm) = self.listener.lookupTransform('/world','/' + self.name + '_remote_center_link', rospy.Time(0))
+                    (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_tool_wrist_sca_shaft_link', rospy.Time(0))
+                else: 
+                    (self.p_rcm, self.rot_rcm) = self.gazebo_service_call(self.namedict[self.name]+'::remote_center_link','')
+                    (self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_sca_shaft_link',self.namedict[self.name]+'::remote_center_link')
+                   
                 print('trying')              
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
+
         print('/'+ self.name + '_rcm',self.p_rcm)        
         print('/'+ self.name + '_tool',self.p_tool)
         rospy.sleep(1)
+
+    def gazebo_service_call(self,x,y):
+        rospy.wait_for_service('/gazebo/get_link_state')
+        try:
+            get = rospy.ServiceProxy('/gazebo/get_link_state', GetLinkState)
+            resp1 = get(x,y)
+            pos = [0]*3
+            rot = [0]*4
+            pos[0] = resp1.link_state.pose.position.x
+            pos[1] = resp1.link_state.pose.position.y
+            pos[2] = resp1.link_state.pose.position.z
+
+            rot[0] = resp1.link_state.pose.orientation.x
+            rot[1] = resp1.link_state.pose.orientation.y
+            rot[2] = resp1.link_state.pose.orientation.z
+            rot[3] = resp1.link_state.pose.orientation.w
+
+            return pos , rot
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
 
     def move(self,msg):
         self.p_tool[0] = self.p_tool[0]+msg.linear.x
         self.p_tool[1] = self.p_tool[1]+msg.linear.y
         self.p_tool[2] = self.p_tool[2]+msg.linear.z
 
-    def handle_worldpose(self, msg):
-        self.p_tool = [msg.linear.x, msg.linear.y,msg.linear.z]
+    # def handle_worldpose(self, msg):
+    #     self.p_tool = [msg.linear.x, msg.linear.y,msg.linear.z]
 
     def get_pose(self):
         return self.p_tool
@@ -60,13 +88,14 @@ class psm(object):
 
         return joint_angle
 
-    def message_making(self,string,data): 
+    def message_making(self,string,data,j): 
         hello_str = JointState()
         hello_str.header = Header()
         hello_str.header.stamp = rospy.Time.now()
+        hello_str.header.frame_id = self.name
         hello_str.name = [string]
         hello_str.position = [data]
-        hello_str.velocity = []
+        hello_str.velocity = [j]
         hello_str.effort = []
 
         return hello_str
@@ -90,10 +119,10 @@ class psm(object):
         self.obj= ob
             
 class master(psm):
-    def __init__(self,name):
+    def __init__(self,name, gazebo_on):
         psm.master = name
         psm.number +=1
-        psm.__init__(self,name)
+        psm.__init__(self,name, gazebo_on)
         #print('done init',psm.master)
 
 
@@ -128,21 +157,21 @@ class master(psm):
 
 
 class slave(psm):
-    def __init__(self,name):
+    def __init__(self,name,gazebo_on):
         
         psm.number +=1
-        psm.__init__(self,name)
+        psm.__init__(self,name, gazebo_on)
   
         self.p_master = []
         self.rot_master = [None]*4
 
         #print(' I got to slave')
-        while (not self.p_master): 
-            try: 
-                (self.p_master,self.rot_master) = self.listener.lookupTransform('/' +psm.master+ '_remote_center_link','/'+self.name+'_remote_center_link', rospy.Time(0))
-                #print('im looping here')
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                continue
+        # while (not self.p_master): 
+        #     try: 
+        #         (self.p_master,self.rot_master) = self.listener.lookupTransform('/' +psm.master+ '_remote_center_link','/'+self.name+'_remote_center_link', rospy.Time(0))
+        #         #print('im looping here')
+        #     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+        #         continue
 
         rospy.sleep(1)
         #print(self.name,self.rot_master, 'Here I go again')
@@ -182,7 +211,7 @@ class slave(psm):
 
 
 class mainframe():
-    def __init__(self, names , num):
+    def __init__(self, names , num, gazebo_on):
 
         self.num = num
         self.names = names
@@ -201,9 +230,9 @@ class mainframe():
         self.r = [None]*self.num
         for i in range(self.num):         
             if (i==0):
-                self.r[i] = master(self.names[i])
+                self.r[i] = master(self.names[i], gazebo_on)
             else:
-                self.r[i] = slave(self.names[i])
+                self.r[i] = slave(self.names[i], gazebo_on)
 
         rospy.Subscriber('/psm/poses', gm.PoseStamped, self.handle_worldpose)
         rospy.Subscriber('/psm/cmd_vel', gm.Twist, self.handle_move)
@@ -228,7 +257,6 @@ class mainframe():
             #print(self.r[i].obj)
 
     def handle_force(self,msg):
-
         # for i in range(self.num-1):
         #     self.r[i+1].move_force(msg)
         for i in range(self.num):
@@ -274,7 +302,7 @@ class mainframe():
             #print('got here')
             data = self.r[i].inverse_kinematic(self.r[i].p_tool[0],self.r[i].p_tool[1],self.r[i].p_tool[2])
             for j in range(len(data)):
-                msg = self.r[i].message_making(self.r[i].joint_names[j],data[j])
+                msg = self.r[i].message_making(self.r[i].joint_names[j],data[j],j)
                 #print(msg)
                 self.p[i].publish(msg)
 

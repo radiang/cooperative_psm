@@ -8,8 +8,12 @@ def get_link_state(x,y):
     try:
         get = rospy.ServiceProxy('/gazebo/get_link_state', GetLinkState)
         resp1 = get(x,y)
-        print resp1.link_state.link_name
-        print resp1.link_state.pose.position
+        print resp1.link_state
+        pos = [0]*3
+        pos[0] = resp1.link_state.pose.position.x
+        pos[1] = resp1.link_state.pose.position.y
+        pos[2] = resp1.link_state.pose.position.z
+        print pos
 
         return resp1
     except rospy.ServiceException, e:

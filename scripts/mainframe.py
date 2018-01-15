@@ -11,16 +11,14 @@ from tf import TransformListener
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
-
-
 from psm_coop import coop
 
 if __name__ == '__main__':
 	name = rospy.get_param('/name')
 	num = rospy.get_param('/number')
-	print(name)
-	print(num)
-	a = coop.mainframe(name, num)
+	gazebo_on = rospy.get_param('/gazebo_on')
+	
+	a = coop.mainframe(name, num,gazebo_on)
 
 	rospy.sleep(2)
 

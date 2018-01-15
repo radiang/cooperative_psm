@@ -4,8 +4,9 @@
 
 <!-- Set the number of PSMs and the names, the nodes psm_controller and psm_listener uses these parameters -->
 
-<rosparam param="number">3</rosparam>
+<rosparam param="number">2</rosparam>
 <rosparam param="name">['one','two','three']</rosparam>
+<rosparam param="gazebo_on">1</rosparam>
 
 	 <node pkg="teleop_twist_keyboard" type="teleop_psm.py" name="teleop" output="screen"/>
 
