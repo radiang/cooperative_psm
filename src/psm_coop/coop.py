@@ -165,14 +165,17 @@ class slave(psm):
         self.p_master = []
         self.rot_master = [None]*4
 
-        #print(' I got to slave')
-        # while (not self.p_master): 
-        #     try: 
-        #         (self.p_master,self.rot_master) = self.listener.lookupTransform('/' +psm.master+ '_remote_center_link','/'+self.name+'_remote_center_link', rospy.Time(0))
-        #         #print('im looping here')
-        #     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-        #         continue
+        print(' I got to slave')
+        while (not self.p_master): 
+            try:
+                if (gazebo_on==0):
+                    (self.p_master,self.rot_master) = self.listener.lookupTransform('/' +psm.master+ '_remote_center_link','/'+self.name+'_remote_center_link', rospy.Time(0))
+                else: 
+                    (self.p_master, self.rot_master) = self.gazebo_service_call(self.namedict[psm.master]+'::remote_center_link', self.namedict[self.name]+'::remote_center_link')
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
 
+        print('/'+ self.name + '_master',self.p_master)
         rospy.sleep(1)
         #print(self.name,self.rot_master, 'Here I go again')
         Re = tf.transformations.quaternion_matrix(self.rot_master)

@@ -52,8 +52,6 @@ if __name__ == '__main__':
             message.pose.position.x = trans[0]
             message.pose.position.y = trans[1]
             message.pose.position.z = trans[2]
-    
             a.publish(message)
-            
             r.sleep()
         
