@@ -51,6 +51,7 @@ class gazebo_wrapper():
         
 if __name__ == '__main__':
     a = gazebo_wrapper()
+    rospy.sleep(2)
     a.pupu()
     rospy.spin()
    

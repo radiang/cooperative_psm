@@ -37,7 +37,8 @@ class psm(object):
                     (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_tool_wrist_sca_shaft_link', rospy.Time(0))
                 else: 
                     (self.p_rcm, self.rot_rcm) = self.gazebo_service_call(self.namedict[self.name]+'::remote_center_link','')
-                    (self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_sca_shaft_link',self.namedict[self.name]+'::remote_center_link')
+                    #(self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_sca_shaft_link',self.namedict[self.name]+'::remote_center_link')
+                    (self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_link',self.namedict[self.name]+'::remote_center_link')
                    
                 print('trying')              
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -171,7 +172,8 @@ class slave(psm):
                 if (gazebo_on==0):
                     (self.p_master,self.rot_master) = self.listener.lookupTransform('/' +psm.master+ '_remote_center_link','/'+self.name+'_remote_center_link', rospy.Time(0))
                 else: 
-                    (self.p_master, self.rot_master) = self.gazebo_service_call(self.namedict[psm.master]+'::remote_center_link', self.namedict[self.name]+'::remote_center_link')
+                    #(self.p_master, self.rot_master) = self.gazebo_service_call(self.namedict[psm.master]+'::remote_center_link', self.namedict[self.name]+'::remote_center_link')
+                    (self.p_master, self.rot_master) = self.gazebo_service_call(self.namedict[self.name]+'::remote_center_link', self.namedict[psm.master]+'::remote_center_link')
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
 
@@ -220,6 +222,7 @@ class mainframe():
         self.names = names
         self.poses = [None]*self.num
         self.worldpose = [[0.15,0.15,0.15],[0.15,0.15,0.15],[0.15,0.15,0.15]]
+        #print(self.worldpose)
         self.object_v = [None]*self.num
         # Create node
         if not rospy.get_node_uri():
@@ -236,6 +239,7 @@ class mainframe():
                 self.r[i] = master(self.names[i], gazebo_on)
             else:
                 self.r[i] = slave(self.names[i], gazebo_on)
+            #self.worldpose[i]=self.r[i].get_pose
 
         rospy.Subscriber('/psm/poses', gm.PoseStamped, self.handle_worldpose)
         rospy.Subscriber('/psm/cmd_vel', gm.Twist, self.handle_move)
@@ -249,7 +253,13 @@ class mainframe():
     
     def handle_worldpose(self,msg):
         i = self.names.index(msg.header.frame_id)
+        #print(i)
         self.worldpose[i] = np.array([msg.pose.position.x, msg.pose.position.y,msg.pose.position.z])
+
+        #self.worldpose[i][0]=msg.pose.position.x
+        #self.worldpose[i][1]=msg.pose.position.y
+        #self.worldpose[i][2]=msg.pose.position.z
+        #print(self.worldpose[i])
         #print("Got Message: " , i)
         self.make_object_v(i)
 
@@ -270,9 +280,10 @@ class mainframe():
     #         self.r[i+1].object_pose(msg)
 
     def make_centroid(self):
+        #print(self.worldpose[1],self.worldpose[0])
         if (self.num == 2):
-            self.object_v[1] = (np.array(self.worldpose[1]) - np.array(self.worldpose[0]))/2
-            self.object_v[0] = (np.array(self.worldpose[0]) - np.array(self.worldpose[1]))/2
+            self.object_v[1] = (np.array(self.worldpose[1])-np.array(self.worldpose[0]))/2
+            self.object_v[0] = (np.array(self.worldpose[0])-np.array(self.worldpose[1]))/2
         
         else:    
             v1 = np.array(self.worldpose[1])-np.array(self.worldpose[0])
