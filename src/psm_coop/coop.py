@@ -234,6 +234,8 @@ class mainframe():
 
       
         self.r = [None]*self.num
+        self.state = [None]*self.num
+
         for i in range(self.num):         
             if (i==0):
                 self.r[i] = master(self.names[i], gazebo_on)
@@ -249,7 +251,7 @@ class mainframe():
         self.p = [None]*self.num
         for i in range(self.num):
             self.p[i] = rospy.Publisher('/' + self.names[i], JointState, queue_size=10)
-
+            self.state[i] = rospy.Publisher('/psm_sense/'+self.names[i] +'/worldpose',gm.Pose,queue_size=10)
     
     def handle_worldpose(self,msg):
         i = self.names.index(msg.header.frame_id)
@@ -278,6 +280,14 @@ class mainframe():
 # def handle_object_pose(self,msg):
     #     for i in range(self.num-1):
     #         self.r[i+1].object_pose(msg)
+    def joint_message_making(self,pose):
+        scale = 100
+        msg = gm.Pose()
+        msg.position.x = pose[0]*scale
+        msg.position.y = pose[1]*scale
+        msg.position.z = pose[2]*scale
+
+        return msg
 
     def make_centroid(self):
         #print(self.worldpose[1],self.worldpose[0])
@@ -314,10 +324,12 @@ class mainframe():
             #self.make_object_v(i)
             #print(self.worldpose[i])
             #print('got here')
+            mess = self.joint_message_making(self.worldpose[i])
+            self.state[i].publish(mess)
+
             data = self.r[i].inverse_kinematic(self.r[i].p_tool[0],self.r[i].p_tool[1],self.r[i].p_tool[2])
             for j in range(len(data)):
                 msg = self.r[i].message_making(self.r[i].joint_names[j],data[j],j)
-                #print(msg)
                 self.p[i].publish(msg)
 
     
