@@ -27,10 +27,18 @@ if __name__ == '__main__':
     #     a[i]= rospy.Publisher('/psm/poses/'+name[i], gm.PoseStamped,queue_size=1)
     #     rate=rospy.Rate(10)
     a= rospy.Publisher('/psm/poses', gm.PoseStamped,queue_size=1)
+    b = [None]*num
+    b[0]= rospy.Publisher('/'+ name[0]+ '/poses', gm.Point,queue_size=1)
+    b[1]= rospy.Publisher('/'+ name[1]+ '/poses', gm.Point,queue_size=1)
+
     r = rospy.Rate(800)
     message = gm.PoseStamped()
-    trans = [0]*3
+    n_msg = gm.Point()
 
+    trans = [0]*3
+    count = 0
+    flag = 0
+    string = [None]*3
     while not rospy.is_shutdown():
         for i in range(num):
 
@@ -47,12 +55,35 @@ if __name__ == '__main__':
                     trans[1]=resp1.link_state.pose.position.y
                     trans[2]=resp1.link_state.pose.position.z
 
+                if (flag ==0):
+                    string[0] = name[i] + '_init_tool/x'
+                    string[1] = name[i] + '_init_tool/y'
+                    string[2] = name[i] + '_init_tool/z'       
+                    
+                    rospy.set_param(string[0], trans[0])
+                    rospy.set_param(string[1], trans[1])
+                    rospy.set_param(string[2], trans[2])
+
+                if (count>150*10):
+                    flag =1
+
+                count=count+1
+
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
             message.header.frame_id = name[i]
+            message.header.stamp = rospy.Time.now() 
             message.pose.position.x = trans[0]
             message.pose.position.y = trans[1]
             message.pose.position.z = trans[2]
+            message.pose.orientation.x = count
+            message.pose.orientation.y = flag
             a.publish(message)
-            r.sleep()
+
+            n_msg.x = trans[0] 
+            n_msg.y = trans[1]
+            n_msg.z = trans[2]
+            b[i].publish(n_msg)
+
+        r.sleep()
         
