@@ -31,7 +31,7 @@ if __name__ == '__main__':
     b[0]= rospy.Publisher('/'+ name[0]+ '/poses', gm.Point,queue_size=1)
     b[1]= rospy.Publisher('/'+ name[1]+ '/poses', gm.Point,queue_size=1)
 
-    r = rospy.Rate(800)
+    r = rospy.Rate(400)
     message = gm.PoseStamped()
     n_msg = gm.Point()
 

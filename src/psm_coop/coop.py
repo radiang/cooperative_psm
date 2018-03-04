@@ -21,6 +21,7 @@ class psm(object):
         self.joint_names = [self.name + '_outer_yaw_joint', self.name + '_outer_pitch_joint_1', self.name + '_outer_insertion_joint']
         self.p_rcm = []
         self.p_tool = []
+        self.p_init = []
         #self.worldpose = [] 
         self.rot_rcm = [None] * 4
         self.rot_tool = [None] * 4
@@ -44,6 +45,7 @@ class psm(object):
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
 
+        self.p_init = np.copy(self.p_tool)
         print('/'+ self.name + '_rcm',self.p_rcm)        
         print('/'+ self.name + '_tool',self.p_tool)
         rospy.sleep(1)
@@ -72,6 +74,11 @@ class psm(object):
         self.p_tool[0] = self.p_tool[0]+msg.linear.x
         self.p_tool[1] = self.p_tool[1]+msg.linear.y
         self.p_tool[2] = self.p_tool[2]+msg.linear.z
+
+    def move_abs(self,msg):
+        self.p_tool[0] = self.p_init[0]+msg.linear.x
+        self.p_tool[1] = self.p_init[1]+msg.linear.y
+        self.p_tool[2] = self.p_init[2]+msg.linear.z
 
     # def handle_worldpose(self, msg):
     #     self.p_tool = [msg.linear.x, msg.linear.y,msg.linear.z]
@@ -205,14 +212,39 @@ class slave(psm):
         self.p_tool[1] = self.p_tool[1] + new_vector[1]
         self.p_tool[2] = self.p_tool[2] + new_vector[2]
 
+    def move_abs(self, msg):
+        #Linear Movement of Slave PSM
+        #print('Mothafuka')
+        new_vector = self.inv_rot_master.dot(np.array([msg.linear.x, msg.linear.y, msg.linear.z,1]))
+        #print(new_vector)
+        self.p_tool[0] = self.p_init[0]+new_vector[0]
+        self.p_tool[1] = self.p_init[1]+new_vector[1]
+        self.p_tool[2] = self.p_init[2]+new_vector[2]
+
+        #Angular Movement of PSM2 is based on centroid of object
+        rot=tf.transformations.euler_matrix(msg.angular.x,msg.angular.y,msg.angular.z, 'rxyz')
+        rot_i=rot-np.identity(4)
+        new_rotation=rot_i.dot(np.append(self.obj,1))
+            
+        new_vector = self.inv_rot_master.dot(np.array([new_rotation[0], new_rotation[1], new_rotation[2],1]))
+
+        # #Make Angular Movement of PSM2 based on master position of object 
+        #self.p_tool[0] = self.p_init[0]+new_vector[0]
+        #self.p_tool[1] = self.p_init[1]+new_vector[1]
+        #self.p_tool[2] = self.p_init[2]+new_vector[2]
+
+
+
+
+
     def move_force(self,msg):
           #Force Movement of PSM2 based on centroid of object 
-            move_force= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
-            new_vector = self.inv_rot_master.dot(np.append(move_force,1))
+        move_force= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
+        new_vector = self.inv_rot_master.dot(np.append(move_force,1))
                 
-            self.p_tool[0]=self.p_tool[0]+new_vector[0]
-            self.p_tool[1]=self.p_tool[1]+new_vector[1]
-            self.p_tool[2]=self.p_tool[2]+new_vector[2]
+            #self.p_tool[0]=self.p_tool[0]+new_vector[0]
+            #self.p_tool[1]=self.p_tool[1]+new_vector[1]
+            #self.p_tool[2]=self.p_tool[2]+new_vector[2]
 
 
 class mainframe():
@@ -267,9 +299,14 @@ class mainframe():
 
     def handle_move(self,msg):
         for i in range(self.num):
-            self.r[i].move(msg)
+            #self.r[i].move(msg)
             #print('this shit ',i,self.object_v[i])
             #print(self.r[i].obj)
+
+            #For Video
+            self.r[i].move_abs(msg)
+
+
 
     def handle_force(self,msg):
         # for i in range(self.num-1):

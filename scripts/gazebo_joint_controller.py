@@ -48,11 +48,14 @@ class gazebo_wrapper():
                 self.j[i][3].publish(0.0)    
                 print("yes4")
             rospy.sleep(0.1)
+
     def callback(self,data):
-        if(int(data.velocity[0])!=2):
-            self.j[self.numdict[data.header.frame_id]][int(data.velocity[0])].publish(data.position[0])
+        #if(int(data.velocity[0])!=2):
+        self.j[self.numdict[data.header.frame_id]][int(data.velocity[0])].publish(data.position[0])
+        print(data.velocity[0])
         #else:
-         #   self.j[self.numdict[data.header.frame_id]][int(data.velocity[0])].publish(0.15)
+            #self.j[self.numdict[data.header.frame_id]][int(data.velocity[0])].publish(data.position[0])
+
         #self.j[0][3].publish(0.0)
         #self.j[1][3].publish(0.0)
 
