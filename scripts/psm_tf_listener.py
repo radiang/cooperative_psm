@@ -28,10 +28,11 @@ if __name__ == '__main__':
     #     rate=rospy.Rate(10)
     a= rospy.Publisher('/psm/poses', gm.PoseStamped,queue_size=1)
     b = [None]*num
-    b[0]= rospy.Publisher('/'+ name[0]+ '/poses', gm.Point,queue_size=1)
-    b[1]= rospy.Publisher('/'+ name[1]+ '/poses', gm.Point,queue_size=1)
 
-    r = rospy.Rate(400)
+    for i in range(num):
+        b[i]= rospy.Publisher('/'+ name[i]+ '/poses', gm.Point,queue_size=1)
+        
+    r = rospy.Rate(800)
     message = gm.PoseStamped()
     n_msg = gm.Point()
 
@@ -44,7 +45,8 @@ if __name__ == '__main__':
 
             try:
                 if (gazebo_on == 0):   
-                    (trans,rot) = listener.lookupTransform('/world' ,'/'+name[i]+'_tool_tf', rospy.Time(0))
+                    #(trans,rot) = listener.lookupTransform('/world' ,'/'+name[i]+'_tool_tf', rospy.Time(0))
+                    (trans,rot) = listener.lookupTransform('/'+name[0]+'_remote_center_link' ,'/'+name[i]+'_tool_tf', rospy.Time(0))
                 #print(trans)
                 else:
                     get = rospy.ServiceProxy('/gazebo/get_link_state', GetLinkState)
@@ -84,6 +86,5 @@ if __name__ == '__main__':
             n_msg.y = trans[1]
             n_msg.z = trans[2]
             b[i].publish(n_msg)
-
-        r.sleep()
+            r.sleep()
         

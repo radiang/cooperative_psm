@@ -25,7 +25,7 @@ class psm(object):
         #self.worldpose = [] 
         self.rot_rcm = [None] * 4
         self.rot_tool = [None] * 4
-        self.obj = []
+        self.obj = [0.15, 0.15, 0.15]
         self.counter = 0
 
         self.br = tf.TransformBroadcaster()
@@ -45,9 +45,13 @@ class psm(object):
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
 
+        self.matrix_rot_rcm = tf.transformations.quaternion_matrix(self.rot_rcm)
+        self.inv_rot_rcm=tf.transformations.inverse_matrix(self.matrix_rot_rcm)
+
         self.p_init = np.copy(self.p_tool)
-        print('/'+ self.name + '_rcm',self.p_rcm)        
+        print('/'+ self.name + '_rcm',self.p_rcm,self.rot_rcm)        
         print('/'+ self.name + '_tool',self.p_tool)
+        #print(self.matrix_rot_rcm)
         rospy.sleep(1)
 
     def gazebo_service_call(self,x,y):
@@ -112,7 +116,7 @@ class psm(object):
         
         self.br.sendTransform((self.p_rcm), (self.rot_rcm), rospy.Time.now(), self.name+"_rcm_tf", "world")
         self.br.sendTransform((self.p_tool), (0,0,0,1), rospy.Time.now(), self.name+"_tool_tf", self.name+"_rcm_tf")
-        #self.br.sendTransform((self.obj), (0,0,0,1), rospy.Time.now(),self.name+'test', self.name+"_tool_tf")
+        self.br.sendTransform((self.obj[0],self.obj[1],self.obj[2]), (0,0,0,1), rospy.Time.now(),self.name+'_test', self.name+"_tool_tf")
 
     def pu_publish(self): 
         data = self.inverse_kinematic(self.p_tool[0],self.p_tool[1],self.p_tool[2])
@@ -123,8 +127,7 @@ class psm(object):
             #print(msg)
             self.p.publish(msg)
 
-    def set_object(self,ob):
-        self.obj= ob
+ 
             
 class master(psm):
     def __init__(self,name, gazebo_on):
@@ -146,7 +149,7 @@ class master(psm):
         #Angular Movement of PSM1 based off of centroid of object.
         rot=tf.transformations.euler_matrix(msg.angular.x,msg.angular.y,msg.angular.z, 'rxyz')
         rot_i=rot-np.identity(4)
-        new_rotation=rot_i.dot(np.append(self.obj,1))
+        new_rotation=rot_i.dot(np.append(-self.obj,1))
             
         new_vector = np.array([new_rotation[0], new_rotation[1], new_rotation[2],1])
         self.p_tool[0] = self.p_tool[0] + new_vector[0]
@@ -156,13 +159,19 @@ class master(psm):
         #Optional command, re-orient based on PSM1, Turn above lines Off 
 
     def move_force(self,msg):
-        move_force= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
-        new_vector = np.append(move_force,1)
+        new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
+    
             
         self.p_tool[0]=self.p_tool[0]+new_vector[0]
         self.p_tool[1]=self.p_tool[1]+new_vector[1]
         self.p_tool[2]=self.p_tool[2]+new_vector[2]
 
+    def set_object(self,ob):
+    #    R= np.matrix.transpose(self.matrix_rot_rcm[0:3][0:3]) 
+    #    x = np.matmul(R,ob)
+    #    self.obj = np.array([x[0],x[1],x[2]])   
+        self.obj = ob
+        #print(np.linalg.norm(self.obj))
 
 class slave(psm):
     def __init__(self,name,gazebo_on):
@@ -177,6 +186,7 @@ class slave(psm):
         while (not self.p_master): 
             try:
                 if (gazebo_on==0):
+                    # ROT_MASTER IS R^MASTER_SLAVE: R MASTER TO SLAVE
                     (self.p_master,self.rot_master) = self.listener.lookupTransform('/' +psm.master+ '_remote_center_link','/'+self.name+'_remote_center_link', rospy.Time(0))
                 else: 
                     #(self.p_master, self.rot_master) = self.gazebo_service_call(self.namedict[psm.master]+'::remote_center_link', self.namedict[self.name]+'::remote_center_link')
@@ -203,9 +213,9 @@ class slave(psm):
         #Angular Movement of PSM2 is based on centroid of object
         rot=tf.transformations.euler_matrix(msg.angular.x,msg.angular.y,msg.angular.z, 'rxyz')
         rot_i=rot-np.identity(4)
-        new_rotation=rot_i.dot(np.append(self.obj,1))
+        new_vector=rot_i.dot(np.append(-self.obj,1))
             
-        new_vector = self.inv_rot_master.dot(np.array([new_rotation[0], new_rotation[1], new_rotation[2],1]))
+        #new_vector = self.inv_rot_master.dot(np.array([new_rotation[0], new_rotation[1], new_rotation[2],1]))
 
         #Make Angular Movement of PSM2 based on master position of object 
         self.p_tool[0] = self.p_tool[0] + new_vector[0]
@@ -235,18 +245,19 @@ class slave(psm):
 
 
 
-
-
     def move_force(self,msg):
           #Force Movement of PSM2 based on centroid of object 
-        move_force= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
-        new_vector = self.inv_rot_master.dot(np.append(move_force,1))
+        new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
+        #new_vector = self.inv_rot_master.dot(np.append(move_force,1))
                 
-            #self.p_tool[0]=self.p_tool[0]+new_vector[0]
-            #self.p_tool[1]=self.p_tool[1]+new_vector[1]
-            #self.p_tool[2]=self.p_tool[2]+new_vector[2]
+        self.p_tool[0]=self.p_tool[0]+new_vector[0]
+        self.p_tool[1]=self.p_tool[1]+new_vector[1]
+        self.p_tool[2]=self.p_tool[2]+new_vector[2]
 
-
+    def set_object(self,ob):
+        x = self.inv_rot_master.dot(np.append(ob,1)) 
+        self.obj = np.array([x[0],x[1],x[2]])   
+      
 class mainframe():
     def __init__(self, names , num, gazebo_on):
 
@@ -273,6 +284,7 @@ class mainframe():
                 self.r[i] = master(self.names[i], gazebo_on)
             else:
                 self.r[i] = slave(self.names[i], gazebo_on)
+        
             #self.worldpose[i]=self.r[i].get_pose
 
         rospy.Subscriber('/psm/poses', gm.PoseStamped, self.handle_worldpose)
@@ -287,26 +299,20 @@ class mainframe():
     
     def handle_worldpose(self,msg):
         i = self.names.index(msg.header.frame_id)
-        #print(i)
         self.worldpose[i] = np.array([msg.pose.position.x, msg.pose.position.y,msg.pose.position.z])
 
-        #self.worldpose[i][0]=msg.pose.position.x
-        #self.worldpose[i][1]=msg.pose.position.y
-        #self.worldpose[i][2]=msg.pose.position.z
         #print(self.worldpose[i])
         #print("Got Message: " , i)
         self.make_object_v(i)
 
     def handle_move(self,msg):
         for i in range(self.num):
-            #self.r[i].move(msg)
+            self.r[i].move(msg)
             #print('this shit ',i,self.object_v[i])
             #print(self.r[i].obj)
 
             #For Video
-            self.r[i].move_abs(msg)
-
-
+            #self.r[i].move_abs(msg)
 
     def handle_force(self,msg):
         # for i in range(self.num-1):
@@ -329,19 +335,20 @@ class mainframe():
     def make_centroid(self):
         #print(self.worldpose[1],self.worldpose[0])
         if (self.num == 2):
-            self.object_v[1] = (np.array(self.worldpose[1])-np.array(self.worldpose[0]))/2
-            self.object_v[0] = (np.array(self.worldpose[0])-np.array(self.worldpose[1]))/2
+            self.object_v[0] = (np.array(self.worldpose[1])-np.array(self.worldpose[0]))/2
+            self.object_v[1] = (np.array(self.worldpose[0])-np.array(self.worldpose[1]))/2
         
         else:    
             v1 = np.array(self.worldpose[1])-np.array(self.worldpose[0])
             v2 = np.array(self.worldpose[2])-np.array(self.worldpose[0])
-            b = v1 - v2
+            b = v2 - v1
 
-            c_m = (b/2 + v2)*2/3
+            c_m = (v1+b/2)*2/3
 
-            self.object_v[0] = -c_m
-            self.object_v[1] = -c_m + v1
-            self.object_v[2] = -c_m + v2
+            self.object_v[0] = c_m
+            self.object_v[1] = c_m - v1
+            self.object_v[2] = c_m - v2
+        
         
     def make_object_v(self,x):
         if (self.num == 2):
@@ -349,6 +356,8 @@ class mainframe():
             #This is for non centroid movement, has to be fixed
             # self.object_v[x] = self.worldpose[x]-self.worldpose[0]
             self.r[x].set_object(self.object_v[x])
+
+            #print(self.r[x].obj)
         else:
             self.make_centroid()
             self.r[x].set_object(self.object_v[x])

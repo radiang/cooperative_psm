@@ -19,19 +19,14 @@ if __name__ == '__main__':
 	gazebo_on = rospy.get_param('/gazebo_on')
 	
 	a = coop.mainframe(name, num,gazebo_on)
-
-	rospy.sleep(2)
+	r = rospy.Rate(1500)
+	rospy.sleep(1)
 
 	print('READY TO START')
 	while not rospy.is_shutdown():
-		#try: 
-		a.run()
 		for i in range(num):
 			if (i>0):
 			 	a.make_object_v(i)
-
-			#print('amrunning')
-
-		#except:
-		#	continue        
-	rospy.spin()
+		a.run()  
+		r.sleep()
+	#rospy.spin()

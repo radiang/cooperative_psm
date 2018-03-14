@@ -4,14 +4,11 @@ import rospy
 import copy
 import time
 import math
-import tf
+
 import numpy as np
 import geometry_msgs.msg as gm
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import PointCloud
 from std_msgs.msg import Header
-from gazebo_msgs.srv import GetLinkState
-from gazebo_msgs.srv import ApplyBodyWrench
-from gazebo_msgs.msg import LinkStates
 
 class Timer(object):
     def __init__(self, name=None):
@@ -30,45 +27,59 @@ class Timer(object):
         #print 'Time Elapsed: %s Hz: %s' % (t,x)
 
 class environment(object):
-    def __init__(self,name,num,k,c):
+    def __init__(self,name,num,k,c,enable):
         self.num=num
         self.name=name
-        self.init_pose = np.ones((self.num,3))
-        self.new_pose = np.ones((self.num,3))
-        self.init_object = np.ones((self.num,3))
-        self.new_object = np.ones((self.num,3))
-        self.new_object_min1 = np.ones((self.num,3))
-        self.change = np.ones((self.num,3))
-        self.force = np.ones((self.num,3,3))
+        self.enable = enable
+        
+    
         self.k = k
         self.c = c
         self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
         self.rot_tool = [None]*4
 
-        rospy.Subscriber('/gazebo/link_states', LinkStates, self.callback)
+
+        self.count = 0
+
+        rospy.Subscriber('/ndi/fiducials', PointCloud, self.callback)
+        rospy.sleep(1)
+        
+        self.init_pose = np.ones((self.track_num,3))
+        self.new_pose = np.ones((self.track_num,3))
+        self.init_object = np.ones((self.track_num,3))
+        self.new_object = np.ones((self.track_num,3))
+        self.new_object_min1 = np.ones((self.track_num,3))
+        self.change = np.ones((self.track_num,3))
+        self.force = np.ones((self.track_num,3,3))
 
         self.initial_object()
 
     def callback(self,msg):
-        for i in range(self.num):
-            j = msg.name.index('dvrk_psm::'+self.namedict[self.name[i]]+'::tool_wrist_link')
+        
+        if (self.count < 10):
+            self.track_num = len(msg.points)
+            self.tracker_pose = np.ones((self.track_num,3)) 
 
-            self.new_pose[i][0] = msg.pose[j].position.x
-            self.new_pose[i][1] = msg.pose[j].position.y
-            self.new_pose[i][2] = msg.pose[j].position.z
+        for i in range(self.track_num):
+            self.tracker_pose[i][0] = msg.points[i].x 
+            self.tracker_pose[i][1] = msg.points[i].y 
+            self.tracker_pose[i][2] = msg.points[i].z 
 
+        self.count = self.count + 1
+      
+      
     def initial_object(self):
-        for i in range(self.num):
-            (self.init_pose[i], self.rot_tool) = self.gazebo_service_call(self.namedict[self.name[i]]+'::tool_wrist_link','world')
-            #(self.init_pose[i], self.rot_tool) = self.gazebo_service_call(self.namedict[self.name[i]]+'::tool_wrist_link',self.namedict[self.name[0]]+'::base_link')
-        if(self.num==2):
-            for i in range(self.num):    
-                self.init_object[i]=self.cyclic_substraction(self.init_pose,self.init_object,i,self.num-1)
-                print('init',self.init_pose[i])
-        else: 
+        self.init_pose = copy.copy(self.tracker_pose)
+        print('init',self.init_pose)
+        for i in range(self.track_num):
+            if(self.track_num==2):           
+                self.init_object[i] = self.init_pose[self.cyclic_numbering(i+1,self.track_num)] - self. init_pose[i]
+                print('init_object',self.init_object[i])
+        
+        if(self.track_num>2): 
             (self.init_object[0],self.init_object[1],self.init_object[2]) = self.make_centroid(self.init_pose[0],self.init_pose[1],self.init_pose[2])
 
-        print('init',self.init_pose[i])
+            
     def gazebo_service_call(self,x,y):
         rospy.wait_for_service('/gazebo/get_link_state')
         try:
@@ -107,16 +118,9 @@ class environment(object):
 
         except rospy.ServiceException as e:
             print e
-            
-    def cyclic_substraction(self,x,y,num,num_max):
-        if (num==0):
-            y[num]=x[num_max]-x[num]
-        else: 
-            y[num]=x[num-1]-x[num]
-        return y[num]
 
     def cyclic_numbering(self,x,num_max):
-        if (x>num_max):
+        if (x>num_max-1):
             x = 0
         else:
             x = x
@@ -143,34 +147,25 @@ class environment(object):
 
 
     def calculate_new_object(self): 
-        for i in range(self.num):
-            with Timer('service_call'):
-            #(self.new_pose[i], self.rot_tool) = self.gazebo_service_call(self.namedict[self.name[i]]+'::tool_wrist_link','world')
-            #(self.new_pose[i], self.rot_tool) = self.gazebo_service_call(self.namedict[self.name[i]]+'::tool_wrist_link',self.namedict[self.name[0]]+'::base_link')
-                self.new_object_min1[i] = copy.copy(self.new_object[i])
-
-            if (self.num==2):        
-                self.new_object[i]=self.cyclic_substraction(self.new_pose,self.new_object,i,self.num-1)
-        
-        if(self.num>2):
+        self.new_pose = copy.copy(self.tracker_pose)
+        self.new_object_min1 = copy.copy(self.new_object)
+        for i in range(self.track_num):
+            if (self.track_num==2):        
+                self.new_object[i] = self.new_pose[self.cyclic_numbering(i+1,self.track_num)] - self.new_pose[i]
+        if(self.track_num>2):
             (self.new_object[0],self.new_object[1],self.new_object[2]) = self.make_centroid(self.new_pose[0],self.new_pose[1],self.new_pose[2])
-    
+        
+        #print('new_object',self.new_object)
+
     def calculate_force(self): 
         for i in range(self.num):
-            #Should use neighbor algorithm, right now neighbors are sequential i's
-            # if(self.num>2):
-            #     j=self.cyclic_numbering(i+1,self.num-1)
-
-            #     self.force[i][0]=self.k*(self.new_object[i]-self.init_object[i])*np.divide(self.new_object[i],np.linalg.norm(self.new_object[i]))
-            #     self.force[i][1]=-self.k*(self.new_object[j]-self.init_object[j])*np.divide(self.new_object[j],np.linalg.norm(self.new_object[j]))
-            #     self.force[i][2]=self.force[i][0]+self.force[i][1]
-            # else: 
+        
             k_diff = self.k*(np.linalg.norm(self.new_object[i])-np.linalg.norm(self.init_object[i]))
             c_diff = self.c*(np.linalg.norm(self.new_object[i])-np.linalg.norm(self.new_object_min1[i]))
             #print('c_diff',c_diff)
             self.force[i][0]=(k_diff+c_diff)*np.divide(self.new_object[i],np.linalg.norm(self.new_object[i]))
  
-            #print(i, self.force[i][0])
+            print('force',i, self.force[i][0])
     def message_making(self,force,i):
         msg = gm.WrenchStamped()
 
@@ -195,51 +190,62 @@ class environment(object):
 
 if __name__ == '__main__':
     rospy.init_node("object_node",anonymous=True)
-    rospy.wait_for_service('gazebo/apply_body_wrench')
 
-    name = rospy.get_param('/name')
-    num = rospy.get_param('/number')
-    gazebo_on = rospy.get_param('/gazebo_on')
+    #ame = rospy.get_param('/name')
+    #num = rospy.get_param('/number')
+    #gazebo_on = rospy.get_param('/gazebo_on')
+
+
+    name = ['one','two']
+    num = 2
+    gazebo_on = 0
+    enable = 0 
     namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
 
     p = [None]*num
     for i in range(num):
         p[i]=rospy.Publisher('/psm_sense/'+namedict[name[i]]+'/tool_forces',gm.WrenchStamped, queue_size=10)
 
-    
     k=1000 #stiffness of object N/m
     c = 10 #damping of object N/m2
 
-    env = environment(name,num,k,c)    
+    env = environment(name,num,k,c, enable)    
     r = rospy.Rate(4000)
-    rospy.sleep(1)
     j = 0
+
     while not rospy.is_shutdown():          
-        
-        with Timer('calc_new_object'):
-            env.calculate_new_object()
-        with Timer('calc_force'):
-            env.calculate_force()
-        if (j == 0):
-            print('new_pose',env.new_pose)
-            print('force',env.force)
-            #rospy.sleep(1)
-        #print('init_object',env.init_object)
-        print('new_object',env.new_object)
-        print('force',env.force)
+        env.calculate_new_object()
+        env.calculate_force()
 
-        for i in range(num):
-            if(num>2):
-                with Timer('force_call'):
-                    env.gazebo_force_call(env.force[i][0],i)
-                msg = env.message_making(env.force[i][0],i)
-                with Timer('publish'):
-                    p[i].publish(msg)
-            else:
-                env.gazebo_force_call(env.force[i][0],i)
-                msg = env.message_making(env.force[i][0],i)
+        for i in range(env.track_num):
+            msg = env.message_making(env.force[i][0],i)
+            with Timer('publish'):
                 p[i].publish(msg)
-
-        j = j + 1
         r.sleep()
+        # with Timer('calc_new_object'):
+        #     env.calculate_new_object()
+        # with Timer('calc_force'):
+        #     env.calculate_force()
+        # if (j == 0):
+        #     print('new_pose',env.new_pose)
+        #     print('force',env.force)
+        #     #rospy.sleep(1)
+        # #print('init_object',env.init_object)
+        # print('new_object',env.new_object)
+        # print('force',env.force)
+
+        # for i in range(num):
+        #     if(num>2):
+        #         with Timer('force_call'):
+        #             env.gazebo_force_call(env.force[i][0],i)
+        #         msg = env.message_making(env.force[i][0],i)
+        #         with Timer('publish'):
+        #             p[i].publish(msg)
+        #     else:
+        #         env.gazebo_force_call(env.force[i][0],i)
+        #         msg = env.message_making(env.force[i][0],i)
+        #         p[i].publish(msg)
+
+        # j = j + 1
+        # r.sleep()
         
