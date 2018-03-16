@@ -5,17 +5,19 @@ import math
 import time
 import sys 
 import rospy
+import copy
 import tf
 from tf import TransformListener
 import geometry_msgs.msg as gm
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Header
+from std_msgs.msg import Float64
 from gazebo_msgs.srv import GetLinkState
 
 class psm(object):
     #global number
     number = 0
-    def __init__(self, name, gazebo_on): 
+    def __init__(self, name, gazebo_on,track_force,des_force): 
         self.name = name
         self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
         self.joint_names = [self.name + '_outer_yaw_joint', self.name + '_outer_pitch_joint_1', self.name + '_outer_insertion_joint']
@@ -27,6 +29,13 @@ class psm(object):
         self.rot_tool = [None] * 4
         self.obj = [0.15, 0.15, 0.15]
         self.counter = 0
+
+        self.track_force = track_force
+        self.force = 0
+        self.force_min1 =0
+        self.des_force = des_force
+        self.gain = .00000125
+        self.gain_c = 0.000001
 
         self.br = tf.TransformBroadcaster()
         self.listener = tf.TransformListener()
@@ -52,6 +61,11 @@ class psm(object):
         print('/'+ self.name + '_rcm',self.p_rcm,self.rot_rcm)        
         print('/'+ self.name + '_tool',self.p_tool)
         #print(self.matrix_rot_rcm)
+
+        if(self.track_force==1):
+            rospy.Subscriber('/psm_sense/'+self.namedict[self.name] +'/tool_forces', gm.WrenchStamped, self.move_force)
+        
+
         rospy.sleep(1)
 
     def gazebo_service_call(self,x,y):
@@ -84,13 +98,33 @@ class psm(object):
         self.p_tool[1] = self.p_init[1]+msg.linear.y
         self.p_tool[2] = self.p_init[2]+msg.linear.z
 
+    def move_force(self,msg):
+        
+        if(self.track_force==1):
+            self.force_min1 = copy.copy(self.force)
+            self.force = msg.wrench.torque.x
+
+            delta_pos= msg.wrench.torque.x - self.des_force
+            delta_der= msg.wrench.torque.x - self.force_min1
+
+            new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*(self.gain*delta_pos + self.gain_c*delta_der)
+
+        else:
+            new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
+        
+        self.p_tool[0]=self.p_tool[0]+new_vector[0]
+        self.p_tool[1]=self.p_tool[1]+new_vector[1]
+        self.p_tool[2]=self.p_tool[2]+new_vector[2]
+
     # def handle_worldpose(self, msg):
     #     self.p_tool = [msg.linear.x, msg.linear.y,msg.linear.z]
 
+
+    def set_force(self,msg):
+        self.des_force = self.des_force + 500*msg.linear.x
+
     def get_pose(self):
         return self.p_tool
-
-
 
     def inverse_kinematic(self,x,y,z): 
         joint_angle=[0,0,0]
@@ -130,10 +164,10 @@ class psm(object):
  
             
 class master(psm):
-    def __init__(self,name, gazebo_on):
+    def __init__(self,name, gazebo_on,track_force,des_force):
         psm.master = name
         psm.number +=1
-        psm.__init__(self,name, gazebo_on)
+        psm.__init__(self,name, gazebo_on,track_force,des_force)
         #print('done init',psm.master)
 
 
@@ -158,13 +192,13 @@ class master(psm):
 
         #Optional command, re-orient based on PSM1, Turn above lines Off 
 
-    def move_force(self,msg):
-        new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
+    # def move_force(self,msg):
+    #     new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
     
             
-        self.p_tool[0]=self.p_tool[0]+new_vector[0]
-        self.p_tool[1]=self.p_tool[1]+new_vector[1]
-        self.p_tool[2]=self.p_tool[2]+new_vector[2]
+    #     self.p_tool[0]=self.p_tool[0]+new_vector[0]
+    #     self.p_tool[1]=self.p_tool[1]+new_vector[1]
+    #     self.p_tool[2]=self.p_tool[2]+new_vector[2]
 
     def set_object(self,ob):
     #    R= np.matrix.transpose(self.matrix_rot_rcm[0:3][0:3]) 
@@ -174,10 +208,10 @@ class master(psm):
         #print(np.linalg.norm(self.obj))
 
 class slave(psm):
-    def __init__(self,name,gazebo_on):
+    def __init__(self,name,gazebo_on,track_force,des_force):
         
         psm.number +=1
-        psm.__init__(self,name, gazebo_on)
+        psm.__init__(self,name, gazebo_on,track_force,des_force)
   
         self.p_master = []
         self.rot_master = [None]*4
@@ -245,24 +279,28 @@ class slave(psm):
 
 
 
-    def move_force(self,msg):
-          #Force Movement of PSM2 based on centroid of object 
-        new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
-        #new_vector = self.inv_rot_master.dot(np.append(move_force,1))
+    # def move_force(self,msg):
+    #       #Force Movement of PSM2 based on centroid of object 
+    #     new_vector= self.obj[0:3]/np.linalg.norm(self.obj[0:3])*msg.linear.x
+    #     #new_vector = self.inv_rot_master.dot(np.append(move_force,1))
                 
-        self.p_tool[0]=self.p_tool[0]+new_vector[0]
-        self.p_tool[1]=self.p_tool[1]+new_vector[1]
-        self.p_tool[2]=self.p_tool[2]+new_vector[2]
+    #     self.p_tool[0]=self.p_tool[0]+new_vector[0]
+    #     self.p_tool[1]=self.p_tool[1]+new_vector[1]
+    #     self.p_tool[2]=self.p_tool[2]+new_vector[2]
 
     def set_object(self,ob):
         x = self.inv_rot_master.dot(np.append(ob,1)) 
         self.obj = np.array([x[0],x[1],x[2]])   
       
 class mainframe():
-    def __init__(self, names , num, gazebo_on):
+    def __init__(self, names , num, gazebo_on, track_force,des_force=5):
 
         self.num = num
         self.names = names
+        
+        self.track_force = track_force
+        self.des_force = des_force
+
         self.poses = [None]*self.num
         self.worldpose = [[0.15,0.15,0.15],[0.15,0.15,0.15],[0.15,0.15,0.15]]
         #print(self.worldpose)
@@ -281,21 +319,24 @@ class mainframe():
 
         for i in range(self.num):         
             if (i==0):
-                self.r[i] = master(self.names[i], gazebo_on)
+                self.r[i] = master(self.names[i], gazebo_on,self.track_force,self.des_force)
             else:
-                self.r[i] = slave(self.names[i], gazebo_on)
+                self.r[i] = slave(self.names[i], gazebo_on,self.track_force,self.des_force)
         
             #self.worldpose[i]=self.r[i].get_pose
 
         rospy.Subscriber('/psm/poses', gm.PoseStamped, self.handle_worldpose)
         rospy.Subscriber('/psm/cmd_vel', gm.Twist, self.handle_move)
         rospy.Subscriber('/psm/cmd_force', gm.Twist, self.handle_force)
-        
+
+    
           # Create publishers
         self.p = [None]*self.num
         for i in range(self.num):
             self.p[i] = rospy.Publisher('/' + self.names[i], JointState, queue_size=10)
             self.state[i] = rospy.Publisher('/psm_sense/'+self.names[i] +'/worldpose',gm.Pose,queue_size=10)
+
+        self.des_pub = rospy.Publisher('/psm_sense/desired_force',Float64,queue_size=10)
     
     def handle_worldpose(self,msg):
         i = self.names.index(msg.header.frame_id)
@@ -317,8 +358,13 @@ class mainframe():
     def handle_force(self,msg):
         # for i in range(self.num-1):
         #     self.r[i+1].move_force(msg)
-        for i in range(self.num):
-            self.r[i].move_force(msg)
+        if(self.track_force == 1):
+            self.des_force = self.des_force+ 500*msg.linear.x
+            for i in range(self.num):
+                self.r[i].set_force(msg)
+        else: 
+            for i in range(self.num):
+                self.r[i].move_force(msg)
 
 # def handle_object_pose(self,msg):
     #     for i in range(self.num-1):
@@ -370,8 +416,11 @@ class mainframe():
             #self.make_object_v(i)
             #print(self.worldpose[i])
             #print('got here')
-            mess = self.joint_message_making(self.worldpose[i])
-            self.state[i].publish(mess)
+
+            #mess = self.joint_message_making(self.worldpose[i])
+            #self.state[i].publish(mess)
+
+            self.des_pub.publish(self.des_force)
 
             data = self.r[i].inverse_kinematic(self.r[i].p_tool[0],self.r[i].p_tool[1],self.r[i].p_tool[2])
             for j in range(len(data)):

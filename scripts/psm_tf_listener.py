@@ -51,7 +51,7 @@ if __name__ == '__main__':
                 else:
                     get = rospy.ServiceProxy('/gazebo/get_link_state', GetLinkState)
                     #resp1 = get(namedict[name[i]]+'::tool_wrist_sca_shaft_link','')
-                    resp1 = get(namedict[name[i]]+'::tool_wrist_link','')
+                    resp1 = get(namedict[name[i]]+'::tool_wrist_link',namedict[name[0]]+'::remote_center_link')
 
                     trans[0]=resp1.link_state.pose.position.x
                     trans[1]=resp1.link_state.pose.position.y

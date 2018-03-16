@@ -207,7 +207,7 @@ if __name__ == '__main__':
         p[i]=rospy.Publisher('/psm_sense/'+namedict[name[i]]+'/tool_forces',gm.WrenchStamped, queue_size=10)
 
     
-    k=1000 #stiffness of object N/m
+    k=10000 #stiffness of suture material from ref[] N/m
     c = 10 #damping of object N/m2
 
     env = environment(name,num,k,c)    
@@ -225,8 +225,8 @@ if __name__ == '__main__':
             print('force',env.force)
             #rospy.sleep(1)
         #print('init_object',env.init_object)
-        print('new_object',env.new_object)
-        print('force',env.force)
+        #print('new_object',env.new_object)
+        #print('force',env.force)
 
         for i in range(num):
             if(num>2):
