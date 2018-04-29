@@ -20,7 +20,7 @@ class psm(object):
     def __init__(self, name, gazebo_on,track_force,des_force): 
         self.name = name
         self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
-        self.joint_names = [self.name + '_outer_yaw_joint', self.name + '_outer_pitch_joint_1', self.name + '_outer_insertion_joint']
+        self.joint_names = [self.name + '_yaw_joint', self.name + '_pitch_back_joint', self.name + '_main_insertion_joint']
         self.p_rcm = []
         self.p_tool = []
         self.p_init = []
@@ -44,11 +44,11 @@ class psm(object):
             try:
                 if (gazebo_on == 0):
                     (self.p_rcm, self.rot_rcm) = self.listener.lookupTransform('/world','/' + self.name + '_remote_center_link', rospy.Time(0))
-                    (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_tool_wrist_sca_shaft_link', rospy.Time(0))
+                    (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_gripper1_link', rospy.Time(0))
                 else: 
-                    (self.p_rcm, self.rot_rcm) = self.gazebo_service_call(self.namedict[self.name]+'::remote_center_link','')
-                    #(self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_sca_shaft_link',self.namedict[self.name]+'::remote_center_link')
-                    (self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_link',self.namedict[self.name]+'::remote_center_link')
+                    (self.p_rcm, self.rot_rcm) = self.gazebo_service_call(self.namedict[self.name]+'::remote_center_link','world')
+                    (self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_sca_shaft_link',self.namedict[self.name]+'::remote_center_link')
+                    #(self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::large_needle_driver::gripper1_link',self.namedict[self.name]+'::remote_center_link')
                    
                 print('trying')              
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -130,7 +130,7 @@ class psm(object):
         joint_angle=[0,0,0]
         joint_angle[0] = -math.atan(x/z)
         joint_angle[1] = -math.atan(y/math.sqrt(math.pow(x,2)+math.pow(z,2))) 
-        joint_angle[2] = math.sqrt(math.pow(x,2)+math.pow(y,2)+math.pow(z,2))
+        joint_angle[2] = math.sqrt(math.pow(x,2)+math.pow(y,2)+math.pow(z,2))+0.006
 
         return joint_angle
 
@@ -230,10 +230,9 @@ class slave(psm):
 
         print('/'+ self.name + '_master',self.p_master)
         rospy.sleep(1)
-        #print(self.name,self.rot_master, 'Here I go again')
-        Re = tf.transformations.quaternion_matrix(self.rot_master)
-        self.inv_rot_master=tf.transformations.inverse_matrix(Re)
-        #print(self.inv_rot_master, 'Here I go again')
+        self.Re = tf.transformations.quaternion_matrix(self.rot_master)
+        self.inv_rot_master=tf.transformations.inverse_matrix(self.Re)
+        
 
 
     def move(self, msg):
@@ -289,8 +288,10 @@ class slave(psm):
     #     self.p_tool[2]=self.p_tool[2]+new_vector[2]
 
     def set_object(self,ob):
-        x = self.inv_rot_master.dot(np.append(ob,1)) 
+        x = self.inv_rot_master.dot(np.append(ob,0)) 
         self.obj = np.array([x[0],x[1],x[2]])   
+
+        #self.obj=ob
       
 class mainframe():
     def __init__(self, names , num, gazebo_on, track_force,des_force=5):

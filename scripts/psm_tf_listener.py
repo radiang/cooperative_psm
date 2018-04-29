@@ -50,13 +50,16 @@ if __name__ == '__main__':
                 #print(trans)
                 else:
                     get = rospy.ServiceProxy('/gazebo/get_link_state', GetLinkState)
-                    #resp1 = get(namedict[name[i]]+'::tool_wrist_sca_shaft_link','')
-                    resp1 = get(namedict[name[i]]+'::tool_wrist_link',namedict[name[0]]+'::remote_center_link')
+                    resp1 = get(namedict[name[i]]+'::tool_wrist_sca_shaft_link',namedict[name[0]]+'::remote_center_link')
+                    #resp1 = get(namedict[name[i]]+'::large_needle_driver::gripper1_link',namedict[name[0]]+'::remote_center_link')
+
 
                     trans[0]=resp1.link_state.pose.position.x
                     trans[1]=resp1.link_state.pose.position.y
                     trans[2]=resp1.link_state.pose.position.z
-
+                    
+                    #(trans,rot) = listener.lookupTransform('/'+name[0]+'_rcm_tf' ,'/'+name[i]+'_tool_tf', rospy.Time(0))
+                
                 if (flag ==0):
                     string[0] = name[i] + '_init_tool/x'
                     string[1] = name[i] + '_init_tool/y'

@@ -29,11 +29,23 @@ class gazebo_wrapper():
 
         for i in range(self.num):
             rospy.Subscriber('/' + self.name[i], JointState, self.callback)
+            
+            #For new psm
+            #self.j[i][0]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/yaw_joint/SetPositionTarget',Float64, queue_size=10)
+            #self.j[i][1]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/pitch_back_joint/SetPositionTarget',Float64, queue_size=10)
+            #self.j[i][2]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/main_insertion_joint/SetPositionTarget',Float64, queue_size=10)
+            #self.j[i][3]=rospy.Publisher('/dvrk_psm/large_needle_driver/'+self.namedict[self.name[i]]+'/tool_roll_joint/SetPositionTarget',Float64, queue_size=10)
+            
+            #For old psm
             self.j[i][0]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_yaw_joint/SetPositionTarget',Float64, queue_size=10)
             self.j[i][1]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_pitch_joint_1/SetPositionTarget',Float64, queue_size=10)
             self.j[i][2]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_insertion_joint/SetPositionTarget',Float64, queue_size=10)
-            #self.j[i][3]=rospy.Publisher('/dvrk_psm/'+self.namedict[self.name[i]]+'/outer_roll_joint/SetPositionTarget',Float64, queue_size=10)
+            self.j[i][3]=rospy.Publisher('/dvrk_psm/large_needle_driver/'+self.namedict[self.name[i]]+'/tool_roll_joint/SetPositionTarget',Float64, queue_size=10)
             
+
+
+
+
         print('yes2')
         
 
@@ -45,7 +57,7 @@ class gazebo_wrapper():
                 self.j[i][0].publish(0.0)
                 self.j[i][1].publish(0.0)
                 self.j[i][2].publish(0.15)
-                #self.j[i][3].publish(0.15)    
+                self.j[i][3].publish(0.15)    
                 print("yes4")
             rospy.sleep(0.1)
 

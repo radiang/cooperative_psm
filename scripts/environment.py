@@ -45,13 +45,15 @@ class environment(object):
         self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
         self.rot_tool = [None]*4
 
-        rospy.Subscriber('/gazebo/link_states', LinkStates, self.callback)
 
+
+        rospy.Subscriber('/gazebo/link_states', LinkStates, self.callback)
+        rospy.sleep(1)
         self.initial_object()
 
     def callback(self,msg):
         for i in range(self.num):
-            j = msg.name.index('dvrk_psm::'+self.namedict[self.name[i]]+'::tool_wrist_link')
+            j = msg.name.index('dvrk_psm::'+self.namedict[self.name[i]]+'::large_needle_driver::tool_roll_link')
 
             self.new_pose[i][0] = msg.pose[j].position.x
             self.new_pose[i][1] = msg.pose[j].position.y
@@ -59,16 +61,19 @@ class environment(object):
 
     def initial_object(self):
         for i in range(self.num):
-            (self.init_pose[i], self.rot_tool) = self.gazebo_service_call(self.namedict[self.name[i]]+'::tool_wrist_link','world')
+            (self.init_pose[i], self.rot_tool) = self.gazebo_service_call('dvrk_psm::'+self.namedict[self.name[i]]+'::large_needle_driver::tool_roll_link','world')
+            
+            self.init_pose[i]=copy.copy(self.new_pose[i])
+
             #(self.init_pose[i], self.rot_tool) = self.gazebo_service_call(self.namedict[self.name[i]]+'::tool_wrist_link',self.namedict[self.name[0]]+'::base_link')
         if(self.num==2):
             for i in range(self.num):    
                 self.init_object[i]=self.cyclic_substraction(self.init_pose,self.init_object,i,self.num-1)
-                print('init',self.init_pose[i])
+                print('init_pose_i',self.init_pose[i])
         else: 
             (self.init_object[0],self.init_object[1],self.init_object[2]) = self.make_centroid(self.init_pose[0],self.init_pose[1],self.init_pose[2])
 
-        print('init',self.init_pose[i])
+        #print('init',self.init_pose[i])
     def gazebo_service_call(self,x,y):
         rospy.wait_for_service('/gazebo/get_link_state')
         try:
@@ -171,18 +176,19 @@ class environment(object):
             self.force[i][0]=(k_diff+c_diff)*np.divide(self.new_object[i],np.linalg.norm(self.new_object[i]))
  
             #print(i, self.force[i][0])
-    def message_making(self,force,i):
-        msg = gm.WrenchStamped()
+    def message_making(self,force):
+        msg = gm.Wrench()
 
-        msg.wrench.force.x = force[0]
-        msg.wrench.force.y = force[1]
-        msg.wrench.force.z = force[2]
-        msg.wrench.torque.x = self.calculate_force_dir(i)*np.linalg.norm(np.array(force))
-        msg.wrench.torque.y = 0
-        msg.wrench.torque.z = 0 #+1 : pulling force, -1: pushing  force
+        msg.force.x = force[0]
+        msg.force.y = force[1]
+        msg.force.z = force[2]
+        msg.torque.x = 0
+        msg.torque.x = self.calculate_force_dir(i)*np.linalg.norm(np.array(force))
+        msg.torque.y = 0
+        msg.torque.z = 0 #+1 : pulling force, -1: pushing  force
 
-        msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id= str(i)
+        #sg.header.stamp = rospy.Time.now()
+        #msg.header.frame_id= str(i)
         return msg
 
     def calculate_force_dir(self,i):
@@ -204,14 +210,14 @@ if __name__ == '__main__':
 
     p = [None]*num
     for i in range(num):
-        p[i]=rospy.Publisher('/psm_sense/'+namedict[name[i]]+'/tool_forces',gm.WrenchStamped, queue_size=10)
+        p[i]=rospy.Publisher('/dvrk_psm/'+namedict[name[i]]+'/tool_roll_link/SetForce',gm.Wrench, queue_size=10)
 
     
     k=10000 #stiffness of suture material from ref[] N/m
     c = 10 #damping of object N/m2
 
     env = environment(name,num,k,c)    
-    r = rospy.Rate(4000)
+    r = rospy.Rate(2000)
     rospy.sleep(1)
     j = 0
     while not rospy.is_shutdown():          
@@ -220,9 +226,11 @@ if __name__ == '__main__':
             env.calculate_new_object()
         with Timer('calc_force'):
             env.calculate_force()
-        if (j == 0):
-            print('new_pose',env.new_pose)
-            print('force',env.force)
+        #if (j == 0):
+
+        #print('new_pose',env.new_pose)
+        #print('force',env.force)
+
             #rospy.sleep(1)
         #print('init_object',env.init_object)
         #print('new_object',env.new_object)
@@ -231,13 +239,13 @@ if __name__ == '__main__':
         for i in range(num):
             if(num>2):
                 with Timer('force_call'):
-                    env.gazebo_force_call(env.force[i][0],i)
-                msg = env.message_making(env.force[i][0],i)
+                    #env.gazebo_force_call(env.force[i][0],i)
+                    msg = env.message_making(env.force[i][0])
                 with Timer('publish'):
                     p[i].publish(msg)
             else:
-                env.gazebo_force_call(env.force[i][0],i)
-                msg = env.message_making(env.force[i][0],i)
+                #env.gazebo_force_call(env.force[i][0],i)
+                msg = env.message_making(env.force[i][0])
                 p[i].publish(msg)
 
         j = j + 1

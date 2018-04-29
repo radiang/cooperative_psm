@@ -5,8 +5,11 @@ project (psm_coop)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package (catkin REQUIRED COMPONENTS
+	      roscpp
               rospy
               )
+
+find_package (Eigen3 REQUIRED)
 
 ## The catkin_package macro generates cmake config files for your package
 ## Declare things to be passed to dependent projects
@@ -15,10 +18,10 @@ find_package (catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package (
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES my_pkg
    CATKIN_DEPENDS rospy
-#  DEPENDS system_lib
+   #DEPENDS eigen3/Eigen
 )
 
 ## Mark executable scripts (Python etc.) for installation
@@ -27,5 +30,17 @@ catkin_package (
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
+
+include_directories(
+include
+  ${Eigen3_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
+add_executable(talker src/talker.cpp)
+target_link_libraries(talker ${catkin_LIBRARIES})
+
+add_executable(force_control src/force_control.cpp)
+target_link_libraries(force_control ${catkin_LIBRARIES})
 
 catkin_python_setup ()
