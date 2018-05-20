@@ -78,7 +78,7 @@ public:
 
 
 
-    rate = 30;
+    rate = 1000;
     tf = 0.2 ; // moving 0.001 m in 0.2 s is pretty good for u values.
 
     q1_traj.ts = 1/rate;
@@ -102,6 +102,8 @@ public:
     he<< 0.0, 0.0, 0.0;
 
     xd<< 0.0, 0.0, 0.0;
+    xe << 0.0, 0.0, 0.0;
+
     x0<<0.0,0.0,0.0;
     q0<<0.0,0.0,0.0;
 

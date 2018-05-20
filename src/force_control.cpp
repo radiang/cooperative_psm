@@ -25,7 +25,7 @@ void PsmForceControl::SetDesiredInit()
  vd << 0, 0, 0;
  ad << 0, 0, 0;
 
- //ROS_INFO_STREAM("x0: "<< x0<< "   xd: "<< xd);
+
 }
 
 
@@ -515,7 +515,7 @@ void PsmForceControl::CalcU()
       //this->interpolate();
 
     ve = Ja*qd;
-    ROS_INFO_STREAM("x increment: "<< xd - xe);
+    //ROS_INFO_STREAM("x increment: "<< xd - xe);
 
     if (q1_traj.check==true) {
 
@@ -532,7 +532,7 @@ void PsmForceControl::CalcU()
         //ROS_INFO_STREAM("v_int at "<< t << " : "<< v_int);
 
         t = t + 1;
-        ROS_INFO_STREAM("u_int at " << t << " : " << u);
+        //ROS_INFO_STREAM("u_int at " << t << " : " << u);
         if (t == rate*tf)
         {
             t = 0;
@@ -550,18 +550,17 @@ void PsmForceControl::CalcU()
 
     // ///// SAFETY ///////
     int fl = 2; //force limit
-    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2)
+    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*3)
     {
         u<< 0, 0, 0;
     }
 
-    ROS_INFO_STREAM("u_steady 1: "<< u(0));
-    ROS_INFO_STREAM("u_steady 2: "<< u(1));
-    ROS_INFO_STREAM("u_steady 3: "<< u(2));
+    //ROS_INFO_STREAM("u_steady 1: "<< u(0));
+    //ROS_INFO_STREAM("u_steady 2: "<< u(1));
+    //ROS_INFO_STREAM("u_steady 3: "<< u(2));
 
-
+   // ROS_INFO_STREAM("x0: "<< x0<< "   xd: "<< xd << " xe: " << xe);
     //ROS_INFO_STREAM("\nu: "<< u);
-       //ROS_INFO_STREAM("x increment: "<< xd - xe);
 
        // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
 
@@ -572,18 +571,7 @@ void PsmForceControl::CalcU()
        //ROS_INFO_STREAM("JaM: "<< JaM);
 
     //ROS_INFO_STREAM("Ja inverse: "<< JaM.transpose()*he);
-   // ROS_INFO_STREAM("Ja inverse: "<< Ja.inverse());
-       //ROS_INFO_STREAM("M inverse: "<< M.inverse());
-       //ROS_INFO_STREAM("Move Coef: "<< Ja.inverse()*Mt.inverse());
-
-      // ROS_INFO_STREAM("All Move Coef: "<< M*Ja.inverse()*Mt.inverse());
-       //ROS_INFO_STREAM("N: "<< N);
-       //ROS_INFO_STREAM("ve: "<< ve);
-
-       //ROS_INFO_STREAM("he: "<<(M*ad+Kd*(vd-ve)+Kp*(xd-xe)-M*Jd*qd-he));
-       //ROS_INFO_STREAM("KP: "<<Kp*(xd-xe));
-       //ROS_INFO_STREAM("Kd: "<<Kd*(vd-ve));
-       //ROS_INFO_STREAM("ve: "<< ve<< "vd"<< vd << "Kd: "<<Kd );
+   // ROS_INFO_STREAM("Ja inverse: "<< Ja.inverse())
  }
 
 void PsmForceControl::Interpolate(Eigen::VectorXd x0, Eigen::VectorXd xf)
@@ -593,14 +581,12 @@ void PsmForceControl::Interpolate(Eigen::VectorXd x0, Eigen::VectorXd xf)
 
 void PsmForceControl::output()
  {
-   std::cout<<u;
-
   joint_msg.effort[0]=u(0);
   joint_msg.effort[1]=u(1);
   joint_msg.effort[2]=u(2);
 
 
-  //joint_pub.publish(joint_msg);
+  joint_pub.publish(joint_msg);
 
 
   /* msg2.velocity[0] = qd(0);
@@ -618,31 +604,25 @@ int main(int argc, char **argv)
   
   ros::init(argc, argv, "PsmForceControl_node");
   ros::NodeHandle n;
- 
+
   std_msgs::String mes;
   std::stringstream ss;
   ss<<"it starteed";
   mes.data = ss.str();
   ROS_INFO("%s", mes.data.c_str());
-  std::cout<<123;
 
   PsmForceControl obj(n);
+  ros::Rate r(obj.rate);
   // int i, j;
   int count = 0;
-  ros::Duration(0.1).sleep();
   ros::spinOnce();
+  ros::Duration(1).sleep();
+  ros::spinOnce();
+
   obj.SetGainsInit();
   obj.SetDesiredInit();
 
-  std_msgs::Float64 msg;
-  // char link[100];
-    //Interpolate a;
-
-
-
-
-  ros::Rate r(obj.rate);
-    ROS_INFO("%s", mes.data.c_str());
+  ROS_INFO("%s", mes.data.c_str());
   while(ros::ok())
   {
   obj.CalcJaM(obj.q,obj.qd);
