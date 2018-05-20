@@ -38,8 +38,8 @@ public:
 
     traject q1_traj,q2_traj,q3_traj;
 
-  Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int;
-  Eigen::MatrixXd Ja, JaM, Jd, Jmin ;
+  Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr;
+  Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
   Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
 
   //Eigen::Matrix4d Ja;
@@ -65,7 +65,8 @@ public:
     he.resize(3); xf.resize(3); xd.resize(3); vd.resize(3); ad.resize(3); y.resize(3); u.resize(3); x0.resize(3); q0.resize(3);
     x_int.resize(3); v_int.resize(3); a_int.resize(3);
 
-    Ja.resize(3,3); JaM.resize(3,3); Jd.resize(3,3); Jmin.resize(3,3), N.resize(3);
+    Ja.resize(3,3); JaM.resize(3,3); Jd.resize(3,3); Jmin.resize(3,3);
+    N.resize(3); G.resize(3); C.resize(3,3); Fr.resize(3);
     M.resize(3,3); Mt.resize(3,3); Kp.resize(3,3); Kd.resize(3,3); Cp.resize(3,3); Ci.resize(3,3);
 
     //JointMsgs
@@ -107,6 +108,11 @@ public:
     q<<0.0, 0.0, 0.0;
     qd<< 0.0, 0.0, 0.0;
 
+      C<< 0, 0, 0, 0, 0, 0 ,0 ,0 ,0;
+      G <<0 ,0 ,0;
+      Fr << 0 ,0 ,0;
+      N << 0, 0, 0;
+
     M<< 0, 0, 0, 0, 0, 0 ,0 ,0 ,0;
     Mt<< 0, 0, 0, 0, 0, 0 ,0 ,0 ,0;
     Ja << 0, 0, 0, 0, 0, 0 ,0 ,0 ,0;
@@ -132,13 +138,21 @@ public:
   void CallbackSetForce(geometry_msgs::Pose msg);
   void CallbackSetPositionIncrement(geometry_msgs::Twist msg);
   void CallbackSetPosition(geometry_msgs::Twist msg);
+
   void CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd);
-  void CalcN(Eigen::VectorXd q, Eigen::VectorXd qd);
   void CalcDiffJacobian(Eigen::VectorXd q, Eigen::VectorXd  qd);
+
+  void CalcN(Eigen::VectorXd q, Eigen::VectorXd qd);
+  void CalcFr(Eigen::VectorXd qd);
+  void CalcC(Eigen::VectorXd q, Eigen::VectorXd qd);
+  void CalcG(Eigen::VectorXd q);
+
   void CalcM(Eigen::VectorXd q);
-  void Interpolate(Eigen::VectorXd x0, Eigen::VectorXd xf);
+
   void CalcU();
   void publish_joint_torque();
   void output();
+
+  void Interpolate(Eigen::VectorXd x0, Eigen::VectorXd xf);
 
 };
