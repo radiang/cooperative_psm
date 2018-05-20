@@ -52,12 +52,14 @@ public:
 
   //Eigen::Matrix4d Ja;
 
-  std_msgs::Float64 msg1;
+  std_msgs::Float64 mq0, mq1, mq2;
   sensor_msgs::JointState joint_msg, msg2;
 
   PsmForceControl(ros::NodeHandle n){
-    plot_y=n.advertise<std_msgs::Float64>("/qd",10);
-    plot_x=n.advertise<sensor_msgs::JointState>("/qd1",10);
+    plot_x=n.advertise<std_msgs::Float64>("/qd0",10);
+    plot_y=n.advertise<std_msgs::Float64>("/qd1",10);
+    plot_z=n.advertise<std_msgs::Float64>("/qd2",10);
+
     joint_pub=n.advertise<sensor_msgs::JointState>("/dvrk/PSM1/set_effort_joint",10);
 
     jacobian_sub=n.subscribe("/dvrk/PSM1/jacobian_body", 100, &PsmForceControl::callback_jacobian,this);
@@ -90,7 +92,7 @@ public:
 
     rate = 1000;
     tf = 0.2 ; // moving 0.001 m in 0.2 s is pretty good for u values.
-    filter_n = 5;
+    filter_n = 20;
     index = 0;
 
 

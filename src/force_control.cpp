@@ -53,11 +53,11 @@ void PsmForceControl::callback_joint(sensor_msgs::JointState msg)
     if (index > filter_n-1) {
         myq[i].pop_front();
         sum[i] = 0;
-        for(int j = 0;j<5;j++)
+        for(int j = 0;j<filter_n;j++)
         {
             sum[i] = sum[i]+myq[i][j];
         }
-        qd(i) = sum[i]/5;
+        qd(i) = sum[i]/filter_n;
     }
     }
   //ROS_INFO_STREAM("joint_states"<<q);
@@ -529,14 +529,15 @@ void PsmForceControl::CalcU()
     }
     else {
        //y = Ja.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-        y = JaM.inverse()*M.inverse()*(M*ad+Kd*(vd-ve)+Kp*(xd-xe)-he); }
+
+        y = JaM.inverse()*M.inverse()*(M*ad+Kd*(vd-ve)+Kp*(xd-xe)-M*Jd*qd-he); }
 
 
-    u = M*y + Fr + G + JaM.transpose()*he;
+    u = M*y +C*qd+ Fr+ G + JaM.transpose()*he;
 
     // ///// SAFETY ///////
-    int fl = 2; //force limit
-    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*3)
+    int fl = 4; //force limit
+    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2)
     {
         u<< 0, 0, 0;
     }
@@ -568,7 +569,7 @@ void PsmForceControl::output()
   joint_msg.effort[1]=u(1);
   joint_msg.effort[2]=u(2);
 
-  //joint_pub.publish(joint_msg);
+  joint_pub.publish(joint_msg);
 
   /* msg2.velocity[0] = qd(0);
    msg2.velocity[1] = qd(1);
@@ -576,8 +577,16 @@ void PsmForceControl::output()
 
    plot_x.publish(msg2);*/
 
-   msg1.data = qd(0);
-   plot_y.publish(msg1);
+   mq0.data = qd(0);
+   plot_x.publish(mq0);
+
+   mq1.data = qd(1);
+   plot_y.publish(mq1);
+
+   mq2.data = qd(2);
+   plot_z.publish(mq2);
+
+
  }
 
 int main(int argc, char **argv)
