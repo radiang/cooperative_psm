@@ -7,7 +7,7 @@ void PsmForceControl::SetGainsInit()
 
  Kp.diagonal()<<10, 10, 30;
  Kd.diagonal()<<0, 0, 0;
-
+//
  Cp.diagonal()<<40,40,40;
  Ci.diagonal()<<1,1,1;
 
