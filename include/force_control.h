@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <boost/bind.hpp>
 #include <sstream>
+#include <queue>
 
 
 #include <std_msgs/Float64.h>
@@ -35,6 +36,13 @@ public:
     int t;
     double t0;
     double tf;
+    int index;
+
+    double sum[3];
+    int filter_n;
+
+    std::deque<double> myq[3];
+    std::deque<double> que1, que2, que3;
 
     traject q1_traj,q2_traj,q3_traj;
 
@@ -76,10 +84,15 @@ public:
       msg2.velocity.push_back(0.0);
     }
 
-
+    myq[0]= que1;
+    myq[1]= que2;
+    myq[2]= que3;
 
     rate = 1000;
     tf = 0.2 ; // moving 0.001 m in 0.2 s is pretty good for u values.
+    filter_n = 5;
+    index = 0;
+
 
     q1_traj.ts = 1/rate;
     q2_traj.ts = 1/rate;

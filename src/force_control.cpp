@@ -25,15 +25,11 @@ void PsmForceControl::SetDesiredInit()
  vd << 0, 0, 0;
  ad << 0, 0, 0;
 
-
 }
 
 
 void PsmForceControl::callback_jacobian(std_msgs::Float64MultiArray msg)
 {
-  
-    //Jmin = Ja;
-
 for (int i=0;i<3;i++)
    {
      for (int j=0;j<3;j++)
@@ -41,8 +37,6 @@ for (int i=0;i<3;i++)
   Ja(i,j)=msg.data[i*6+j];
      }
   }
-  //ROS_INFO_STREAM("Jacobian"<<Ja);
-
 }
 
 
@@ -53,9 +47,21 @@ void PsmForceControl::callback_joint(sensor_msgs::JointState msg)
     q(i)=msg.position[i];
     qd(i)=msg.velocity[i];
     eff(i)=msg.effort[i];
-    }
 
+    myq[i].push_back(msg.velocity[i]);
+
+    if (index > filter_n-1) {
+        myq[i].pop_front();
+        sum[i] = 0;
+        for(int j = 0;j<5;j++)
+        {
+            sum[i] = sum[i]+myq[i][j];
+        }
+        qd(i) = sum[i]/5;
+    }
+    }
   //ROS_INFO_STREAM("joint_states"<<q);
+    index = index + 1;
 }
 
 void PsmForceControl::callback_cartesian(geometry_msgs::PoseStamped msg)
@@ -64,7 +70,6 @@ void PsmForceControl::callback_cartesian(geometry_msgs::PoseStamped msg)
     xe(1)=-msg.pose.position.x; // x becomes -y in my calculation
     xe(2)=msg.pose.position.z;
     //ROS_INFO_STREAM("cartesian"<<xe);
-
 }
 
  void PsmForceControl::callback_force(geometry_msgs::Wrench msg)
@@ -78,7 +83,6 @@ void PsmForceControl::callback_cartesian(geometry_msgs::PoseStamped msg)
     fd(0)=msg.position.x;
     fd(1)=msg.position.y;
     fd(2)=msg.position.z;
-
  }
 
  void PsmForceControl::CallbackSetPosition(geometry_msgs::Twist msg)
@@ -99,11 +103,7 @@ void PsmForceControl::callback_cartesian(geometry_msgs::PoseStamped msg)
      xd(1)=msg.linear.y+xd(1);
      xd(2)=msg.linear.z+xd(2);
 
-
-     //if (q1_traj.check == false){
-
-
-    /*     q1_traj.qd << xe(0), 0, 0, xd(0),0,0;
+         q1_traj.qd << xe(0), 0, 0, xd(0),0,0;
          q2_traj.qd << xe(1), 0, 0, xd(1),0,0;
          q3_traj.qd << xe(2), 0, 0, xd(2),0,0;
 
@@ -114,15 +114,7 @@ void PsmForceControl::callback_cartesian(geometry_msgs::PoseStamped msg)
          //ROS_INFO("IT WORKS");
 
          t0 = ros::Time::now().toSec();
-         t = 0;*/
-
-
-     //}
-
-     //else{
-
-     //}
-
+         t = 0;
  }
 
  void PsmForceControl::CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd)
@@ -135,52 +127,52 @@ void PsmForceControl::callback_cartesian(geometry_msgs::PoseStamped msg)
     float qd2 = qd(1);
     float qd3 = qd(2);
 
-// Jacobian from matlab
-float t2 = q2-2.908373974667121E-1;
-float t3 = cos(t2);
-float t4 = 3.141592653589793*(1.0/2.0);
-float t5 = -q2+t4+2.908373974667121E-1;
-float t6 = q2-t4;
-float t7 = sin(t5);
-float t8 = cos(t5);
-float t9 = sin(t2);
-float t10 = cos(t6);
-float t11 = t3*t7;
-float t12 = t8*t9;
-float t13 = t11+t12;
-float t14 = t3*t8;
-float t17 = t7*t9;
-float t15 = t14-t17;
-float t16 = sin(t6);
-float t18 = q1-t4;
-float t19 = sin(t18);
-float t20 = t3*t7*t19;
-float t21 = t8*t9*t19;
-float t22 = t20+t21;
-float t23 = t3*t8*t19;
-float t25 = t7*t9*t19;
-float t24 = t23-t25;
-float t26 = q3+4.162E-1;
-float t27 = cos(t18);
-float t28 = t3*t7*t27;
-float t29 = t8*t9*t27;
-float t30 = t28+t29;
-float t31 = t3*t8*t27;
-float t33 = t7*t9*t27;
-float t32 = t31-t33;
-float t34 = t16*t30;
-float t35 = t34-t10*t32;
-float t36 = t10*t24;
-float t37 = t36-t16*t22;
+    // Jacobian from matlab
+    float t2 = q2-2.908373974667121E-1;
+    float t3 = cos(t2);
+    float t4 = 3.141592653589793*(1.0/2.0);
+    float t5 = -q2+t4+2.908373974667121E-1;
+    float t6 = q2-t4;
+    float t7 = sin(t5);
+    float t8 = cos(t5);
+    float t9 = sin(t2);
+    float t10 = cos(t6);
+    float t11 = t3*t7;
+    float t12 = t8*t9;
+    float t13 = t11+t12;
+    float t14 = t3*t8;
+    float t17 = t7*t9;
+    float t15 = t14-t17;
+    float t16 = sin(t6);
+    float t18 = q1-t4;
+    float t19 = sin(t18);
+    float t20 = t3*t7*t19;
+    float t21 = t8*t9*t19;
+    float t22 = t20+t21;
+    float t23 = t3*t8*t19;
+    float t25 = t7*t9*t19;
+    float t24 = t23-t25;
+    float t26 = q3+4.162E-1;
+    float t27 = cos(t18);
+    float t28 = t3*t7*t27;
+    float t29 = t8*t9*t27;
+    float t30 = t28+t29;
+    float t31 = t3*t8*t27;
+    float t33 = t7*t9*t27;
+    float t32 = t31-t33;
+    float t34 = t16*t30;
+    float t35 = t34-t10*t32;
+    float t36 = t10*t24;
+    float t37 = t36-t16*t22;
 
-JaM(0,1) = t3*(3.0/2.0E1)-t10*t13*(4.3E1/1.0E3)+t10*t15*(1.68E2/6.25E2)-t13*t16*(1.68E2/6.25E2)-t15*t16*(4.3E1/1.0E3)-t26*(t10*t15-t13*t16);
-JaM(0,2) = -t10*t13-t15*t16;
-JaM(1,0) = t3*t19*(-3.0/2.0E1)+t10*t22*(4.3E1/1.0E3)-t10*t24*(1.68E2/6.25E2)+t16*t22*(1.68E2/6.25E2)+t16*t24*(4.3E1/1.0E3)+t26*t37-t3*t8*t19*(1.29E2/2.5E2)+t7*t9*t19*(1.29E2/2.5E2);
-JaM(1,1) = t9*t27*(-3.0/2.0E1)-t10*t30*(1.68E2/6.25E2)-t10*t32*(4.3E1/1.0E3)+t16*t30*(4.3E1/1.0E3)-t16*t32*(1.68E2/6.25E2)+t26*(t10*t30+t16*t32);
-JaM(1,2) = t35;
-JaM(2,0) = t3*t27*(-3.0/2.0E1)+t10*t30*(4.3E1/1.0E3)-t10*t32*(1.68E2/6.25E2)+t16*t30*(1.68E2/6.25E2)+t16*t32*(4.3E1/1.0E3)-t26*t35-t3*t8*t27*(1.29E2/2.5E2)+t7*t9*t27*(1.29E2/2.5E2);
-JaM(2,1) = t9*t19*(3.0/2.0E1)+t10*t22*(1.68E2/6.25E2)+t10*t24*(4.3E1/1.0E3)-t16*t22*(4.3E1/1.0E3)+t16*t24*(1.68E2/6.25E2)-t26*(t10*t22+t16*t24);
-JaM(2,2) = t37;
+    JaM(0,1) = t3*(3.0/2.0E1)-t10*t13*(4.3E1/1.0E3)+t10*t15*(1.68E2/6.25E2)-t13*t16*(1.68E2/6.25E2)-t15*t16*(4.3E1/1.0E3)-t26*(t10*t15-t13*t16);
+    JaM(0,2) = -t10*t13-t15*t16;
+    JaM(1,0) = t3*t19*(-3.0/2.0E1)+t10*t22*(4.3E1/1.0E3)-t10*t24*(1.68E2/6.25E2)+t16*t22*(1.68E2/6.25E2)+t16*t24*(4.3E1/1.0E3)+t26*t37-t3*t8*t19*(1.29E2/2.5E2)+t7*t9*t19*(1.29E2/2.5E2);
+    JaM(1,1) = t9*t27*(-3.0/2.0E1)-t10*t30*(1.68E2/6.25E2)-t10*t32*(4.3E1/1.0E3)+t16*t30*(4.3E1/1.0E3)-t16*t32*(1.68E2/6.25E2)+t26*(t10*t30+t16*t32);
+    JaM(1,2) = t35;
+    JaM(2,0) = t3*t27*(-3.0/2.0E1)+t10*t30*(4.3E1/1.0E3)-t10*t32*(1.68E2/6.25E2)+t16*t30*(1.68E2/6.25E2)+t16*t32*(4.3E1/1.0E3)-t26*t35-t3*t8*t27*(1.29E2/2.5E2)+t7*t9*t27*(1.29E2/2.5E2);
+    JaM(2,1) = t9*t19*(3.0/2.0E1)+t10*t22*(1.68E2/6.25E2)+t10*t24*(4.3E1/1.0E3)-t16*t22*(4.3E1/1.0E3)+t16*t24*(1.68E2/6.25E2)-t26*(t10*t22+t16*t24);
+    JaM(2,2) = t37;
 
 }
 
@@ -229,7 +221,6 @@ JaM(2,2) = t37;
            N(i)=0;
        }
    }
-  // ROS_INFO_STREAM("N: "<<N); //only works if robot is moving
  }
 void PsmForceControl::CalcFr(Eigen::VectorXd qd)
 {
@@ -270,7 +261,7 @@ void PsmForceControl::CalcC(Eigen::VectorXd q, Eigen::VectorXd qd)
     float t18 = cos(t7);
     float t19 = cos(t8);
     float t20 = cos(t9);
-   float  t21 = cos(t4);
+    float t21 = cos(t4);
     float t22 = sin(t7);
     float t23 = sin(t8);
     float t24 = sin(t9);
@@ -279,67 +270,67 @@ void PsmForceControl::CalcC(Eigen::VectorXd q, Eigen::VectorXd qd)
     float t27 = sin(t10);
     float t28 = sin(t11);
     float t29 = cos(t12);
-   float  t30 = cos(t13);
-   float t31 = q2-5.816747949334241E-1;
-   float t32 = sin(t12);
-   float  t33 = sin(t13);
-   float  t34 = cos(q3);
-   float  t35 = sin(q3);
-   float  t36 = q3*q3;
-   float  t37 = cos(t3);
-   float  t38 = cos(t5);
-   float  t39 = sin(t3);
-   float  t40 = sin(t4);
-   float  t41 = sin(t5);
-   float  t42 = q2-q3;
-   float  t43 = q2-t6;
-   float  t44 = q2+t6;
-   float  t45 = q2+q3-2.908373974667121E-1;
-   float  t46 = -q2+q3+2.908373974667121E-1;
-   float  t47 = q2+q3;
-   float  t48 = q2-2.908373974667121E-1;
-   float  t49 = cos(t46);
-   float  t50 = sin(t46);
-   float  t51 = cos(t47);
-   float  t52 = cos(t48);
-   float  t53 = sin(t47);
-   float  t54 = sin(t48);
-   float  t55 = sin(t31);
-   float  t56 = cos(q2);
-   float  t57 = sin(q2);
-   float  t58 = cos(t42);
-   float   t59 = cos(t43);
-   float  t60 = cos(t44);
-   float  t61 = sin(t42);
-   float  t62 = sin(t43);
-   float  t63 = sin(t44);
-   float  t64 = cos(t45);
-   float  t65 = sin(t45);
-   float  t66 = t49*1.882831077710977E-4;
-   float  t67 = t50*8.929284668366714E-4;
-   float  t68 = t51*2.187023801023081E-3;
-   float  t69 = qd1*t20*9.641693446251764E-3;
-   float   t70 = qd2*t60*2.382719144631059E-1;
-   float  t71 = qd2*t62*1.928338689250353E-2;
-   float  t72 = qd2*t63*1.928338689250353E-2;
-   float  t73 = cos(2.908373974667121E-1);
-   float  t74 = qd1*t16*4.659634886359594E-1;
-   float  t75 = sin(2.908373974667121E-1);
-   float  t76 = qd3*t56*5.811329365550027E-1;
-   float t77 = qd1*t57*2.825070207040501E-1;
-   float t78 = sin(5.816747949334241E-1);
-   float t79 = cos(5.816747949334241E-1);
-   float t80 = t56*t56;
-   float t81 = t73*t73;
-   float t82 = t34*t34;
-   float t83 = qd2*t17*4.765438289262118E-1;
-   float t84 = t35*t73*3.765662155421955E-4;
-   float t85 = q3*qd2*3.547726451423457E-2;
-   float t86 = qd2*t34*2.047782617278766E-3;
-   float t87 = qd1*t34*t57*1.954397302546342E-2;
-   float t88 = qd2*t35*t75*1.506264862168782E-3;
-   float t89 = qd1*t34*t56*t75*1.506264862168782E-3;
-   float t90 = qd1*t35*t56*t75*7.143427734693371E-3;
+    float  t30 = cos(t13);
+    float t31 = q2-5.816747949334241E-1;
+    float t32 = sin(t12);
+    float  t33 = sin(t13);
+    float  t34 = cos(q3);
+    float  t35 = sin(q3);
+    float  t36 = q3*q3;
+    float  t37 = cos(t3);
+    float  t38 = cos(t5);
+    float  t39 = sin(t3);
+    float  t40 = sin(t4);
+    float  t41 = sin(t5);
+    float  t42 = q2-q3;
+    float  t43 = q2-t6;
+    float  t44 = q2+t6;
+    float  t45 = q2+q3-2.908373974667121E-1;
+    float  t46 = -q2+q3+2.908373974667121E-1;
+    float  t47 = q2+q3;
+    float  t48 = q2-2.908373974667121E-1;
+    float  t49 = cos(t46);
+    float  t50 = sin(t46);
+    float  t51 = cos(t47);
+    float  t52 = cos(t48);
+    float  t53 = sin(t47);
+    float  t54 = sin(t48);
+    float  t55 = sin(t31);
+    float  t56 = cos(q2);
+    float  t57 = sin(q2);
+    float  t58 = cos(t42);
+    float  t59 = cos(t43);
+    float  t60 = cos(t44);
+    float  t61 = sin(t42);
+    float  t62 = sin(t43);
+    float  t63 = sin(t44);
+    float  t64 = cos(t45);
+    float  t65 = sin(t45);
+    float  t66 = t49*1.882831077710977E-4;
+    float  t67 = t50*8.929284668366714E-4;
+    float  t68 = t51*2.187023801023081E-3;
+    float  t69 = qd1*t20*9.641693446251764E-3;
+    float  t70 = qd2*t60*2.382719144631059E-1;
+    float  t71 = qd2*t62*1.928338689250353E-2;
+    float  t72 = qd2*t63*1.928338689250353E-2;
+    float  t73 = cos(2.908373974667121E-1);
+    float  t74 = qd1*t16*4.659634886359594E-1;
+    float  t75 = sin(2.908373974667121E-1);
+    float  t76 = qd3*t56*5.811329365550027E-1;
+    float t77 = qd1*t57*2.825070207040501E-1;
+    float t78 = sin(5.816747949334241E-1);
+    float t79 = cos(5.816747949334241E-1);
+    float t80 = t56*t56;
+    float t81 = t73*t73;
+    float t82 = t34*t34;
+    float t83 = qd2*t17*4.765438289262118E-1;
+    float t84 = t35*t73*3.765662155421955E-4;
+    float t85 = q3*qd2*3.547726451423457E-2;
+    float t86 = qd2*t34*2.047782617278766E-3;
+    float t87 = qd1*t34*t57*1.954397302546342E-2;
+    float t88 = qd2*t35*t75*1.506264862168782E-3;
+    float t89 = qd1*t34*t56*t75*1.506264862168782E-3;
+    float t90 = qd1*t35*t56*t75*7.143427734693371E-3;
     C(0,0) = q3*5.641684399813122E-2-qd3*1.128336879962624E-1+t14*1.164908721589898E-1-t15*5.956797861577647E-2+t16*3.78435941017915E-3-t17*4.820846723125882E-3+t18*4.465001762795682E-2-t19*2.978398930788824E-2-t20*2.978398930788824E-2-t21*2.014865689785166E-1-t22*2.698969455342773E-3+t23*2.410423361562941E-3-t24*2.410423361562941E-3+t25*8.929284668366714E-4-t26*8.929284668366714E-4-t27*1.882831077710977E-4+t28*1.882831077710977E-4+t29*8.929284668366714E-4-t30*8.929284668366714E-4-t32*1.882831077710977E-4+t33*1.882831077710977E-4-t34*1.079489817887627E-4-t35*5.119456543196916E-4-t36*4.434658064279322E-3-t37*4.454206864616806E-2-t38*1.32012537564389E-2-t39*2.187023801023081E-3+t40*8.799769460551694E-2+t41*1.862739453565847E-3+t56*1.412535103520251E-1-t73*1.32012537564389E-2+t75*1.862739453565847E-3-t78*7.206792799878022E-2+cos(t31)*1.412535103520251E-1+q3*qd3*1.773863225711729E-2+q3*t21*5.641684399813122E-2-q3*t40*1.979388287369336E-2-qd2*t14*1.51374376407166E-2+qd2*t16*4.659634886359594E-1+qd3*t15*1.928338689250353E-2+qd2*t18*1.079587782137109E-2-qd3*t17*2.382719144631059E-1-qd2*t19*9.641693446251764E-3-qd3*t18*5.397938910685546E-3+qd2*t20*9.641693446251764E-3+qd3*t19*9.641693446251764E-3-qd2*t21*3.519907784220678E-1+qd3*t20*9.641693446251764E-3+qd2*t22*1.786000705118273E-1-qd3*t21*1.128336879962624E-1-qd2*t23*1.191359572315529E-1-qd3*t22*8.930003525591364E-2-qd2*t24*1.191359572315529E-1+qd3*t23*1.191359572315529E-1-qd2*t25*7.53132431084391E-4-qd3*t24*1.191359572315529E-1-qd2*t26*7.53132431084391E-4+qd3*t25*3.765662155421955E-4-qd2*t27*3.571713867346686E-3-qd3*t26*3.765662155421955E-4-qd2*t28*3.571713867346686E-3+qd3*t27*1.785856933673343E-3-qd3*t28*1.785856933673343E-3+qd3*t29*3.765662155421955E-4-qd3*t30*3.765662155421955E-4+qd3*t32*1.785856933673343E-3-qd3*t33*1.785856933673343E-3+qd3*t34*1.023891308639383E-3-qd3*t35*2.158979635775254E-4+qd2*t37*8.748095204092325E-3-qd2*t38*7.450957814263388E-3+qd3*t37*4.374047602046162E-3-qd2*t39*1.781682745846722E-1-qd2*t40*8.059462759140663E-1-qd3*t39*8.908413729233612E-2-qd2*t41*5.280501502575559E-2+qd3*t40*3.958776574738673E-2+qd2*t55*2.825070207040501E-1+qd2*t57*2.825070207040501E-1-t21*t36*4.434658064279322E-3+q3*qd2*t21*7.917553149477345E-2+q3*qd3*t21*1.773863225711729E-2+q3*qd2*t40*2.256673759925249E-1-qd2*t36*t40*1.773863225711729E-2-3.323437414950833E-1;
     C(0,1) = t52*4.915806880307994E-2-t53*4.454206864616806E-2+t54*1.320771962680341E-1-t58*2.698969455342773E-3+t59*4.820846723125882E-3+t60*4.820846723125882E-3-t61*4.465001762795682E-2+t62*5.956797861577647E-2-t63*5.956797861577647E-2-t64*1.882831077710977E-4-t65*8.929284668366714E-4+t66+t67+t68+t69+t70+t71+t72+t74+t76+t77+q3*t54*1.266821036021037E-1-qd1*t14*1.51374376407166E-2+qd1*t18*1.079587782137109E-2-qd1*t19*9.641693446251764E-3-qd1*t21*3.519907784220678E-1+qd1*t22*1.786000705118273E-1-qd1*t23*1.191359572315529E-1-qd1*t24*1.191359572315529E-1-qd1*t25*7.53132431084391E-4-qd1*t26*7.53132431084391E-4-qd1*t27*3.571713867346686E-3-qd1*t28*3.571713867346686E-3+qd1*t37*8.748095204092325E-3-qd1*t38*7.450957814263388E-3-qd1*t39*1.781682745846722E-1-qd1*t40*8.059462759140663E-1-qd1*t41*5.280501502575559E-2+qd2*t49*3.571713867346686E-3-qd2*t50*7.53132431084391E-4+qd2*t51*1.781682745846722E-1-qd2*t52*5.283087850721363E-1+qd2*t53*8.748095204092325E-3+qd1*t55*2.825070207040501E-1+qd2*t54*1.966322752123198E-1-qd3*t54*5.06728414408415E-1+qd2*t58*1.786000705118273E-1-qd2*t59*2.382719144631059E-1+qd3*t59*2.382719144631059E-1-qd2*t61*1.079587782137109E-2+qd3*t60*2.382719144631059E-1-qd3*t62*1.928338689250353E-2+qd2*t64*3.571713867346686E-3+qd3*t63*1.928338689250353E-2-qd2*t65*7.53132431084391E-4+q3*qd1*t21*7.917553149477345E-2+q3*qd1*t40*2.256673759925249E-1-q3*qd2*t52*5.06728414408415E-1-qd1*t36*t40*1.773863225711729E-2-1.374393583700811E-2;
     C(0,2) = qd1*(-1.128336879962624E-1)-t52*1.266821036021037E-1+t53*4.454206864616806E-2-t57*2.905664682775014E-1-t58*2.698969455342773E-3-t61*4.465001762795682E-2+t64*1.882831077710977E-4+t65*8.929284668366714E-4+t66+t67-t68+t69+t70-t71+t72+q3*qd1*1.773863225711729E-2+qd1*t15*1.928338689250353E-2-qd1*t17*2.382719144631059E-1-qd1*t18*5.397938910685546E-3+qd1*t19*9.641693446251764E-3-qd1*t21*1.128336879962624E-1-qd1*t22*8.930003525591364E-2+qd1*t23*1.191359572315529E-1-qd1*t24*1.191359572315529E-1+qd1*t25*3.765662155421955E-4-qd1*t26*3.765662155421955E-4+qd1*t27*1.785856933673343E-3-qd1*t28*1.785856933673343E-3+qd1*t29*3.765662155421955E-4-qd1*t30*3.765662155421955E-4+qd1*t32*1.785856933673343E-3-qd1*t33*1.785856933673343E-3+qd1*t34*1.023891308639383E-3-qd1*t35*2.158979635775254E-4+qd1*t37*4.374047602046162E-3-qd1*t39*8.908413729233612E-2+qd1*t40*3.958776574738673E-2-qd3*t49*3.571713867346686E-3+qd3*t50*7.53132431084391E-4-qd3*t51*1.781682745846722E-1-qd2*t54*5.06728414408415E-1-qd3*t53*8.748095204092325E-3+qd2*t56*5.811329365550027E-1+qd2*t59*2.382719144631059E-1-qd3*t58*1.786000705118273E-1+qd3*t61*1.079587782137109E-2-qd3*t64*3.571713867346686E-3+qd3*t65*7.53132431084391E-4+q3*qd1*t21*1.773863225711729E-2;
@@ -451,9 +442,6 @@ void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
     float q1 = q(0);
     float q2 = q(1);
     float q3 = q(2);
-    //float qd1 = qd(1);
-    //float qd2 = qd(2);
-    //float qd3 = qd(3);
 
     float t2 = q2*2.0;
     float t3 = q3*2.0;
@@ -491,7 +479,6 @@ void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
     float t35 = t5*t10*1.785856933673343E-3;
     float t36 = t33+t34+t35-t8*t10*3.765662155421955E-4+1.979388287369336E-2;
 
-
     M(0,0) = q3*(-5.641684399813122E-2)-t4*1.412535103520251E-1+t5*1.079489817887627E-4-t6*1.862739453565847E-3+t7*7.206792799878022E-2+t8*5.119456543196916E-4-t9*1.164908721589898E-1+t10*1.32012537564389E-2-t12*3.78435941017915E-3+t13*5.956797861577647E-2+t14*4.820846723125882E-3+t15*4.434658064279322E-3-t5*t6*3.765662155421955E-4-t5*t9*1.079489817887627E-4-t6*t8*1.785856933673343E-3-t4*t11*1.412535103520251E-1+t6*t9*1.862739453565847E-3+t7*t9*8.799769460551694E-2+t5*t12*4.885993256365854E-3-t8*t9*5.119456543196916E-4+t6*t12*1.32012537564389E-2+t7*t12*2.014865689785166E-1+t9*t10*1.32012537564389E-2-t8*t12*8.919208627412488E-2+t9*t11*2.014865689785166E-1+t9*t13*5.956797861577647E-2-t10*t12*1.862739453565847E-3-t7*t16*1.412535103520251E-1+t9*t14*4.820846723125882E-3-t11*t12*8.799769460551694E-2-q3*t7*t9*1.979388287369336E-2-q3*t7*t12*5.641684399813122E-2-q3*t9*t11*5.641684399813122E-2+q3*t11*t12*1.979388287369336E-2+t5*t6*t9*3.765662155421955E-4+t6*t8*t9*1.785856933673343E-3-t5*t10*t12*3.765662155421955E-4-t8*t10*t12*1.785856933673343E-3+t7*t12*t15*4.434658064279322E-3+t9*t11*t15*4.434658064279322E-3+3.761269948597414E-1;
     M(0,1) = t25;
     M(0,2) = t32;
@@ -519,7 +506,6 @@ void PsmForceControl::CalcU()
 
     if (q1_traj.check==true) {
 
-
         x_int << q1_traj.x(t), q2_traj.x(t), q3_traj.x(t);
         v_int << q1_traj.v(t), q2_traj.v(t), q3_traj.v(t);
         a_int << q1_traj.a(t), q2_traj.a(t), q3_traj.a(t);
@@ -545,8 +531,8 @@ void PsmForceControl::CalcU()
        //y = Ja.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
         y = JaM.inverse()*M.inverse()*(M*ad+Kd*(vd-ve)+Kp*(xd-xe)-he); }
 
+
     u = M*y + Fr + G + JaM.transpose()*he;
-    //u = M*(xd-xe);
 
     // ///// SAFETY ///////
     int fl = 2; //force limit
@@ -559,19 +545,16 @@ void PsmForceControl::CalcU()
     //ROS_INFO_STREAM("u_steady 2: "<< u(1));
     //ROS_INFO_STREAM("u_steady 3: "<< u(2));
 
-   // ROS_INFO_STREAM("x0: "<< x0<< "   xd: "<< xd << " xe: " << xe);
+    // ROS_INFO_STREAM("x0: "<< x0<< "   xd: "<< xd << " xe: " << xe);
     //ROS_INFO_STREAM("\nu: "<< u);
-
-       // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
-
-
+    // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
     //ROS_INFO_STREAM("M: "<< M);
-
-      // ROS_INFO_STREAM("Ja: "<< Ja);
-       //ROS_INFO_STREAM("JaM: "<< JaM);
+    // ROS_INFO_STREAM("Ja: "<< Ja);
+    // ROS_INFO_STREAM("JaM: "<< JaM);
 
     //ROS_INFO_STREAM("Ja inverse: "<< JaM.transpose()*he);
-   // ROS_INFO_STREAM("Ja inverse: "<< Ja.inverse())
+    // ROS_INFO_STREAM("Ja inverse: "<< Ja.inverse())
+    ROS_INFO_STREAM("qd: "<< qd);
  }
 
 void PsmForceControl::Interpolate(Eigen::VectorXd x0, Eigen::VectorXd xf)
@@ -585,9 +568,7 @@ void PsmForceControl::output()
   joint_msg.effort[1]=u(1);
   joint_msg.effort[2]=u(2);
 
-
-  joint_pub.publish(joint_msg);
-
+  //joint_pub.publish(joint_msg);
 
   /* msg2.velocity[0] = qd(0);
    msg2.velocity[1] = qd(1);
@@ -595,8 +576,8 @@ void PsmForceControl::output()
 
    plot_x.publish(msg2);*/
 
-  msg1.data = qd(0);
-  plot_y.publish(msg1);
+   msg1.data = qd(0);
+   plot_y.publish(msg1);
  }
 
 int main(int argc, char **argv)
@@ -636,11 +617,9 @@ int main(int argc, char **argv)
 
   obj.CalcU();
   obj.output();
-  //count=count+1;
+
   r.sleep();
   ros::spinOnce();
-
-
   }
 ros::spin();
 
