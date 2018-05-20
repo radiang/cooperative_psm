@@ -19,7 +19,7 @@ find_package (Eigen3 REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package (
   INCLUDE_DIRS include
-#  LIBRARIES my_pkg
+  LIBRARIES psm_coop
    CATKIN_DEPENDS rospy
    #DEPENDS eigen3/Eigen
 )
@@ -37,10 +37,15 @@ include
   ${catkin_INCLUDE_DIRS}
 )
 
+add_library(psm_coop src/Interpolate.cpp include/Interpolate.h)
+
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
 
 add_executable(force_control src/force_control.cpp)
 target_link_libraries(force_control ${catkin_LIBRARIES})
+
+add_executable(test_interpolate src/test_interpolate.cpp)
+target_link_libraries(test_interpolate ${catkin_LIBRARIES})
 
 catkin_python_setup ()

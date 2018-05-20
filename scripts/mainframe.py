@@ -1,16 +1,6 @@
 #!/usr/bin/env python 
 
-import roslib
-import numpy as np
-import math
-import time
-import sys 
 import rospy
-import tf
-from tf import TransformListener
-from geometry_msgs.msg import Twist
-from sensor_msgs.msg import JointState
-from std_msgs.msg import Header
 from psm_coop import coop
 
 if __name__ == '__main__':
@@ -27,7 +17,7 @@ if __name__ == '__main__':
 	while not rospy.is_shutdown():
 		for i in range(num):
 			if (i>0):
-			 	a.make_object_v(i)
+				a.make_object_v(i)
 		a.run()  
 		r.sleep()
 	#rospy.spin()

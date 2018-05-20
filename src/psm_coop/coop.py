@@ -40,9 +40,9 @@ class psm(object):
         self.br = tf.TransformBroadcaster()
         self.listener = tf.TransformListener()
                     
-        while (not (self.p_rcm and self.p_tool)): 
+        while not self.p_rcm and self.p_tool:
             try:
-                if (gazebo_on == 0):
+                if gazebo_on == 0:
                     (self.p_rcm, self.rot_rcm) = self.listener.lookupTransform('/world','/' + self.name + '_remote_center_link', rospy.Time(0))
                     (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_gripper1_link', rospy.Time(0))
                 else: 
@@ -62,7 +62,7 @@ class psm(object):
         print('/'+ self.name + '_tool',self.p_tool)
         #print(self.matrix_rot_rcm)
 
-        if(self.track_force==1):
+        if self.track_force==1:
             rospy.Subscriber('/psm_sense/'+self.namedict[self.name] +'/tool_forces', gm.WrenchStamped, self.move_force)
         
 
