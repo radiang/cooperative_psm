@@ -5,12 +5,14 @@ void PsmForceControl::SetGainsInit()
  Mt.diagonal()<<0.3, 0.4, 0.56;
 
 
- Kp.diagonal()<<10, 10, 30;
- Kd.diagonal()<<0, 0, 0;
-//
- Cp.diagonal()<<40,40,40;
- Ci.diagonal()<<1,1,1;
 
+ // Real Coefficients
+    //Kp.diagonal()<<20, 10, 80;
+    //Kd.diagonal()<<5, 0.5, 10;
+
+ // Test Damping
+    Kp.diagonal()<<1, 1, 3;
+    Kd.diagonal()<<5, 0.5, 10;
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -496,7 +498,7 @@ void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
     int fl = 4; //force limit
-    ve = Ja*qd;
+    ve = JaM*qd;
 
 
     if (q1_traj.check==true) {
@@ -527,15 +529,12 @@ void PsmForceControl::CalcU()
     else {
        //y = Ja.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
 
-        y = JaM.inverse()*M.inverse()*(M*ad+Kd*(vd-ve)+Kp*(xd-xe)-M*Jd*qd-he); }
+        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he); }
 
 
     u = M*y +N+ JaM.transpose()*he;
 
     // ///// SAFETY ///////
-
-
-
     if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2)
     {
         u<< 0, 0, 0;
@@ -549,7 +548,7 @@ void PsmForceControl::CalcU()
     // ROS_INFO_STREAM("x0: "<< x0<< "   xd: "<< xd << " xe: " << xe);
     //ROS_INFO_STREAM("\nu: "<< u);
     // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
-    ROS_INFO_STREAM("M: "<< M);
+    //ROS_INFO_STREAM("M: "<< M);
     // ROS_INFO_STREAM("Ja: "<< Ja);
     // ROS_INFO_STREAM("JaM: "<< JaM);
 
@@ -571,7 +570,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT--------------------
-  //joint_pub.publish(joint_msg);
+  joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);
