@@ -90,7 +90,7 @@ public:
     myq[1]= que2;
     myq[2]= que3;
 
-    rate = 1000;
+    rate = 30;
     tf = 0.2 ; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
