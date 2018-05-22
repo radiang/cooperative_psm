@@ -1,4 +1,4 @@
-#include "Interpolate.cpp"
+#include "Interpolate.h"
 
 
 int main(int argc, char **argv)

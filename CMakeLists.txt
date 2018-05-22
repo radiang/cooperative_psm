@@ -37,7 +37,16 @@ include
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(psm_coop src/Interpolate.cpp include/Interpolate.h)
+set(SRC_FILES
+		#src/Interpolate.cpp
+		src/force_control.cpp
+		)
+set(HDR_FILES
+		include/Interpolate.h
+		include/force_control.h
+		)
+
+add_library(psm_coop  ${SRC_FILES} ${HDR_FILES})
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
