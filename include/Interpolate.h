@@ -24,8 +24,6 @@
 
 using namespace std;
 
-
-
 struct traject {
     Eigen::VectorXd x;
     Eigen::VectorXd v;
@@ -33,9 +31,9 @@ struct traject {
     double ts;
     double tf;
     bool check;
+    bool check2;
     Eigen::VectorXd qd;
     };
-
 
 
 traject interpolate(traject des)
@@ -48,8 +46,6 @@ traject interpolate(traject des)
     Eigen::MatrixXd T_mat;
     coef.resize(6);
     T_mat.resize(6,6);
-
-
 
     T_mat << 1, t0, pow(t0,2),     pow(t0,3),      pow(t0,4),      pow(t0,5),
             0,  1,  2*t0, 3*pow(t0,2),  4*pow(t0,3),  5*pow(t0,4),
@@ -70,25 +66,30 @@ traject interpolate(traject des)
     des.v.resize(period);
     des.a.resize(period);
 
-
-
     double t;
     double x;
     double v;
     double a;
 
-
-
-    for (int i=0;i<period;i++)
-    { t =  t0+des.ts*(i+1);
-        x = coef(0) + coef(1)*t + coef(2)*pow(t,2) +coef(3)*pow(t,3)+coef(4)*pow(t,4)+coef(5)*pow(t,5);
-        v = coef(1) + 2*coef(2)*t +3*coef(3)*pow(t,2)+4*coef(4)*pow(t,3)+5*coef(5)*pow(t,4);
-        a = 2*coef(2)*t +6*coef(3)*t+12*coef(4)*pow(t,2)+20*coef(5)*pow(t,3);
+    for (int i=0;i<period;i++) {
+        t = t0 + des.ts * (i + 1);
+        x = coef(0) + coef(1) * t + coef(2) * pow(t, 2) + coef(3) * pow(t, 3) + coef(4) * pow(t, 4) +
+            coef(5) * pow(t, 5);
+        v = coef(1) + 2 * coef(2) * t + 3 * coef(3) * pow(t, 2) + 4 * coef(4) * pow(t, 3) + 5 * coef(5) * pow(t, 4);
+        a = 2 * coef(2) * t + 6 * coef(3) * t + 12 * coef(4) * pow(t, 2) + 20 * coef(5) * pow(t, 3);
 
         //std::cout<<x;
-        des.x(i) = x;
-        des.v(i) = v;
-        des.a(i) = a;}
+        if (des.check2 == false) {
+            des.x(i) = x;
+            des.v(i) = v;
+            des.a(i) = a;
+        }
+        else {
+            des.x(i) = des.qd(0);
+            des.v(i) = des.qd(1);
+            des.a(i) = des.qd(2);
+        }
+    }
     //std::cout<<des.x(10);
 
     des.check = true;
