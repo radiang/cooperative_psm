@@ -58,9 +58,9 @@ public:
 
         name = nam;
 
-        plot_x=n.advertise<std_msgs::Float64>("/qd0",10);
-        plot_y=n.advertise<std_msgs::Float64>("/qd1",10);
-        plot_z=n.advertise<std_msgs::Float64>("/qd2",10);
+        plot_x=n.advertise<std_msgs::Float64>("/0",10);
+        plot_y=n.advertise<std_msgs::Float64>("/1",10);
+        plot_z=n.advertise<std_msgs::Float64>("/2",10);
 
         joint_pub=n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint",10);
 
@@ -92,8 +92,8 @@ public:
         myq[1]= que2;
         myq[2]= que3;
 
-        rate = 10;
-        tf = 2; // moving 0.001 m in 0.2 s is pretty good for u values.
+        rate = 1000;
+        tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
         filter_n = 20;
         index = 0;
 

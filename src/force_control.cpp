@@ -414,17 +414,17 @@ void PsmForceControl::CalcFr(Eigen::VectorXd qd)
     float qd2 = qd(1);
     float qd3 = qd(2);
 
-    Fr(0) = (-4.360647177914232E-1) / (exp(qd1 * -1.4E1) + 1.0) + 2.180323588957116E-1;
-    Fr(1) = (-1.972829644054581E-1) / (exp(qd2 * -1.4E1) + 1.0) + 9.864148220272907E-2;
-    Fr(2) = (-1.007632798570069) / (exp(qd3 * -1.4E1) + 1.0) + 5.038163992850346E-1;
+    Fr(0) = (-1.311940751876277E-1)/(exp(qd1*-1.6E1)+1.0)+6.559703759381383E-2;
+    Fr(1) = (-2.636855528068643E-1)/(exp(qd2*-1.6E1)+1.0)+1.318427764034322E-1;
+    Fr(2) = (-1.181909487060188)/(exp(qd3*-1.6E1)+1.0)+5.909547435300938E-1;
 }
 void PsmForceControl::SetGainsInit()
 {
- Mt.diagonal()<<0.3, 0.4, 0.56;
+ Mt.diagonal()<<0.3, 0.4, 0.5;
 
  // Real Coefficients
-    Kp.diagonal()<<20, 10, 80;
-    Kd.diagonal()<<5, 0.5, 10;
+    Kp.diagonal() << 30, 30, 120;
+    Kd.diagonal() << 4, 4, 8;
 
  // Test Damping
     //Kp.diagonal()<<1, 1, 3;
@@ -484,9 +484,9 @@ void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
 
 void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
 {
-    xe(0)=msg.pose.position.y;  // y becomes x in my calculation
-    xe(1)=-msg.pose.position.x; // x becomes -y in my calculation
-    xe(2)=msg.pose.position.z;
+    xe(0) = msg.pose.position.y;  // y becomes x in my calculation
+    xe(1) =-msg.pose.position.x; // x becomes -y in my calculation
+    xe(2) = msg.pose.position.z;
     //ROS_INFO_STREAM("cartesian"<<xe);
 }
 
@@ -517,9 +517,9 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
      //xd(2)=msg.position.z+xe(2);
 
      //Just for testing
-     xd(0)=msg.linear.x+xd(0);
-     xd(1)=msg.linear.y+xd(1);
-     xd(2)=msg.linear.z+xd(2);
+     xd(0)= msg.linear.x + xd(0);
+     xd(1)= msg.linear.y + xd(1);
+     xd(2)= msg.linear.z + xd(2);
 
          q1_traj.qd << xe(0), 0, 0, xd(0),0,0;
          q2_traj.qd << xe(1), 0, 0, xd(1),0,0;
@@ -534,8 +534,6 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
          t0 = ros::Time::now().toSec();
          t = 0;
  }
-
-
 
 
 void PsmForceControl::CalcU()
@@ -553,16 +551,25 @@ void PsmForceControl::CalcU()
         a_int << q1_traj.a(t), q2_traj.a(t), q3_traj.a(t);
 
         y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
-
         //y = JaM.inverse() * Mt.inverse() * (Mt * a_int + Kd * (v_int - ve) + Kp * (x_int - xe) - he);
 
 
-        //ROS_INFO_STREAM("v_int at "<< t << " : "<< v_int);
+        ROS_INFO_STREAM("interpolating");
+
+        mq0.data = x_int(0);
+        plot_x.publish(mq0);
+
+        mq1.data =x_int(1);
+        plot_y.publish(mq1);
+
+        mq2.data = x_int(2);
+        plot_z.publish(mq2);
+
 
         t = t + 1;
-        ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
+ /*       ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
         ROS_INFO_STREAM("u_int 2 at time" << t << " : " << u(1));
-        ROS_INFO_STREAM("u_int 3 at time" << t << " : " << u(2));
+        ROS_INFO_STREAM("u_int 3 at time" << t << " : " << u(2));*/
         if (t == rate*tf)
         {
             t = 0;
@@ -578,24 +585,24 @@ void PsmForceControl::CalcU()
 
         y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
 
-        ROS_INFO_STREAM("u_steady 1: "<< u(0));
+ /*       ROS_INFO_STREAM("u_steady 1: "<< u(0));
         ROS_INFO_STREAM("u_steady 2: "<< u(1));
-        ROS_INFO_STREAM("u_steady 3: "<< u(2));
+        ROS_INFO_STREAM("u_steady 3: "<< u(2));*/
     }
 
-
-    u = M*y +N+ JaM.transpose()*he;
+    u = M*y + N + Fr + JaM.transpose()*he;
 // ///// SAFETY ///////
     if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2.5)
     {
         u<< 0, 0, 0;
     }
 
-    ROS_INFO_STREAM("x increment: "<< xd - xe);
+    //ROS_INFO_STREAM("x increment: "<< xd - xe);
 
 
-    // ROS_INFO_STREAM("x0: "<< x0<< "   xd: "<< xd << " xe: " << xe);
-    //ROS_INFO_STREAM("\nu: "<< u);
+    ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe: " << xe << endl);
+
+    ROS_INFO_STREAM("u: "<< u);
     // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
     //ROS_INFO_STREAM("M: "<< M);
     // ROS_INFO_STREAM("Ja: "<< Ja);
@@ -613,7 +620,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT--------------------
-  //joint_pub.publish(joint_msg);
+  joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);
@@ -622,6 +629,7 @@ void PsmForceControl::output()
 
    plot_x.publish(msg2);*/
 
+/*
    mq0.data = qd(0);
    plot_x.publish(mq0);
 
@@ -631,6 +639,7 @@ void PsmForceControl::output()
    mq2.data = qd(2);
    plot_z.publish(mq2);
 
+*/
 
  }
 
@@ -665,6 +674,7 @@ int main(int argc, char **argv)
   {
   obj.CalcJaM(obj.q,obj.qd);
   obj.CalcDiffJacobian(obj.q,obj.qd);
+  obj.CalcFr(obj.qd);
   obj.CalcN(obj.q,obj.qd);
   obj.CalcM(obj.q);
   obj.CalcU();
