@@ -573,11 +573,11 @@ void PsmForceControl::CalcU()
         mq0.data = x_int(0);
         plot_x.publish(mq0);
 
-        mq1.data =x_int(1);
+        mq1.data =v_int(2);
         plot_y.publish(mq1);
 
-        mq2.data = x_int(2);
-        plot_z.publish(mq2);
+        //mq2.data = x_int(2);
+        //plot_z.publish(mq2);
 
         t = t + 1;
 
@@ -629,7 +629,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT--------------------
- // joint_pub.publish(joint_msg);
+ joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);
@@ -649,6 +649,10 @@ void PsmForceControl::output()
    plot_z.publish(mq2);
 
 */
+
+    mq2.data = qd(2);
+    plot_z.publish(mq2);
+
 
  }
 
