@@ -410,21 +410,32 @@ void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
 
 void PsmForceControl::CalcFr(Eigen::VectorXd qd)
 {
+    for (int i=0;i<3;i++)
+    {
+        if (abs(qd(i)) < deadband)
+        {
+            qd(i)=0;
+        }
+    }
+
     float qd1 = qd(0);
     float qd2 = qd(1);
     float qd3 = qd(2);
 
-    Fr(0) = (-1.311940751876277E-1)/(exp(qd1*-1.6E1)+1.0)+6.559703759381383E-2;
-    Fr(1) = (-2.636855528068643E-1)/(exp(qd2*-1.6E1)+1.0)+1.318427764034322E-1;
-    Fr(2) = (-1.181909487060188)/(exp(qd3*-1.6E1)+1.0)+5.909547435300938E-1;
+    Fr(0) = (-1.311940751876277E-1)/(exp(qd1*-6.00E2)+1.0)+6.559703759381383E-2;
+    Fr(1) = (-2.636855528068643E-1)/(exp(qd2*-6.0E2)+1.0)+1.318427764034322E-1;
+    Fr(2) = (-1.181909487060188)/(exp(qd3*-6.0E2)+1.0)+5.909547435300938E-1;
 }
+
 void PsmForceControl::SetGainsInit()
 {
- Mt.diagonal()<<0.3, 0.4, 0.5;
+    //Mt.diagonal()<<0.3, 0.4, 0.5;
+
+    Mt.diagonal()<<0.3, 0.4, 0.1;
 
  // Real Coefficients
-    Kp.diagonal() << 30, 30, 120;
-    Kd.diagonal() << 4, 4, 8;
+    Kp.diagonal() << 60, 60, 100;
+    Kd.diagonal() << 2, 2, 2;
 
  // Test Damping
     //Kp.diagonal()<<1, 1, 3;
@@ -568,7 +579,7 @@ void PsmForceControl::CalcU()
         y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
         //y = JaM.inverse() * Mt.inverse() * (Mt * a_int + Kd * (v_int - ve) + Kp * (x_int - xe) - he);
 
-        ROS_INFO_STREAM("interpolating");
+        //ROS_INFO_STREAM("interpolating");
 
         mq0.data = x_int(0);
         plot_x.publish(mq0);
@@ -581,7 +592,7 @@ void PsmForceControl::CalcU()
 
         t = t + 1;
 
- /*     ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
+   /*     ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
         ROS_INFO_STREAM("u_int 2 at time" << t << " : " << u(1));
         ROS_INFO_STREAM("u_int 3 at time" << t << " : " << u(2));*/
         if (t == rate*tf)
@@ -597,12 +608,15 @@ void PsmForceControl::CalcU()
     else {
         y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
 
- /*     ROS_INFO_STREAM("u_steady 1: "<< u(0));
-        ROS_INFO_STREAM("u_steady 2: "<< u(1));
-        ROS_INFO_STREAM("u_steady 3: "<< u(2));*/
+
     }
 
-    u = M*y + N + Fr + JaM.transpose()*he;
+    u = M*y + N  + JaM.transpose()*he;
+
+     ROS_INFO_STREAM("u_steady 1: "<< u(0));
+     ROS_INFO_STREAM("u_steady 2: "<< u(1));
+     ROS_INFO_STREAM("u_steady 3: "<< u(2));
+
 // ///// SAFETY ///////
     if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2.5)
     {
@@ -610,7 +624,7 @@ void PsmForceControl::CalcU()
     }
 
     // ROS_INFO_STREAM("x increment: "<< xd - xe);
-    ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe: " << xe << endl);
+    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
     // ROS_INFO_STREAM("u: "<< u);
     // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
     // ROS_INFO_STREAM("M: "<< M);
@@ -638,7 +652,6 @@ void PsmForceControl::output()
 
    plot_x.publish(msg2);*/
 
-/*
    mq0.data = qd(0);
    plot_x.publish(mq0);
 
@@ -647,12 +660,6 @@ void PsmForceControl::output()
 
    mq2.data = qd(2);
    plot_z.publish(mq2);
-
-*/
-
-    mq2.data = qd(2);
-    plot_z.publish(mq2);
-
 
  }
 

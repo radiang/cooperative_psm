@@ -37,6 +37,7 @@ public:
     int index;
     string name;
 
+    double deadband;
     double sum[3];
     int filter_n;
 
@@ -94,7 +95,7 @@ public:
 
         rate = 1000;
         tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
-        filter_n = 20;
+        filter_n = 30;
         index = 0;
 
         q1_traj.ts = 1/rate;
@@ -140,6 +141,7 @@ public:
         Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
         Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
+        deadband = 0.005;
   }
 
   //void showImage(const sensor_msgs::ImageConstPtr& img);
