@@ -68,82 +68,6 @@ void PsmForceControl::CalcN(Eigen::VectorXd q, Eigen::VectorXd qd) {
 
     // N
     if (name == "PSM1") {
-      /*  float t2 = q1 - q2;
-        float t3 = q1 + q2 - 2.908373974667121E-1;
-        float t4 = q1 - q2 + 2.908373974667121E-1;
-        float t5 = q1 + q2;
-        float t6 = qd2 * qd2;
-        float t7 = sin(t4);
-        float t8 = sin(t5);
-        float t9 = sin(t2);
-        float t10 = sin(t3);
-        float t11 = sin(q2);
-        float t12 = q2 - 2.908373974667121E-1;
-        float t13 = cos(t12);
-        float t14 = q2 * 2.0;
-        float t15 = t14 - 2.908373974667121E-1;
-        float t16 = cos(t15);
-        float t17 = t14 - 5.816747949334241E-1;
-        float t18 = sin(t17);
-        float t19 = cos(q2);
-        float t20 = cos(t14);
-        float t21 = sin(t14);
-        float t22 = q3 * q3;
-        float t23 = cos(t17);
-        float t24 = sin(t15);
-        float t25 = cos(t2);
-        float t26 = t9 * 2.733215756395077;
-        float t27 = cos(t3);
-        float t28 = cos(t4);
-        float t29 = t28 * 5.16223995547158E-1;
-        float t30 = cos(t5);
-        float t31 = t30 * 3.592041604117469E-2;
-        float t32 = t8 * 2.733215756395077;
-        float t33 = qd1 * qd1;
-        float t34 = q3 * t7 * 1.327945847307407;
-        float t35 = q2 - 5.816747949334241E-1;
-        float t36 = sin(t35);
-        float t37 = q3 * t10 * 1.327945847307407;
-        float t38 = cos(2.908373974667121E-1);
-
-        N(0) = q1 * (-1.414143078037124) - qd1 * 6.017170786081841E-2 - t7 * 1.607410916322051 -
-               t10 * 1.607410916322051 - t25 * 3.592041604117469E-2 + t26 - t27 * 5.16223995547158E-1 + t29 + t31 +
-               t32 + t34 + t37 - sin(q1 - 2.908373974667121E-1) * 1.381353770893327 -
-               sin(q1 + 2.908373974667121E-1) * 1.381353770893327 + cos(q1) * 2.443913113060148E-2 +
-               sin(q1) * 2.339828709154676 + qd1 * qd3 * 2.647017575466359E-1 - q3 * t8 * 1.4602217424003 -
-               q3 * t9 * 1.4602217424003 - t6 * t11 * 5.266507406325907E-2 - t6 * t13 * 5.650959887702604E-2 +
-               t6 * t19 * 6.243564561426633E-2 + qd2 * qd3 * sin(t12) * 3.991146837973142E-1 -
-               q3 * qd1 * qd3 * 1.138027587635799 - qd1 * qd2 * t11 * 8.457267985061186E-2 -
-               qd2 * qd3 * t11 * 4.334303756630776E-1 - qd1 * qd2 * t16 * 2.754321337470551E-1 +
-               qd1 * qd3 * t16 * 8.940133116736533E-2 + qd1 * qd2 * t18 * 1.34101996751048E-2 -
-               qd1 * qd3 * t18 * 2.107036716519012E-1 + qd1 * qd2 * t20 * 8.295619278055471E-2 +
-               qd1 * qd2 * t21 * 5.739994956059657E-1 - qd1 * qd3 * t20 * 4.807856619154441E-1 -
-               qd1 * qd3 * t21 * 2.413586136479669E-1 - qd1 * qd2 * t24 * 1.442356985746332E-1 +
-               qd1 * qd3 * t23 * 7.4548741946208E-1 - qd1 * qd2 * t36 * 8.457267985061186E-2 +
-               qd1 * qd3 * t38 * 8.940133116736533E-2 + q3 * t6 * t13 * 1.995573418986571E-1 -
-               q3 * t6 * t19 * 2.167151878315388E-1 - q3 * qd1 * qd2 * t18 * 1.49097483892416 -
-               q3 * qd1 * qd2 * t20 * 4.827172272959338E-1 + q3 * qd1 * qd2 * t21 * 9.615713238308882E-1 -
-               q3 * qd1 * qd3 * t20 * 5.960088744491022E-1 - q3 * qd1 * qd2 * t23 * 4.214073433038025E-1 -
-               q3 * qd1 * qd2 * t24 * 1.788026623347307E-1 - q3 * qd1 * qd3 * t23 * 5.420187131866966E-1 +
-               qd1 * qd2 * t18 * t22 * 5.420187131866966E-1 + qd1 * qd2 * t21 * t22 * 5.960088744491022E-1;
-        N(1) = q2 * (-1.995951913841251) - qd2 * 1.25836793913242E-1 + t7 * 1.607410916322051 -
-               t10 * 1.607410916322051 + t25 * 3.592041604117469E-2 - t26 - t27 * 5.16223995547158E-1 - t29 + t31 +
-               t32 - t34 + t37 + qd2 * qd3 * 5.294035150932717E-1 - q3 * t8 * 1.4602217424003 +
-               q3 * t9 * 1.4602217424003 + t11 * t33 * 4.228633992530593E-2 + t16 * t33 * 1.377160668735276E-1 -
-               t18 * t33 * 6.7050998375524E-3 - t20 * t33 * 4.147809639027736E-2 - t21 * t33 * 2.869997478029829E-1 +
-               t24 * t33 * 7.211784928731662E-2 + t33 * t36 * 4.228633992530593E-2 -
-               q3 * qd2 * qd3 * 2.276055175271598 + qd2 * qd3 * t38 * 1.788026623347307E-1 +
-               q3 * t18 * t33 * 7.4548741946208E-1 + q3 * t20 * t33 * 2.413586136479669E-1 -
-               q3 * t21 * t33 * 4.807856619154441E-1 + q3 * t23 * t33 * 2.107036716519012E-1 +
-               q3 * t24 * t33 * 8.940133116736533E-2 - t18 * t22 * t33 * 2.710093565933483E-1 -
-               t21 * t22 * t33 * 2.980044372245511E-1;
-        N(2) = qd3 * (-4.976864218216689E-1) - t6 * 2.647017575466359E-1 + t25 * 1.4602217424003 -
-               t27 * 1.327945847307407 - t28 * 1.327945847307407 + t30 * 1.4602217424003 - t33 * 1.323508787733179E-1 +
-               q3 * t6 * 1.138027587635799 + q3 * t33 * 5.690137938178994E-1 - t6 * t38 * 8.940133116736533E-2 -
-               t16 * t33 * 4.470066558368267E-2 + t18 * t33 * 1.053518358259506E-1 + t20 * t33 * 2.403928309577221E-1 +
-               t21 * t33 * 1.206793068239835E-1 - t23 * t33 * 3.7274370973104E-1 - t33 * t38 * 4.470066558368267E-2 +
-               q3 * t20 * t33 * 2.980044372245511E-1 + q3 * t23 * t33 * 2.710093565933483E-1;
-*/
         float t2 = q1-q2;
         float t3 = q1+q2-2.908373974667121E-1;
         float t4 = q1-q2+2.908373974667121E-1;
@@ -407,47 +331,6 @@ void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
 
     if (name == "PSM1")
     {
- /*       float t2 = q2 * 2.0;
-        float t3 = t2 - 2.908373974667121E-1;
-        float t4 = cos(t2);
-        float t5 = sin(t2);
-        float t6 = t2 - 5.816747949334241E-1;
-        float t7 = cos(t6);
-        float t8 = q3 * q3;
-        float t9 = cos(2.908373974667121E-1);
-        float t10 = cos(t3);
-        float t11 = cos(q2);
-        float t12 = q2 - 2.908373974667121E-1;
-        float t13 = sin(t12);
-        float t14 = sin(q2);
-        float t15 = t13 * 2.825479943851302E-2;
-        float t16 = q3 * t14 * 1.083575939157694E-1;
-        float t17 = t11 * (-2.633253703162953E-2) - t14 * 3.121782280713317E-2 + t15 + t16 -
-                    q3 * t13 * 9.977867094932855E-2 + 3.139133942215261E-2;
-        float t18 = sin(2.908373974667121E-1);
-        float t19 = cos(t12);
-        float t20 = t19 * 9.977867094932855E-2;
-        float t21 = t11 * (-1.083575939157694E-1) + t20;
-        float t22 = t18 * (-4.470066558368267E-2) + 2.260311426499341E-1;
-
-        M(0, 0) = q3 * (-1.323508787733179E-1) + t4 * 1.434998739014914E-1 - t5 * 2.073904819513868E-2 +
-                  t7 * 3.3525499187762E-3 + t8 * 2.845068969089497E-1 - t9 * 3.605892464365831E-2 -
-                  t10 * 3.605892464365831E-2 - t11 * 4.228633992530593E-2 + t18 * 6.885803343676378E-2 -
-                  cos(q2 - 5.816747949334241E-1) * 4.228633992530593E-2 + sin(t3) * 6.885803343676378E-2 +
-                  q3 * t4 * 2.403928309577221E-1 + q3 * t5 * 1.206793068239835E-1 - q3 * t7 * 3.7274370973104E-1 -
-                  q3 * t9 * 4.470066558368267E-2 - q3 * t10 * 4.470066558368267E-2 + t4 * t8 * 1.490022186122756E-1 +
-                  t7 * t8 * 1.355046782966741E-1 + q3 * sin(t6) * 1.053518358259506E-1 + 3.809583595416477E-1;
-        M(0, 1) = t17;
-        M(0, 2) = t21;
-        M(1, 0) = t17;
-        M(1, 1) = q3 * (-2.647017575466359E-1) + t8 * 5.690137938178994E-1 - t9 * 7.211784928731662E-2 +
-                  t18 * 1.377160668735276E-1 - q3 * t9 * 8.940133116736533E-2 + 4.852687409793962E-1;
-        M(1, 2) = t22;
-        M(2, 0) = t21;
-        M(2, 1) = t22;
-        M(2, 2) = 5.690137938178994E-1;
-*/
-
         float t2 = q2*2.0;
         float t3 = t2-5.816747949334241E-1;
         float t4 = t2-2.908373974667121E-1;
@@ -499,10 +382,10 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
         }
         else
         {
-            if (i==2 & q1_traj.check==true)
+            if (i==2 & q_traj[2].check==true)
             {
-                //x[i] = v_int(i);
-                x[i] = qd(i);
+                x[i] = v_int(i);
+                //x[i] = qd(i);
             }
             else
             {
@@ -519,18 +402,19 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     float qd2 = x[1];
     float qd3 = x[2];
 
-    float a = 8.0E2;
+    float a = 3.0E2;
     float scale = 0.8;
 
-    Fr(0) = q1*6.119063107247842E-1+qd1*5.121004410809419E-2+1.561585962952595E-1/(exp(qd1*-3.0E2)+1.0)-7.807929814762977E-2;
-    Fr(1) = q2*1.178371077512102+qd2*1.277466080900284E-1+2.91620349820475E-1/(exp(qd2*-3.0E2)+1.0)-1.458101749102375E-1;
-    Fr(2) = qd3*8.397843687710638E-1+1.117115567283898/(exp(qd3*-3.0E2)+1.0)-5.585577836419491E-1;
+    Fr(0) = q1*6.119063107247842E-1+qd1*5.121004410809419E-2+1.561585962952595E-1/(exp(qd1*-a)+1.0)-7.807929814762977E-2;
+    Fr(1) = q2*1.178371077512102+qd2*1.277466080900284E-1+2.91620349820475E-1/(exp(qd2*-a)+1.0)-1.458101749102375E-1;
+    Fr(2) = qd3*8.397843687710638E-1+1.117115567283898/(exp(qd3*-a)+1.0)-5.585577836419491E-1;
 
     Fr(2) = scale* Fr(2);
 }
 
 void PsmForceControl::SetGainsInit()
 {
+    // Original MT.diagonal of real robot
     //Mt.diagonal()<<0.3, 0.4, 0.5;
 
     Mt.diagonal()<<0.35, 0.36, 0.78;
@@ -587,13 +471,11 @@ void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
         for(int j = 0;j<filter_n;j++)
         {
             sum[i] = sum[i]+myq[i][j];
-            //ROS_INFO_STREAM("check: "<< myq[i][j]);
         }
         qd(i) = sum[i]/filter_n;
 
     }
     }
-  //ROS_INFO_STREAM("joint_states"<<q);
     index = index + 1;
 
     drop = msg.header.seq-drop_p;
@@ -605,7 +487,7 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
     xe(0) = msg.pose.position.y;  // y becomes x in my calculation
     xe(1) =-msg.pose.position.x; // x becomes -y in my calculation
     xe(2) = msg.pose.position.z;
-    //ROS_INFO_STREAM("cartesian"<<xe);
+
 }
 
  void PsmForceControl::CallbackForce(geometry_msgs::Wrench msg)
@@ -630,51 +512,25 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
  }
 
  void PsmForceControl::CallbackSetPositionIncrement(geometry_msgs::Twist msg)
- {   //The real thangg
-     //xd(0)=msg.position.x+xe(0);
-     //xd(1)=msg.position.y+xe(1);
-     //xd(2)=msg.position.z+xe(2);
-
+ {
      double arr[3];
 
      arr[0] = msg.linear.x;
      arr[1] = msg.linear.y;
      arr[2] = msg.linear.z;
 
-     q1_traj.check2 = false;
-     q2_traj.check2 = false;
-     q3_traj.check2 = false;
-
      //Just for testing
      xd(0)= msg.linear.x + xd(0);
      xd(1)= msg.linear.y + xd(1);
      xd(2)= msg.linear.z + xd(2);
 
-     q1_traj.qd << xe(0), 0, 0, xd(0),0,0;
-     q2_traj.qd << xe(1), 0, 0, xd(1),0,0;
-     q3_traj.qd << xe(2), 0, 0, xd(2),0,0;
-
-     double tol = 0.000001;
-     if (abs(msg.linear.x) <  tol) {
-         q1_traj.check2 = true;
-     }
-     if (abs(msg.linear.y) < tol){
-         q2_traj.check2 = true;
-     }
-     if (abs(msg.linear.z) < tol){
-         q3_traj.check2 = true;
-     }
-
-    /* q1_traj = interpolate(q1_traj);
-     q2_traj = interpolate(q2_traj);
-     q3_traj = interpolate(q3_traj);
-*/
      for (int i=0;i<3;i++)
      {
+         q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
+
          if (arr[i] != 0)
          {
              q_traj[i]=interpolate(q_traj[i]);
-             ROS_INFO_STREAM("interp" << i);
          }
      }
 
@@ -690,47 +546,50 @@ void PsmForceControl::CalcU()
     int fl = 2; //force limit
     ve = JaM*qd;
 
-
     if (interp==true)
     {
+        for (int i=0;i<3;i++)
+        {
 
-        x_int << q1_traj.x(t), q2_traj.x(t), q3_traj.x(t);
-        v_int << q1_traj.v(t), q2_traj.v(t), q3_traj.v(t);
-        a_int << q1_traj.a(t), q2_traj.a(t), q3_traj.a(t);
+            if(q_traj[i].check==false)
+            {
+                x_int(i)=xd(i);
+                v_int(i)=0;
+                a_int(i)=0;
+            }
+            else
+            {
+                x_int(i)=q_traj[i].x(t);
+                v_int(i)=q_traj[i].v(t);
+                a_int(i)=q_traj[i].a(t);
+            }
+        }
+
+        ROS_INFO_STREAM("v_int:" << v_int);
 
         y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
-        //y = JaM.inverse() * Mt.inverse() * (Mt * a_int + Kd * (v_int - ve) + Kp * (x_int - xe) - he);
-
-        //ROS_INFO_STREAM("interpolating");
-
-       /* mq0.data = x_int(0);
-        plot_x.publish(mq0);
-
-        mq1.data =v_int(2);
-        plot_y.publish(mq1);*/
-
-        //mq2.data = x_int(2);
-        //plot_z.publish(mq2);
 
         t = t + 1;
 
-   /*     ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
+   /*   ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
         ROS_INFO_STREAM("u_int 2 at time" << t << " : " << u(1));
         ROS_INFO_STREAM("u_int 3 at time" << t << " : " << u(2));*/
+
         if (t == rate*tf)
         {
             t = 0;
-            q1_traj.check = false;
-            q2_traj.check = false;
-            q3_traj.check = false;
+            q_traj[0].check = false;
+            q_traj[1].check = false;
+            q_traj[0].check = false;
             interp = false;
         }
+
         fl = fl*3;
 
     }
-    else {
+    else
+    {
         y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-
     }
 
     u = M*y + N + Fr +JaM.transpose()*he;
@@ -744,18 +603,7 @@ void PsmForceControl::CalcU()
     {
         u<< 0, 0, 0;
     }
-
-    // ROS_INFO_STREAM("x increment: "<< xd - xe);
     //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
-
-    //ROS_INFO_STREAM("Fr: "<< Fr);
-    // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
-    // ROS_INFO_STREAM("M: "<< M);
-    // ROS_INFO_STREAM("Ja: "<< Ja);
-    // ROS_INFO_STREAM("JaM: "<< JaM);
-
-    // ROS_INFO_STREAM("Ja inverse: "<< JaM.transpose()*he);//ROS_INFO_STREAM("Ja inverse: "<< Ja.inverse());
-    // ROS_INFO_STREAM("qd: "<< qd);
  }
 
 void PsmForceControl::output()
