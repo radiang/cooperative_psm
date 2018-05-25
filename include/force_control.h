@@ -37,16 +37,17 @@ public:
     int index;
     string name;
 
-    double deadband;
     double sum[3];
     int filter_n;
+    int drop;
+    int drop_p;
 
     std::deque<double> myq[3];
     std::deque<double> que1, que2, que3;
 
     traject q1_traj, q2_traj, q3_traj;
 
-    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr;
+    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
 
@@ -65,9 +66,9 @@ public:
 
         joint_pub=n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint",10);
 
-        jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 100, &PsmForceControl::CallbackJacobian,this);
-        joint_sub=n.subscribe("/dvrk/"+ name + "/state_joint_current", 100, &PsmForceControl::CallbackJoint,this);
-        cartesian_sub=n.subscribe("/dvrk/"+ name + "/position_cartesian_current", 100, &PsmForceControl::CallbackCartesian,this);
+        //jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
+        joint_sub=n.subscribe("/dvrk/"+ name + "/state_joint_current", 1, &PsmForceControl::CallbackJoint,this);
+        cartesian_sub=n.subscribe("/dvrk/"+ name + "/position_cartesian_current", 1, &PsmForceControl::CallbackCartesian,this);
 
         force_sub=n.subscribe("/psm_sense/" + name + "/tool_forces", 100, &PsmForceControl::CallbackForce,this);
         setforce_sub=n.subscribe("/psm_sense/setforce",100, &PsmForceControl::CallbackSetForce,this);
@@ -76,7 +77,7 @@ public:
 
         q.resize(3); qd.resize(3); eff.resize(3); xe.resize(3); ve.resize(3); fd.resize(3);
         he.resize(3); xf.resize(3); xd.resize(3); vd.resize(3); ad.resize(3); y.resize(3); u.resize(3); x0.resize(3); q0.resize(3);
-        x_int.resize(3); v_int.resize(3); a_int.resize(3);
+        x_int.resize(3); v_int.resize(3); a_int.resize(3), deadband.resize(3);
 
         Ja.resize(3,3); JaM.resize(3,3); Jd.resize(3,3); Jmin.resize(3,3);
         N.resize(3); G.resize(3); C.resize(3,3); Fr.resize(3);
@@ -94,8 +95,8 @@ public:
         myq[2]= que3;
 
         rate = 1000;
-        tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
-        filter_n = 30;
+        tf = 0.5; // moving 0.001 m in 0.2 s is pretty good for u values.
+        filter_n = 20;
         index = 0;
 
         q1_traj.ts = 1/rate;
@@ -141,7 +142,7 @@ public:
         Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
         Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
-        deadband = 0.005;
+        deadband << 0.005, 0.01, 0.005;
   }
 
   //void showImage(const sensor_msgs::ImageConstPtr& img);
@@ -162,7 +163,7 @@ public:
   void CalcDiffJacobian(Eigen::VectorXd q, Eigen::VectorXd  qd);
 
   void CalcN(Eigen::VectorXd q, Eigen::VectorXd qd);
-  void CalcFr(Eigen::VectorXd qd);
+  void CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd);
   void CalcC(Eigen::VectorXd q, Eigen::VectorXd qd);
   void CalcG(Eigen::VectorXd q);
   void CalcM(Eigen::VectorXd q);
