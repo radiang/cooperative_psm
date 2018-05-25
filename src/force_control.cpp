@@ -691,7 +691,7 @@ void PsmForceControl::CalcU()
     ve = JaM*qd;
 
 
-    if (q1_traj.check==true)
+    if (interp==true)
     {
 
         x_int << q1_traj.x(t), q2_traj.x(t), q3_traj.x(t);
