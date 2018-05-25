@@ -634,6 +634,13 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
      //xd(0)=msg.position.x+xe(0);
      //xd(1)=msg.position.y+xe(1);
      //xd(2)=msg.position.z+xe(2);
+
+     double arr[3];
+
+     arr[0] = msg.linear.x;
+     arr[1] = msg.linear.y;
+     arr[2] = msg.linear.z;
+
      q1_traj.check2 = false;
      q2_traj.check2 = false;
      q3_traj.check2 = false;
@@ -658,14 +665,22 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
          q3_traj.check2 = true;
      }
 
-     q1_traj = interpolate(q1_traj);
+    /* q1_traj = interpolate(q1_traj);
      q2_traj = interpolate(q2_traj);
      q3_traj = interpolate(q3_traj);
-
-     //ROS_INFO("IT WORKS");
+*/
+     for (int i=0;i<3;i++)
+     {
+         if (arr[i] != 0)
+         {
+             q_traj[i]=interpolate(q_traj[i]);
+             ROS_INFO_STREAM("interp" << i);
+         }
+     }
 
      t0 = ros::Time::now().toSec();
      t = 0;
+     interp = true;
  }
 
 
@@ -708,6 +723,7 @@ void PsmForceControl::CalcU()
             q1_traj.check = false;
             q2_traj.check = false;
             q3_traj.check = false;
+            interp = false;
         }
         fl = fl*3;
 
@@ -730,9 +746,9 @@ void PsmForceControl::CalcU()
     }
 
     // ROS_INFO_STREAM("x increment: "<< xd - xe);
-    ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
+    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
 
-    ROS_INFO_STREAM("Fr: "<< Fr);
+    //ROS_INFO_STREAM("Fr: "<< Fr);
     // ROS_INFO_STREAM("Check Direction: "<< Ja.inverse()*(xd-xe)*1000);
     // ROS_INFO_STREAM("M: "<< M);
     // ROS_INFO_STREAM("Ja: "<< Ja);
@@ -750,7 +766,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT--------------------
- joint_pub.publish(joint_msg);
+ //joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);

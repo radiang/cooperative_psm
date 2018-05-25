@@ -42,10 +42,12 @@ public:
     int drop;
     int drop_p;
 
+    bool interp;
+
     std::deque<double> myq[3];
     std::deque<double> que1, que2, que3;
 
-    traject q1_traj, q2_traj, q3_traj;
+    traject q_traj[3], q1_traj, q2_traj, q3_traj;
 
     Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
@@ -90,6 +92,7 @@ public:
           msg2.velocity.push_back(0.0);
         }
 
+
         myq[0]= que1;
         myq[1]= que2;
         myq[2]= que3;
@@ -114,6 +117,10 @@ public:
         q1_traj.qd.resize(6);
         q2_traj.qd.resize(6);
         q3_traj.qd.resize(6);
+
+        q_traj[0] = q1_traj;
+        q_traj[1] = q2_traj;
+        q_traj[2] = q3_traj;
 
         // Initialize to zero
         fd << 0.0, 0.0, 0.0;
@@ -143,6 +150,8 @@ public:
         Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
         deadband << 0.005, 0.01, 0.005;
+
+        interp = false;
   }
 
   //void showImage(const sensor_msgs::ImageConstPtr& img);
