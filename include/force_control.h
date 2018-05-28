@@ -26,7 +26,7 @@ class PsmForceControl{
 private:
   //std::vector<ros::Publisher> ecmPub, psm1Pub, psm2Pub, psm3Pub;
     ros::Subscriber jacobian_sub, joint_sub, cartesian_sub, force_sub, setforce_sub, setpos_sub, setpos_sub2;
-    ros::Publisher plot_x, plot_y, plot_z, joint_pub;
+    ros::Publisher plot_x, plot_y, plot_z, joint_pub, desplot_x, desplot_y, desplot_z;
 
   //std::vector<ros::Publisher> cartPub;
 public:
@@ -55,27 +55,31 @@ public:
 
   //Eigen::Matrix4d Ja;
 
-    std_msgs::Float64 mq0, mq1, mq2;
+    std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;
 
     PsmForceControl(ros::NodeHandle n, string nam){
 
         name = nam;
 
+        desplot_x=n.advertise<std_msgs::Float64>("/d0",10);
+        desplot_y=n.advertise<std_msgs::Float64>("/d1",10);
+        desplot_z=n.advertise<std_msgs::Float64>("/d2",10);
+
         plot_x=n.advertise<std_msgs::Float64>("/0",10);
         plot_y=n.advertise<std_msgs::Float64>("/1",10);
         plot_z=n.advertise<std_msgs::Float64>("/2",10);
 
-        joint_pub=n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint",10);
+        joint_pub=n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint",1);
 
         //jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
         joint_sub=n.subscribe("/dvrk/"+ name + "/state_joint_current", 1, &PsmForceControl::CallbackJoint,this);
         cartesian_sub=n.subscribe("/dvrk/"+ name + "/position_cartesian_current", 1, &PsmForceControl::CallbackCartesian,this);
 
-        force_sub=n.subscribe("/psm_sense/" + name + "/tool_forces", 100, &PsmForceControl::CallbackForce,this);
-        setforce_sub=n.subscribe("/psm_sense/setforce",100, &PsmForceControl::CallbackSetForce,this);
-        setpos_sub=n.subscribe("/psm/cmd_vel2",100, &PsmForceControl::CallbackSetPosition,this);
-        setpos_sub2=n.subscribe("/psm/cmd_vel",100, &PsmForceControl::CallbackSetPositionIncrement,this);
+        force_sub=n.subscribe("/psm_sense/" + name + "/tool_forces", 10, &PsmForceControl::CallbackForce,this);
+        setforce_sub=n.subscribe("/psm_sense/setforce",10, &PsmForceControl::CallbackSetForce,this);
+        setpos_sub=n.subscribe("/psm/cmd_vel2",10, &PsmForceControl::CallbackSetPosition,this);
+        setpos_sub2=n.subscribe("/psm/cmd_vel",10, &PsmForceControl::CallbackSetPositionIncrement,this);
 
         q.resize(3); qd.resize(3); eff.resize(3); xe.resize(3); ve.resize(3); fd.resize(3);
         he.resize(3); xf.resize(3); xd.resize(3); vd.resize(3); ad.resize(3); y.resize(3); u.resize(3); x0.resize(3); q0.resize(3);
@@ -97,8 +101,8 @@ public:
         myq[1]= que2;
         myq[2]= que3;
 
-        rate = 30;
-        tf = 0.5; // moving 0.001 m in 0.2 s is pretty good for u values.
+        rate = 2000;
+        tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
         filter_n = 20;
         index = 0;
 

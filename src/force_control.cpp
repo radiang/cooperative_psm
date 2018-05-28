@@ -384,6 +384,7 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
         {
             if (i==2 & q_traj[2].check==true)
             {
+                // This makes it so that friction is only actuating while given a desired command
                 x[i] = v_int(i);
                 //x[i] = qd(i);
             }
@@ -402,8 +403,8 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     float qd2 = x[1];
     float qd3 = x[2];
 
-    float a = 3.0E2;
-    float scale = 0.8;
+    float a = 6.0E2;
+    float scale = 1;
 
     Fr(0) = q1*6.119063107247842E-1+qd1*5.121004410809419E-2+1.561585962952595E-1/(exp(qd1*-a)+1.0)-7.807929814762977E-2;
     Fr(1) = q2*1.178371077512102+qd2*1.277466080900284E-1+2.91620349820475E-1/(exp(qd2*-a)+1.0)-1.458101749102375E-1;
@@ -420,8 +421,8 @@ void PsmForceControl::SetGainsInit()
     Mt.diagonal()<<0.35, 0.36, 0.78;
 
  // Real Coefficients
-    Kp.diagonal() << 30, 30, 60;
-    Kd.diagonal() << 4, 4, 4;
+    Kp.diagonal() << 70, 100, 300;
+    Kd.diagonal() << 10, 14, 20;
 
  // Test Damping
     //Kp.diagonal()<<1, 1, 3;
@@ -435,7 +436,12 @@ void PsmForceControl::SetDesiredInit()
 
  double incre [3] = {0, 0, 0};
  fd << 0, 0, 0;
- xd<< incre[0]+x0(0),incre[1]+x0(1) ,incre[2]+x0(2) ;
+
+ // Impedance Controller
+ //xd<< incre[0]+x0(0),incre[1]+x0(1) ,incre[2]+x0(2) ;
+
+// Computed Torque Controller
+xd<< incre[0] + q0(0),incre[1] + q0(1) ,incre[2] + q0(2) ;
 
  vd << 0, 0, 0;
  ad << 0, 0, 0;
@@ -456,6 +462,8 @@ for (int i=0;i<3;i++)
 
 void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
 {
+
+    // Filter
     for (int i=0;i<3;i++)
     {
     q(i)=msg.position[i];
@@ -526,13 +534,20 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
 
      for (int i=0;i<3;i++)
      {
-         q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
+         // Impedance Controller
+         //q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
+
+         // Computed Torque controller
+         q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
+
 
          if (arr[i] != 0)
          {
              q_traj[i]=interpolate(q_traj[i]);
          }
      }
+
+     //ROS_INFO_STREAM("v_int:" << q_traj[0].check);
 
      t0 = ros::Time::now().toSec();
      t = 0;
@@ -562,13 +577,17 @@ void PsmForceControl::CalcU()
                 x_int(i)=q_traj[i].x(t);
                 v_int(i)=q_traj[i].v(t);
                 a_int(i)=q_traj[i].a(t);
+
             }
         }
 
-        ROS_INFO_STREAM("v_int:" << v_int);
+        //ROS_INFO_STREAM("v_int:" << v_int);
 
-        y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
+        // Impedence Controller
+        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
+        //Computed Torque Controller
+        y =  Kd*(v_int-qd) + Kp*(x_int-q);
         t = t + 1;
 
    /*   ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
@@ -589,12 +608,17 @@ void PsmForceControl::CalcU()
     }
     else
     {
-        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+        // Impedence Controller
+        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+
+        // Computed Torque controller
+        y =  Kd*(vd-qd) + Kp*(xd-q);
     }
 
-    u = M*y + N + Fr +JaM.transpose()*he;
+    u = M*y + N +Fr +JaM.transpose()*he;
 
-    /* ROS_INFO_STREAM("u_steady 1: "<< u(0));
+/*
+     ROS_INFO_STREAM("u_steady 1: "<< u(0));
      ROS_INFO_STREAM("u_steady 2: "<< u(1));
      ROS_INFO_STREAM("u_steady 3: "<< u(2));*/
 
@@ -614,7 +638,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT--------------------
- //joint_pub.publish(joint_msg);
+ joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);
@@ -623,13 +647,34 @@ void PsmForceControl::output()
 
    plot_x.publish(msg2);*/
 
-   mq0.data = qd(0);
+
+     if(interp==true)
+     {
+         dq0.data = x_int(0);
+         dq1.data = x_int(1);
+         dq2.data = x_int(2);
+     }
+     else
+     {
+         dq0.data = xd(0);
+         dq1.data = xd(1);
+         dq2.data = xd(2);
+     }
+
+
+     desplot_x.publish(dq0);
+     desplot_y.publish(dq1);
+
+
+     desplot_z.publish(dq2);
+
+   mq0.data = q(0);
    plot_x.publish(mq0);
 
-   mq1.data = qd(1);
+   mq1.data = q(1);
    plot_y.publish(mq1);
 
-   mq2.data = qd(2);
+   mq2.data = q(2);
    plot_z.publish(mq2);
 
    //drop = 0;

@@ -78,7 +78,7 @@ traject interpolate(traject des)
         v = coef(1) + 2 * coef(2) * t + 3 * coef(3) * pow(t, 2) + 4 * coef(4) * pow(t, 3) + 5 * coef(5) * pow(t, 4);
         a = 2 * coef(2) * t + 6 * coef(3) * t + 12 * coef(4) * pow(t, 2) + 20 * coef(5) * pow(t, 3);
 
-        //std::cout<<x;
+/*        //std::cout<<x;
         if (des.check2 == false) {
             des.x(i) = x;
             des.v(i) = v;
@@ -88,7 +88,10 @@ traject interpolate(traject des)
             des.x(i) = des.qd(0);
             des.v(i) = des.qd(1);
             des.a(i) = des.qd(2);
-        }
+        }*/
+        des.x(i) = x;
+        des.v(i) = v;
+        des.a(i) = a;
     }
     //std::cout<<des.x(10);
 
