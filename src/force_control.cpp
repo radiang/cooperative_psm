@@ -9,7 +9,7 @@ void PsmForceControl::CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd)
     float qd2 = qd(1);
     float qd3 = qd(2);
 
-    // Jacobian from matlab
+ /*   // Jacobian from matlab
     float t2 = q2-2.908373974667121E-1;
     float t3 = cos(t2);
     float t4 = 3.141592653589793*(1.0/2.0);
@@ -55,6 +55,23 @@ void PsmForceControl::CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd)
     JaM(2,0) = t3*t27*(-3.0/2.0E1)+t10*t30*(4.3E1/1.0E3)-t10*t32*(1.68E2/6.25E2)+t16*t30*(1.68E2/6.25E2)+t16*t32*(4.3E1/1.0E3)-t26*t35-t3*t8*t27*(1.29E2/2.5E2)+t7*t9*t27*(1.29E2/2.5E2);
     JaM(2,1) = t9*t19*(3.0/2.0E1)+t10*t22*(1.68E2/6.25E2)+t10*t24*(4.3E1/1.0E3)-t16*t22*(4.3E1/1.0E3)+t16*t24*(1.68E2/6.25E2)-t26*(t10*t22+t16*t24);
     JaM(2,2) = t37;
+*/
+    float t2 = 3.141592653589793*(1.0/2.0);
+    float t3 = q2+t2;
+    float t4 = sin(t3);
+    float t5 = q3+3.7E-3;
+    float t6 = q1-t2;
+    float t7 = cos(t3);
+    float t8 = cos(t6);
+    float t9 = sin(t6);
+    JaM(0,1) = -t4*t5;
+    JaM(0,2) = t7;
+    JaM(1,0) = t4*t5*t9;
+    JaM(1,1) = -t5*t7*t8;
+    JaM(1,2) = -t4*t8;
+    JaM(2,0) = t4*t5*t8;
+    JaM(2,1) = t5*t7*t9;
+    JaM(2,2) = t4*t9;
 
 }
 
@@ -418,7 +435,7 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     Fr(2) = qd3*8.397843687710638E-1+1.117115567283898/(exp(qd3*-a)+1.0)-5.585577836419491E-1;
 */
 
-    Fr(0) =  q1*(-3.374542425099348)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-6.0E2)+1.0)-6.651153938642816E-2;
+    Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-4.0E2)+1.0)-6.651153938642816E-2;
     Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-6.0E2)+1.0)-9.67733653235759E-2;
 
     //Friction Compensation Stick Based on Position
@@ -658,7 +675,7 @@ void PsmForceControl::CalcU()
     {
         u<< 0, 0, 0;
     }
-    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
+    ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
  }
 
 void PsmForceControl::output()
@@ -668,7 +685,7 @@ void PsmForceControl::output()
   joint_msg.effort[2] = u(2);
 
 
-  // ----------------------- IMPORTANT--------------------
+  // ----------------------- IMPORTANT---This runs Robot-----------------
  joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
@@ -695,8 +712,6 @@ void PsmForceControl::output()
 
      desplot_x.publish(dq0);
      desplot_y.publish(dq1);
-
-
      desplot_z.publish(dq2);
 
    mq0.data = q(0);
