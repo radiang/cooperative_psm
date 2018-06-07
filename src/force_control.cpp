@@ -406,9 +406,40 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     float a = 6.0E2;
     float scale = 1;
 
+    float x_e = xd(2)-q(2);
+    float pos_deadband = 0.005; // rad
+    float Fs_pos = 0.6;
+    float Fs_neg = -0.4;
+    /*
+
+
     Fr(0) = q1*6.119063107247842E-1+qd1*5.121004410809419E-2+1.561585962952595E-1/(exp(qd1*-a)+1.0)-7.807929814762977E-2;
     Fr(1) = q2*1.178371077512102+qd2*1.277466080900284E-1+2.91620349820475E-1/(exp(qd2*-a)+1.0)-1.458101749102375E-1;
     Fr(2) = qd3*8.397843687710638E-1+1.117115567283898/(exp(qd3*-a)+1.0)-5.585577836419491E-1;
+*/
+
+    Fr(0) =  q1*(-3.374542425099348)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-6.0E2)+1.0)-6.651153938642816E-2;
+    Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-6.0E2)+1.0)-9.67733653235759E-2;
+
+    //Friction Compensation Stick Based on Position
+    if(abs(qd(2)) < deadband(2))
+    {
+        if (x_e>pos_deadband)
+        {
+            Fr(2) = Fs_pos;
+        } else if (x_e<-pos_deadband)
+        {
+            Fr(2) = Fs_neg;
+        } else
+        {
+            Fr(2) = 0;
+        }
+
+    }
+    else {
+        Fr(2) = qd3*5.3115714926966E-1+9.158363928863775E-1/(exp(qd3*-4.0E2)+1.0)-4.579181964431888E-1;
+    }
+
 
     Fr(2) = scale* Fr(2);
 }
