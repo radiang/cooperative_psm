@@ -648,8 +648,10 @@ void PsmForceControl::CalcU()
             t = 0;
             q_traj[0].check = false;
             q_traj[1].check = false;
-            q_traj[0].check = false;
+            q_traj[2].check = false;
             interp = false;
+
+
         }
 
         fl = fl*3;
@@ -665,7 +667,7 @@ void PsmForceControl::CalcU()
     }
 
     u = M*y + N +Fr +JaM.transpose()*he;
-
+     ROS_INFO_STREAM("POTATO"<< interp);
 /*
      ROS_INFO_STREAM("u_steady 1: "<< u(0));
      ROS_INFO_STREAM("u_steady 2: "<< u(1));
@@ -676,7 +678,7 @@ void PsmForceControl::CalcU()
     {
         u<< 0, 0, 0;
     }
-    ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
+    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
  }
 
 void PsmForceControl::output()
