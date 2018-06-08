@@ -399,7 +399,8 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
         }
         else
         {
-            if (i==2 & q_traj[2].check==true)
+            //if (i==2 & q_traj[2].check==true)
+            if (i==2 & v_int(i) > qd(i))
             {
                 // This makes it so that friction is only actuating while given a desired command
                 x[i] = v_int(i);
