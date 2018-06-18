@@ -83,7 +83,7 @@ void PsmForceControl::CalcN(Eigen::VectorXd q, Eigen::VectorXd qd) {
     float qd2 = qd(1);
     float qd3 = qd(2);
 
-    // N
+    // N from TEST: test_3dof_svd -> fourier_test2
     if (name == "PSM1") {
         float t2 = q1-q2;
         float t3 = q1+q2-2.908373974667121E-1;
@@ -388,7 +388,7 @@ void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
 
 void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
 {
-
+ 
   float x[3];
 
   for (int i=0;i<3;i++)
@@ -414,6 +414,7 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
         }
     }
 
+    // From test_3dof_svd fourier_test2
     float q1 = qd(0);
     float q2 = qd(1);
 
@@ -486,11 +487,11 @@ void PsmForceControl::SetDesiredInit()
  double incre [3] = {0, 0, 0};
  fd << 0, 0, 0;
 
- // Impedance Controller
- //xd<< incre[0]+x0(0),incre[1]+x0(1) ,incre[2]+x0(2) ;
+ //Impedance Controller
+ xd << incre[0] + x0(0), incre[1] + x0(1), incre[2] + x0(2) ;
 
-// Computed Torque Controller
-xd<< incre[0] + q0(0),incre[1] + q0(1) ,incre[2] + q0(2) ;
+ // Computed Torque Controller
+ //xd << incre[0] + q0(0),incre[1] + q0(1) ,incre[2] + q0(2) ;
 
  vd << 0, 0, 0;
  ad << 0, 0, 0;
@@ -584,10 +585,10 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
      for (int i=0;i<3;i++)
      {
          // Impedance Controller
-         //q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
+         q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
 
          // Computed Torque controller
-         q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
+         //q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
 
 
          if (arr[i] != 0)
@@ -632,11 +633,11 @@ void PsmForceControl::CalcU()
 
         //ROS_INFO_STREAM("v_int:" << v_int);
 
-        // Impedence Controller
-        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
+        // Impedance Controller
+        y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
         //Computed Torque Controller
-        y =  Kd*(v_int-qd) + Kp*(x_int-q);
+        //y =  Kd*(v_int-qd) + Kp*(x_int-q);
         t = t + 1;
 
    /*   ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
@@ -659,15 +660,15 @@ void PsmForceControl::CalcU()
     }
     else
     {
-        // Impedence Controller
-        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+        // Impedance Controller
+        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
 
         // Computed Torque controller
-        y =  Kd*(vd-qd) + Kp*(xd-q);
+        //y =  Kd*(vd-qd) + Kp*(xd-q);
     }
 
     u = M*y + N +Fr +JaM.transpose()*he;
-     ROS_INFO_STREAM("POTATO"<< interp);
+     
 /*
      ROS_INFO_STREAM("u_steady 1: "<< u(0));
      ROS_INFO_STREAM("u_steady 2: "<< u(1));
