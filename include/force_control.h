@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
 #include <boost/bind.hpp>
 #include <sstream>
 #include <queue>
@@ -49,7 +51,7 @@ public:
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
 
-    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
+    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband, joint_angle;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
 
@@ -83,7 +85,7 @@ public:
 
         q.resize(3); qd.resize(3); eff.resize(3); xe.resize(3); ve.resize(3); fd.resize(3);
         he.resize(3); xf.resize(3); xd.resize(3); vd.resize(3); ad.resize(3); y.resize(3); u.resize(3); x0.resize(3); q0.resize(3);
-        x_int.resize(3); v_int.resize(3); a_int.resize(3), deadband.resize(3);
+        x_int.resize(3); v_int.resize(3); a_int.resize(3), deadband.resize(3), joint_angle.resize(3);
 
         Ja.resize(3,3); JaM.resize(3,3); Jd.resize(3,3); Jmin.resize(3,3);
         N.resize(3); G.resize(3); C.resize(3,3); Fr.resize(3);
@@ -182,7 +184,7 @@ public:
   void CalcM(Eigen::VectorXd q);
 
   void CalcU();
-  void publish_joint_torque();
+  void InverseKinematic();
   void output();
 
 };

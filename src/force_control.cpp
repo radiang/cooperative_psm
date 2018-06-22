@@ -425,10 +425,17 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     float a = 6.0E2;
     float scale = 1;
 
-    float x_e = xd(2)-q(2);
+
     float pos_deadband = 0.005; // rad
     float Fs_pos = 0.6;
     float Fs_neg = -0.4;
+
+    //Computed Torque
+    //float x_e = xd(2)-q(2);
+
+    //Impedance Controller
+        float x_e = joint_angle(2) - q(2);
+        
     /*
 
 
@@ -443,10 +450,10 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     //Friction Compensation Stick Based on Position
     if(abs(qd(2)) < deadband(2))
     {
-        if (x_e>pos_deadband)
+        if (x_e > pos_deadband)
         {
             Fr(2) = Fs_pos;
-        } else if (x_e<-pos_deadband)
+        } else if (x_e < -pos_deadband)
         {
             Fr(2) = Fs_neg;
         } else
@@ -680,8 +687,14 @@ void PsmForceControl::CalcU()
         u<< 0, 0, 0;
     }
     //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
+    ROS_INFO_STREAM("  Desired Joint Angle: "<< joint_angle << endl <<" actual joint angle: " << q << endl);
  }
-
+void PsmForceControl::InverseKinematic()
+{
+    joint_angle(0) = atan(xd(1)/xd(2));
+    joint_angle(1) = -atan(xd(0)/sqrt(pow(xd(1),2)+pow(xd(2),2)));
+    joint_angle(2) = sqrt(pow(xd(1),2)+pow(xd(0),2)+pow(xd(2),2))+0.006;
+}
 void PsmForceControl::output()
  {
   joint_msg.effort[0] = u(0);
@@ -690,7 +703,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT---This runs Robot-----------------
- joint_pub.publish(joint_msg);
+ //joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);
