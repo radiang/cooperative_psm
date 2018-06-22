@@ -434,7 +434,7 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     //float x_e = xd(2)-q(2);
 
     //Impedance Controller
-        float x_e = joint_angle(2) - q(2);
+        float x_e = joint_des(2) - joint_act(2);
         
     /*
 
@@ -687,13 +687,22 @@ void PsmForceControl::CalcU()
         u<< 0, 0, 0;
     }
     //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
-    ROS_INFO_STREAM("  Desired Joint Angle: "<< joint_angle << endl <<" actual joint angle: " << q << endl);
+
  }
-void PsmForceControl::InverseKinematic()
+Eigen::VectorXd PsmForceControl::InverseKinematic(Eigen::VectorXd fed)
 {
-    joint_angle(0) = atan(xd(1)/xd(2));
+    /*joint_angle(0) = atan(xd(1)/xd(2));
     joint_angle(1) = -atan(xd(0)/sqrt(pow(xd(1),2)+pow(xd(2),2)));
-    joint_angle(2) = sqrt(pow(xd(1),2)+pow(xd(0),2)+pow(xd(2),2))+0.006;
+    joint_angle(2) = sqrt(pow(xd(1),2)+pow(xd(0),2)+pow(xd(2),2))+0.006;*/
+
+    Eigen::VectorXd joint_a;
+    joint_a.resize(3);
+
+    joint_a(0) = atan(fed(1)/fed(2));
+    joint_a(1) = -atan(fed(0)/sqrt(pow(fed(1),2)+pow(fed(2),2)));
+    joint_a(2) = sqrt(pow(fed(1),2)+pow(fed(0),2)+pow(fed(2),2))+0.006;
+
+    return joint_a;
 }
 void PsmForceControl::output()
  {
@@ -703,7 +712,7 @@ void PsmForceControl::output()
 
 
   // ----------------------- IMPORTANT---This runs Robot-----------------
- //joint_pub.publish(joint_msg);
+ joint_pub.publish(joint_msg);
 
   // ------------------------------------------------------
   /* msg2.velocity[0] = qd(0);
@@ -713,7 +722,7 @@ void PsmForceControl::output()
    plot_x.publish(msg2);*/
 
 
-     if(interp==true)
+/*     if(interp==true)
      {
          dq0.data = x_int(0);
          dq1.data = x_int(1);
@@ -724,21 +733,23 @@ void PsmForceControl::output()
          dq0.data = xd(0);
          dq1.data = xd(1);
          dq2.data = xd(2);
-     }
+     }*/
 
+    dq0.data = joint_des(0);
+    dq1.data = joint_des(1);
+    dq2.data = joint_des(2);
 
-     desplot_x.publish(dq0);
-     desplot_y.publish(dq1);
-     desplot_z.publish(dq2);
+    desplot_x.publish(dq0);
+    desplot_y.publish(dq1);
+    desplot_z.publish(dq2);
 
-   mq0.data = q(0);
-   plot_x.publish(mq0);
+    mq0.data = joint_act(0);
+    mq1.data = joint_act(1);
+    mq2.data = joint_act(2);
 
-   mq1.data = q(1);
-   plot_y.publish(mq1);
-
-   mq2.data = q(2);
-   plot_z.publish(mq2);
+    plot_x.publish(mq0);
+    plot_y.publish(mq1);
+    plot_z.publish(mq2);
 
    //drop = 0;
  }
@@ -766,6 +777,8 @@ int main(int argc, char **argv)
 
   while(ros::ok())
   {
+  obj.joint_act = obj.InverseKinematic(obj.xe);
+  obj.joint_des = obj.InverseKinematic(obj.xd);
   obj.CalcJaM(obj.q, obj.qd);
   obj.CalcDiffJacobian(obj.q, obj.qd);
   obj.CalcFr(obj.q, obj.qd);
