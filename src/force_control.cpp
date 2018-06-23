@@ -801,7 +801,7 @@ void PsmForceControl::output()
 
  }
 
- PsmForceControl::Loop()
+void  PsmForceControl::Loop()
  {
      this->joint_act = this->InverseKinematic(xe);
      this->joint_des = this->InverseKinematic(xd);
@@ -838,7 +838,7 @@ int main(int argc, char **argv)
 
   while(ros::ok())
   {
-    obj.loop();
+    obj.Loop();
     ros::spinOnce();
 
   //drop=0;
