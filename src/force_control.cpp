@@ -477,11 +477,15 @@ void PsmForceControl::SetGainsInit()
 
     Mt.diagonal()<<0.35, 0.36, 0.3;
 
- // Real Coefficients
+    //Real Coefficients
     Kp.diagonal() << 70, 100, 300;
     Kd.diagonal() << 10, 7, 15;
 
- // Test Damping
+    //Wrist Coefficients;
+    wrist_kp << 0.5, 0.5, 0.5;
+    wrist_kd <<  0.5,  0.5,  0.5;
+
+    //Test Damping
     //Kp.diagonal()<<1, 1, 3;
     //Kd.diagonal()<<5, 0.5, 10;
 }
@@ -523,23 +527,23 @@ void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
     // Filter
     for (int i=0;i<dof;i++)
     {
-    q(i)=msg.position[i];
-    qd(i)=msg.velocity[i];
-    eff(i)=msg.effort[i];
+        q(i)=msg.position[i];
+        qd(i)=msg.velocity[i];
+        eff(i)=msg.effort[i];
 
-    myq[i].push_back(msg.velocity[i]);
+        myq[i].push_back(msg.velocity[i]);
 
-    if (index > filter_n-1)
-    {
-        myq[i].pop_front();
-        sum[i] = 0;
-        for(int j = 0;j<filter_n;j++)
+        if (index > filter_n-1)
         {
-            sum[i] = sum[i]+myq[i][j];
-        }
-        qd(i) = sum[i]/filter_n;
+            myq[i].pop_front();
+            sum[i] = 0;
+            for(int j = 0;j<filter_n;j++)
+            {
+                sum[i] = sum[i]+myq[i][j];
+            }
+            qd(i) = sum[i]/filter_n;
 
-    }
+        }
     }
     index = index + 1;
 
@@ -707,13 +711,32 @@ Eigen::VectorXd PsmForceControl::InverseKinematic(Eigen::VectorXd fed)
 
 void PsmForceControl::WristPID()
 {
+    for (int i=0;i<3;i++)
+    {
+        wrist_eq(i)= 0.1 - q(i+3);
+        wrist_eqd(i) = 0.0 - qd(i+3);
+    }
 
+    for (int i=0;i<3;i++)
+    {
+        wrist_u(i) = wrist_eq(i) * wrist_kp(i) + wrist_eqd(i) * wrist_kd(i);
+        //ROS_INFO_STREAM("  wrist_u: "<< wrist_u<< endl<< "wrist_eq: "<< wrist_eq << endl<< "wrist_eqd: "<< wrist_eqd<<endl);
+
+        //wrist_u(i) = 0;
+    }
 }
 void PsmForceControl::output()
  {
-  joint_msg.effort[0] = u(0);
-  joint_msg.effort[1] = u(1);
-  joint_msg.effort[2] = u(2);
+     for (int i=0;i<3;i++)
+     {
+         joint_msg.effort[i] = u(i);
+         if(i>=3)
+         {
+             joint_msg.effort[i] = wrist_u(i-3);
+             //ROS_INFO_STREAM(endl<<joint_msg.effort[i]);
+         }
+
+     }
 
 
   // ----------------------- IMPORTANT---This runs Robot-----------------
@@ -809,6 +832,7 @@ int main(int argc, char **argv)
   obj.CalcN(obj.q, obj.qd);
   obj.CalcM(obj.q);
   obj.CalcU();
+  obj.WristPID();
   obj.output();
 
   ros::spinOnce();

@@ -39,20 +39,23 @@ public:
     int index;
     string name;
 
-    double sum[3];
+
     int filter_n;
     int drop;
     int drop_p;
     int dof;
+    int cart_dof;
 
     bool interp;
 
-    std::deque<double> myq[3];
-    std::deque<double> que1, que2, que3;
+    double sum[6];
+    std::deque<double> myq[6];
+    std::deque<double> que1, que2, que3, que4, que5, que6;
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
 
     Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband, joint_act, joint_des;
+    Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
 
@@ -84,15 +87,23 @@ public:
         setpos_sub=n.subscribe("/psm/cmd_vel2",10, &PsmForceControl::CallbackSetPosition,this);
         setpos_sub2=n.subscribe("/psm/cmd_vel",10, &PsmForceControl::CallbackSetPositionIncrement,this);
 
+        //Joint States and Pub data
         dof = 6;
-        q.resize(dof); qd.resize(dof); eff.resize(dof);
-        xe.resize(3); ve.resize(3); fd.resize(3);
-        he.resize(3); xf.resize(3); xd.resize(3); vd.resize(3); ad.resize(3); y.resize(3); u.resize(3); x0.resize(3); q0.resize(3);
-        x_int.resize(3); v_int.resize(3); a_int.resize(3), deadband.resize(3), joint_act.resize(3),joint_des.resize(3);
+        cart_dof = 3;
+        q.resize(dof); qd.resize(dof); eff.resize(dof); u.resize(cart_dof); q0.resize(3); joint_act.resize(3),joint_des.resize(3);
 
+        //Cartesian States and data
+        xe.resize(3); xd.resize(3); ve.resize(3); fd.resize(3); he.resize(3);
+        xf.resize(3);  vd.resize(3); ad.resize(3); y.resize(3);  x0.resize(3);
+        x_int.resize(3); v_int.resize(3); a_int.resize(3), deadband.resize(3),
+
+        // Impedance Controller Data
         Ja.resize(3,3); JaM.resize(3,3); Jd.resize(3,3); Jmin.resize(3,3);
         N.resize(3); G.resize(3); C.resize(3,3); Fr.resize(3);
         M.resize(3,3); Mt.resize(3,3); Kp.resize(3,3); Kd.resize(3,3); Cp.resize(3,3); Ci.resize(3,3);
+
+        // Wrist PID Controller Data
+        wrist_u.resize(3), wrist_eq.resize(3), wrist_eqd.resize(3), wrist_kp.resize(3), wrist_kd.resize(3);
 
         //JointMsgs
         joint_msg.name.push_back("Joint Publisher");
@@ -105,6 +116,9 @@ public:
         myq[0]= que1;
         myq[1]= que2;
         myq[2]= que3;
+        myq[3]= que4;
+        myq[4]= que5;
+        myq[5]= que6;
 
         rate = 2000;
         tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
@@ -141,8 +155,9 @@ public:
         x0 << 0.0, 0.0, 0.0;
         q0 << 0.0, 0.0, 0.0;
 
-        q  << 0.0, 0.0, 0.0;
-        qd << 0.0, 0.0, 0.0;
+        q  << 0.0, 0.0, 0.0, 0.0 , 0.0, 0.0;
+        qd << 0.0, 0.0, 0.0, 0.0 , 0.0, 0.0;
+        u  << 0.0, 0.0, 0.0;
 
         C  << 0, 0, 0, 0, 0, 0 ,0 ,0 ,0;
         G  << 0, 0, 0;
