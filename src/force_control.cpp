@@ -426,7 +426,7 @@ void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
     float scale = 1;
 
 
-    float pos_deadband = 0.005; // rad
+    float pos_deadband = 0.003; // rad
     float Fs_pos = 0.6;
     float Fs_neg = -0.4;
 
@@ -475,11 +475,11 @@ void PsmForceControl::SetGainsInit()
     // Original MT.diagonal of real robot
     //Mt.diagonal()<<0.3, 0.4, 0.5;
 
-    Mt.diagonal()<<0.35, 0.36, 0.78;
+    Mt.diagonal()<<0.35, 0.36, 0.3;
 
  // Real Coefficients
     Kp.diagonal() << 70, 100, 300;
-    Kd.diagonal() << 10, 14, 20;
+    Kd.diagonal() << 10, 7, 15;
 
  // Test Damping
     //Kp.diagonal()<<1, 1, 3;
@@ -722,6 +722,7 @@ void PsmForceControl::output()
    plot_x.publish(msg2);*/
 
 
+  // Check Joint torque computed stuff
 /*     if(interp==true)
      {
          dq0.data = x_int(0);
@@ -735,7 +736,8 @@ void PsmForceControl::output()
          dq2.data = xd(2);
      }*/
 
-    dq0.data = joint_des(0);
+// Check Joint Angles
+/*    dq0.data = joint_des(0);
     dq1.data = joint_des(1);
     dq2.data = joint_des(2);
 
@@ -749,9 +751,26 @@ void PsmForceControl::output()
 
     plot_x.publish(mq0);
     plot_y.publish(mq1);
+    plot_z.publish(mq2);*/
+
+    // Check Cartesian Positions
+    dq0.data = xd(0);
+    dq1.data = xd(1);
+    dq2.data = xd(2);
+
+    desplot_x.publish(dq0);
+    desplot_y.publish(dq1);
+    desplot_z.publish(dq2);
+
+    mq0.data = xe(0);
+    mq1.data = xe(1);
+    mq2.data = xe(2);
+
+    plot_x.publish(mq0);
+    plot_y.publish(mq1);
     plot_z.publish(mq2);
 
-   //drop = 0;
+
  }
 
 int main(int argc, char **argv)
