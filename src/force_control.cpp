@@ -521,7 +521,7 @@ void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
 {
 
     // Filter
-    for (int i=0;i<3;i++)
+    for (int i=0;i<dof;i++)
     {
     q(i)=msg.position[i];
     qd(i)=msg.velocity[i];
@@ -703,6 +703,11 @@ Eigen::VectorXd PsmForceControl::InverseKinematic(Eigen::VectorXd fed)
     joint_a(2) = sqrt(pow(fed(1),2)+pow(fed(0),2)+pow(fed(2),2))+0.006;
 
     return joint_a;
+}
+
+void PsmForceControl::WristPID()
+{
+
 }
 void PsmForceControl::output()
  {

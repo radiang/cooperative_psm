@@ -43,6 +43,7 @@ public:
     int filter_n;
     int drop;
     int drop_p;
+    int dof;
 
     bool interp;
 
@@ -83,7 +84,9 @@ public:
         setpos_sub=n.subscribe("/psm/cmd_vel2",10, &PsmForceControl::CallbackSetPosition,this);
         setpos_sub2=n.subscribe("/psm/cmd_vel",10, &PsmForceControl::CallbackSetPositionIncrement,this);
 
-        q.resize(3); qd.resize(3); eff.resize(3); xe.resize(3); ve.resize(3); fd.resize(3);
+        dof = 6;
+        q.resize(dof); qd.resize(dof); eff.resize(dof);
+        xe.resize(3); ve.resize(3); fd.resize(3);
         he.resize(3); xf.resize(3); xd.resize(3); vd.resize(3); ad.resize(3); y.resize(3); u.resize(3); x0.resize(3); q0.resize(3);
         x_int.resize(3); v_int.resize(3); a_int.resize(3), deadband.resize(3), joint_act.resize(3),joint_des.resize(3);
 
@@ -182,8 +185,8 @@ public:
   void CalcC(Eigen::VectorXd q, Eigen::VectorXd qd);
   void CalcG(Eigen::VectorXd q);
   void CalcM(Eigen::VectorXd q);
-
   void CalcU();
+  void WristPID();
   Eigen::VectorXd InverseKinematic(Eigen::VectorXd fed);
   void output();
 
