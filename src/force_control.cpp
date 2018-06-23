@@ -801,6 +801,20 @@ void PsmForceControl::output()
 
  }
 
+ PsmForceControl::Loop()
+ {
+     this->joint_act = this->InverseKinematic(xe);
+     this->joint_des = this->InverseKinematic(xd);
+     this->CalcJaM(q, qd);
+     this->CalcDiffJacobian(q, qd);
+     this->CalcFr(q, qd);
+     this->CalcN(q, qd);
+     this->CalcM(q);
+     this->CalcU();
+     this->WristPID();
+     this->output();
+ }
+
 int main(int argc, char **argv)
 {
   // Options
@@ -824,18 +838,8 @@ int main(int argc, char **argv)
 
   while(ros::ok())
   {
-  obj.joint_act = obj.InverseKinematic(obj.xe);
-  obj.joint_des = obj.InverseKinematic(obj.xd);
-  obj.CalcJaM(obj.q, obj.qd);
-  obj.CalcDiffJacobian(obj.q, obj.qd);
-  obj.CalcFr(obj.q, obj.qd);
-  obj.CalcN(obj.q, obj.qd);
-  obj.CalcM(obj.q);
-  obj.CalcU();
-  obj.WristPID();
-  obj.output();
-
-  ros::spinOnce();
+    obj.loop();
+    ros::spinOnce();
 
   //drop=0;
 

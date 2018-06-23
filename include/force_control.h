@@ -204,5 +204,6 @@ public:
   void WristPID();
   Eigen::VectorXd InverseKinematic(Eigen::VectorXd fed);
   void output();
+  void Loop();
 
 };
