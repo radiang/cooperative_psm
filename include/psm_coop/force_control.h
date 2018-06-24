@@ -1,3 +1,7 @@
+#ifndef CPsmForceControlH
+#define CPsmForceControlH
+
+
 #include <iostream>
 #include <ros/ros.h>
 #include <string.h>
@@ -20,7 +24,8 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 #include "std_msgs/String.h"
-#include "Interpolate.h"
+
+#include "psm_coop/Interpolate.h"
 
 using namespace std;
 
@@ -32,6 +37,8 @@ private:
 
   //std::vector<ros::Publisher> cartPub;
 public:
+    PsmForceControl(ros::NodeHandle n, const string nam);
+
     double rate;
     int t;
     double t0;
@@ -64,7 +71,9 @@ public:
     std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;
 
-    PsmForceControl(ros::NodeHandle n, string nam){
+
+
+  /*  PsmForceControl(ros::NodeHandle &n, string &nam){
 
         name = nam;
 
@@ -176,34 +185,35 @@ public:
         deadband << 0.005, 0.01, 0.005;
 
         interp = false;
-  }
+  }*/
 
-  //void showImage(const sensor_msgs::ImageConstPtr& img);
-  //void getECMEndEffector(const gazebo_msgs::LinkStatesPtr &msg);
 
   void SetGainsInit();
   void SetDesiredInit();
 
-  void CallbackJacobian(std_msgs::Float64MultiArray msg);
-  void CallbackJoint(sensor_msgs::JointState msg);
-  void CallbackCartesian(geometry_msgs::PoseStamped msg);
-  void CallbackForce(geometry_msgs::Wrench msg);
-  void CallbackSetForce(geometry_msgs::Pose msg);
-  void CallbackSetPositionIncrement(geometry_msgs::Twist msg);
-  void CallbackSetPosition(geometry_msgs::Twist msg);
+  void CallbackJacobian(const std_msgs::Float64MultiArray &msg);
+  void CallbackJoint(const sensor_msgs::JointState &msg);
+  void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
+  void CallbackForce(const geometry_msgs::Wrench &msg);
+  void CallbackSetForce(const geometry_msgs::Pose &msg);
+  void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
+  void CallbackSetPosition(const geometry_msgs::Twist &msg);
 
-  void CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd);
-  void CalcDiffJacobian(Eigen::VectorXd q, Eigen::VectorXd  qd);
+  void CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
+  void CalcDiffJacobian(const Eigen::VectorXd &q, const Eigen::VectorXd  &qd);
 
-  void CalcN(Eigen::VectorXd q, Eigen::VectorXd qd);
-  void CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd);
-  void CalcC(Eigen::VectorXd q, Eigen::VectorXd qd);
-  void CalcG(Eigen::VectorXd q);
-  void CalcM(Eigen::VectorXd q);
+  void CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
+  void CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
+  void CalcC(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
+  void CalcG(const Eigen::VectorXd &q);
+  void CalcM(const Eigen::VectorXd &q);
   void CalcU();
   void WristPID();
-  Eigen::VectorXd InverseKinematic(Eigen::VectorXd fed);
+  Eigen::VectorXd InverseKinematic(const Eigen::VectorXd &fed);
   void output();
   void Loop();
 
 };
+
+
+#endif

@@ -20,7 +20,7 @@ find_package (Eigen3 REQUIRED)
 catkin_package (
   INCLUDE_DIRS include
   LIBRARIES psm_coop
-   CATKIN_DEPENDS rospy
+   CATKIN_DEPENDS rospy roscpp
    #DEPENDS eigen3/Eigen
 )
 
@@ -38,23 +38,30 @@ include
 )
 
 set(SRC_FILES
-		#src/Interpolate.cpp
+		src/Interpolate.cpp
 		src/force_control.cpp
+		src/Psm.cpp
 		)
 set(HDR_FILES
-		include/Interpolate.h
-		include/force_control.h
-		)
+		include/psm_coop/Interpolate.h
+		include/psm_coop/force_control.h
+		include/psm_coop/Psm.h	
+		src/force_main.cpp	
+)
 
 add_library(psm_coop  ${SRC_FILES} ${HDR_FILES})
+target_link_libraries(psm_coop ${catkin_LIBRARIES})
+
+add_executable(force_main src/force_main.cpp)
+target_link_libraries(force_main psm_coop)
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
 
-add_executable(force_control src/force_control.cpp)
-target_link_libraries(force_control ${catkin_LIBRARIES})
+#add_executable(force_control src/force_control.cpp)
+#target_link_libraries(force_control ${catkin_LIBRARIES})
 
 add_executable(test_interpolate src/test_interpolate.cpp)
-target_link_libraries(test_interpolate ${catkin_LIBRARIES})
+target_link_libraries(test_interpolate psm_coop)
 
 catkin_python_setup ()

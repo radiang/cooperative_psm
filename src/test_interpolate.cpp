@@ -1,4 +1,4 @@
-#include "Interpolate.h"
+#include "psm_coop/Interpolate.h"
 
 
 int main(int argc, char **argv)

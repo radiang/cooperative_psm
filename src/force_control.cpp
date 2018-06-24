@@ -1,6 +1,8 @@
-#include "force_control.h"
+#include "psm_coop/force_control.h"
 
-void PsmForceControl::CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd)
+
+
+void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd)
 {
     float q1 = q(0);
     float q2 = q(1);
@@ -75,7 +77,7 @@ void PsmForceControl::CalcJaM(Eigen::VectorXd q, Eigen::VectorXd qd)
 
 }
 
-void PsmForceControl::CalcN(Eigen::VectorXd q, Eigen::VectorXd qd) {
+void PsmForceControl::CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd) {
     float q1 = q(0);
     float q2 = q(1);
     float q3 = q(2);
@@ -138,7 +140,7 @@ void PsmForceControl::CalcN(Eigen::VectorXd q, Eigen::VectorXd qd) {
 
 
 
-void PsmForceControl::CalcC(Eigen::VectorXd q, Eigen::VectorXd qd)
+void PsmForceControl::CalcC(const Eigen::VectorXd &q,const Eigen::VectorXd &qd)
 {
     float q1 = q(0);
     float q2 = q(1);
@@ -247,7 +249,7 @@ void PsmForceControl::CalcC(Eigen::VectorXd q, Eigen::VectorXd qd)
     C(2,2) = 1.342936099164326;
 
 }
-void PsmForceControl::CalcG(Eigen::VectorXd q)
+void PsmForceControl::CalcG(const Eigen::VectorXd &q)
 {
     float q1 = q(0);
     float q2 = q(1);
@@ -268,7 +270,7 @@ void PsmForceControl::CalcG(Eigen::VectorXd q)
 
 }
 
-void PsmForceControl::CalcDiffJacobian(Eigen::VectorXd q, Eigen::VectorXd qd)
+void PsmForceControl::CalcDiffJacobian(const Eigen::VectorXd &q, const Eigen::VectorXd &qd)
 {
     float q1 = q(0);
     float q2 = q(1);
@@ -341,7 +343,7 @@ void PsmForceControl::CalcDiffJacobian(Eigen::VectorXd q, Eigen::VectorXd qd)
     // ROS_INFO_STREAM("Jd: "<<Jd);
 
 }
-void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
+void PsmForceControl::CalcM(const Eigen::VectorXd &q) //Eigen::VectorXd qd)
 {   float q1 = q(0);
     float q2 = q(1);
     float q3 = q(2);
@@ -386,7 +388,151 @@ void PsmForceControl::CalcM(Eigen::VectorXd q) //Eigen::VectorXd qd)
 
 }
 
-void PsmForceControl::CalcFr(Eigen::VectorXd q, Eigen::VectorXd qd)
+
+
+PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam) {
+
+    name = nam;
+
+    desplot_x = n.advertise<std_msgs::Float64>("/d0", 10);
+    desplot_y = n.advertise<std_msgs::Float64>("/d1", 10);
+    desplot_z = n.advertise<std_msgs::Float64>("/d2", 10);
+
+    plot_x = n.advertise<std_msgs::Float64>("/0", 10);
+    plot_y = n.advertise<std_msgs::Float64>("/1", 10);
+    plot_z = n.advertise<std_msgs::Float64>("/2", 10);
+
+    joint_pub = n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint", 1);
+
+//jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
+    joint_sub = n.subscribe("/dvrk/" + name + "/state_joint_current", 1, &PsmForceControl::CallbackJoint, this);
+    cartesian_sub = n.subscribe("/dvrk/" + name + "/position_cartesian_current", 1, &PsmForceControl::CallbackCartesian,
+                                this);
+
+    force_sub = n.subscribe("/psm_sense/" + name + "/tool_forces", 10, &PsmForceControl::CallbackForce, this);
+    setforce_sub = n.subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
+    setpos_sub = n.subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
+    setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
+
+//Joint States and Pub data
+    dof = 6;
+    cart_dof = 3;
+    q.resize(dof);
+    qd.resize(dof);
+    eff.resize(dof);
+    u.resize(cart_dof);
+    q0.resize(3);
+    joint_act.resize(3), joint_des.resize(3);
+
+//Cartesian States and data
+    xe.resize(3);
+    xd.resize(3);
+    ve.resize(3);
+    fd.resize(3);
+    he.resize(3);
+    xf.resize(3);
+    vd.resize(3);
+    ad.resize(3);
+    y.resize(3);
+    x0.resize(3);
+    x_int.resize(3);
+    v_int.resize(3);
+    a_int.resize(3), deadband.resize(3),
+
+// Impedance Controller Data
+            Ja.resize(3, 3);
+    JaM.resize(3, 3);
+    Jd.resize(3, 3);
+    Jmin.resize(3, 3);
+    N.resize(3);
+    G.resize(3);
+    C.resize(3, 3);
+    Fr.resize(3);
+    M.resize(3, 3);
+    Mt.resize(3, 3);
+    Kp.resize(3, 3);
+    Kd.resize(3, 3);
+    Cp.resize(3, 3);
+    Ci.resize(3, 3);
+
+// Wrist PID Controller Data
+    wrist_u.resize(3), wrist_eq.resize(3), wrist_eqd.resize(3), wrist_kp.resize(3), wrist_kd.resize(3);
+
+//JointMsgs
+    joint_msg.name.push_back("Joint Publisher");
+    for (int j = 0; j < 6; j++) {
+        joint_msg.effort.push_back(0.0);
+        msg2.velocity.push_back(0.0);
+    }
+
+
+    myq[0] = que1;
+    myq[1] = que2;
+    myq[2] = que3;
+    myq[3] = que4;
+    myq[4] = que5;
+    myq[5] = que6;
+
+    rate = 2000;
+    tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
+    filter_n = 20;
+    index = 0;
+
+    q1_traj.ts = 1 / rate;
+    q2_traj.ts = 1 / rate;
+    q3_traj.ts = 1 / rate;
+
+    q1_traj.tf = tf;
+    q2_traj.tf = tf;
+    q3_traj.tf = tf;
+
+    q1_traj.check = false;
+    q2_traj.check = false;
+    q3_traj.check = false;
+
+    q1_traj.qd.resize(6);
+    q2_traj.qd.resize(6);
+    q3_traj.qd.resize(6);
+
+    q_traj[0] = q1_traj;
+    q_traj[1] = q2_traj;
+    q_traj[2] = q3_traj;
+
+// Initialize to zero
+    fd << 0.0, 0.0, 0.0;
+    he << 0.0, 0.0, 0.0;
+
+    xd << 0.0, 0.0, 0.0;
+    xe << 0.0, 0.0, 0.0;
+
+    x0 << 0.0, 0.0, 0.0;
+    q0 << 0.0, 0.0, 0.0;
+
+    q << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    qd << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    u << 0.0, 0.0, 0.0;
+
+    C << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    G << 0, 0, 0;
+    Fr << 0, 0, 0;
+    N << 0, 0, 0;
+
+    M << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    Mt << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    Ja << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    JaM << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    Jd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+
+    Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+
+    deadband << 0.005, 0.01, 0.005;
+
+    interp = false;
+
+}
+
+void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd)
 {
  
   float x[3];
@@ -509,7 +655,7 @@ void PsmForceControl::SetDesiredInit()
 }
 
 
-void PsmForceControl::CallbackJacobian(std_msgs::Float64MultiArray msg)
+void PsmForceControl::CallbackJacobian(const std_msgs::Float64MultiArray &msg)
 {
 for (int i=0;i<3;i++)
    {
@@ -521,7 +667,7 @@ for (int i=0;i<3;i++)
 }
 
 
-void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
+void PsmForceControl::CallbackJoint(const sensor_msgs::JointState &msg)
 {
 
     // Filter
@@ -551,7 +697,7 @@ void PsmForceControl::CallbackJoint(sensor_msgs::JointState msg)
     drop_p = msg.header.seq;
 }
 
-void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
+void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 {
     xe(0) = msg.pose.position.y;  // y becomes x in my calculation
     xe(1) =-msg.pose.position.x; // x becomes -y in my calculation
@@ -559,28 +705,28 @@ void PsmForceControl::CallbackCartesian(geometry_msgs::PoseStamped msg)
 
 }
 
- void PsmForceControl::CallbackForce(geometry_msgs::Wrench msg)
+ void PsmForceControl::CallbackForce(const geometry_msgs::Wrench &msg)
  {
      he(0) = msg.force.x;
      he(1) = msg.force.y;
      he(2) = msg.force.z;
  }
 
- void PsmForceControl::CallbackSetForce(geometry_msgs::Pose msg)
+ void PsmForceControl::CallbackSetForce(const geometry_msgs::Pose &msg)
  {
     fd(0)=msg.position.x;
     fd(1)=msg.position.y;
     fd(2)=msg.position.z;
  }
 
- void PsmForceControl::CallbackSetPosition(geometry_msgs::Twist msg)
+ void PsmForceControl::CallbackSetPosition(const geometry_msgs::Twist &msg)
  {
     xd(0)=msg.linear.x;
     xd(1)=msg.linear.y;
     xd(2)=msg.linear.z;
  }
 
- void PsmForceControl::CallbackSetPositionIncrement(geometry_msgs::Twist msg)
+ void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
  {
      double arr[3];
 
@@ -693,7 +839,7 @@ void PsmForceControl::CalcU()
     //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
 
  }
-Eigen::VectorXd PsmForceControl::InverseKinematic(Eigen::VectorXd fed)
+Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
 {
     /*joint_angle(0) = atan(xd(1)/xd(2));
     joint_angle(1) = -atan(xd(0)/sqrt(pow(xd(1),2)+pow(xd(2),2)));
@@ -815,7 +961,7 @@ void  PsmForceControl::Loop()
      this->output();
  }
 
-int main(int argc, char **argv)
+/*int main(int argc, char **argv)
 {
   // Options
     string name = "PSM1";
@@ -847,4 +993,4 @@ int main(int argc, char **argv)
   }
 //ros::spin();
 
-}
+}*/
