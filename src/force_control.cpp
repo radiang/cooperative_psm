@@ -409,7 +409,12 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam) {
     cartesian_sub = n.subscribe("/dvrk/" + name + "/position_cartesian_current", 1, &PsmForceControl::CallbackCartesian,
                                 this);
 
-    force_sub = n.subscribe("/psm_sense/" + name + "/tool_forces", 10, &PsmForceControl::CallbackForce, this);
+    //original plan
+    //force_sub = n.subscribe("/psm_sense/" + name + "/tool_forces", 10, &PsmForceControl::CallbackForce, this);
+
+    //temporary test
+    force_sub = n.subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
+
     setforce_sub = n.subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
     setpos_sub = n.subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
     setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
@@ -705,11 +710,11 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 
 }
 
- void PsmForceControl::CallbackForce(const geometry_msgs::Wrench &msg)
+ void PsmForceControl::CallbackForce(const geometry_msgs::Twist &msg)
  {
-     he(0) = msg.force.x;
-     he(1) = msg.force.y;
-     he(2) = msg.force.z;
+     he(0) = msg.linear.x + he(0);
+     he(1) = msg.linear.y + he(1);
+     he(2) = msg.linear.z + he(2);
  }
 
  void PsmForceControl::CallbackSetForce(const geometry_msgs::Pose &msg)
@@ -765,7 +770,7 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
-    int fl = 2; //force limit
+    int fl = 5; //force limit
     ve = JaM*qd;
 
     if (interp==true)
@@ -826,10 +831,8 @@ void PsmForceControl::CalcU()
 
     u = M*y + N +Fr +JaM.transpose()*he;
      
-/*
-     ROS_INFO_STREAM("u_steady 1: "<< u(0));
-     ROS_INFO_STREAM("u_steady 2: "<< u(1));
-     ROS_INFO_STREAM("u_steady 3: "<< u(2));*/
+     //ROS_INFO_STREAM("u_steady : "<< u <<endl);
+     ROS_INFO_STREAM("he : "<< he <<endl);
 
 // ///// SAFETY ///////
     if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2.5)

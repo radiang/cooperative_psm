@@ -14,7 +14,6 @@ public:
     Psm(ros::NodeHandle n, const string nam, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
 
    void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
-   void CallbackSetForceIncrement(const geometry_msgs)
 
 };
 
