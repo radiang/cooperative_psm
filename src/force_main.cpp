@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     psm[0]= psm1; psm[1] = psm2;
 
 
-    psm[0].name = "PSM1";
+    psm[0].name = "PSM2";
     psm[0].type = "Master";
     psm[0].Rot.resize(3,3);
     psm[0].Rot << 1, 0, 0,
