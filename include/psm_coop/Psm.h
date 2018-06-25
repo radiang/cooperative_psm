@@ -10,12 +10,14 @@ public:
     string type;
     Eigen::MatrixXd Rot;
     Eigen::VectorXd Pos;
+    Eigen::Vector3d xs;
 
     Psm(ros::NodeHandle n, const string nam, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
 
    void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
 
 };
+
 
 
 

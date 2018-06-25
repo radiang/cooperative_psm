@@ -28,9 +28,12 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 
     else if (type == "Slave")
     {
-        xd(0)= msg.linear.x + xd(0);
-        xd(1)= msg.linear.y + xd(1);
-        xd(2)= msg.linear.z + xd(2);
+
+        xs = Rot*xd;
+
+        xd(0)= msg.linear.x + xs(0);
+        xd(1)= msg.linear.y + xs(1);
+        xd(2)= msg.linear.z + xs(2);
     }
 
     for (int i=0;i<3;i++)

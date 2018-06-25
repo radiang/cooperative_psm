@@ -87,6 +87,7 @@ void PsmForceControl::CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd) 
 
     // N from TEST: test_3dof_svd -> fourier_test2
     if (name == "PSM1") {
+        if (name == "PSM1") {
         float t2 = q1-q2;
         float t3 = q1+q2-2.908373974667121E-1;
         float t4 = q1-q2+2.908373974667121E-1;
@@ -832,14 +833,14 @@ void PsmForceControl::CalcU()
     u = M*y + N +Fr +JaM.transpose()*he;
      
      //ROS_INFO_STREAM("u_steady : "<< u <<endl);
-     ROS_INFO_STREAM("he : "<< he <<endl);
+     //ROS_INFO_STREAM("he : "<< he <<endl);
 
 // ///// SAFETY ///////
     if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2.5)
     {
         u<< 0, 0, 0;
     }
-    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << q << endl);
+    ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
 
  }
 Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
@@ -862,7 +863,7 @@ void PsmForceControl::WristPID()
 {
     for (int i=0;i<3;i++)
     {
-        wrist_eq(i)= 0.1 - q(i+3);
+        wrist_eq(i)= 0.5 - q(i+3);
         wrist_eqd(i) = 0.0 - qd(i+3);
     }
 
@@ -878,12 +879,17 @@ void PsmForceControl::output()
  {
      for (int i=0;i<3;i++)
      {
-         joint_msg.effort[i] = u(i);
+
          if(i>=3)
          {
-             joint_msg.effort[i] = wrist_u(i-3);
+             joint_msg.effort[i] = -wrist_u(i-3);
              //ROS_INFO_STREAM(endl<<joint_msg.effort[i]);
          }
+         else
+             {
+             joint_msg.effort[i] = u(i);
+         }
+
 
      }
 
