@@ -12,7 +12,7 @@ public:
     Eigen::VectorXd Pos;
     Eigen::Vector3d xs;
 
-    Psm(ros::NodeHandle n, const string nam, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
+    Psm(ros::NodeHandle n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
 
    void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
 

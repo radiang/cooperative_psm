@@ -33,11 +33,11 @@ class PsmForceControl{
 private:
   //std::vector<ros::Publisher> ecmPub, psm1Pub, psm2Pub, psm3Pub;
     ros::Subscriber jacobian_sub, joint_sub, cartesian_sub, force_sub, setforce_sub, setpos_sub, setpos_sub2;
-    ros::Publisher plot_x, plot_y, plot_z, joint_pub, desplot_x, desplot_y, desplot_z;
+    ros::Publisher plot_x, plot_y, plot_z, joint_pub, pose_pub, desplot_x, desplot_y, desplot_z;
 
   //std::vector<ros::Publisher> cartPub;
 public:
-    PsmForceControl(ros::NodeHandle n, const string nam);
+    PsmForceControl(ros::NodeHandle n, const string nam, const string ctrl_type);
 
     double rate;
     int t;
@@ -45,6 +45,7 @@ public:
     double tf;
     int index;
     string name;
+    string ctrl;
 
 
     int filter_n;
@@ -61,15 +62,18 @@ public:
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
 
-    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband, joint_act, joint_des;
+    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
+    Eigen::VectorXd joint_act, joint_des, orient_cart;
+
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
-
+    Eigen::MatrixXd data_trans;
 
     std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;
 
+    geometry_msgs::Pose pose_msg;
 
 
   void SetGainsInit();

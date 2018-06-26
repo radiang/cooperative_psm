@@ -1,8 +1,9 @@
 #include "psm_coop/Psm.h"
 
 
-Psm::Psm(ros::NodeHandle n,const string nam, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam), type(typ)
+Psm::Psm(ros::NodeHandle n,const string nam, const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam, ctrl_type), type(typ)
 {
+
     Rot.resize(3,3);
     Pos.resize(3);
 
