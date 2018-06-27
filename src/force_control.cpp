@@ -663,8 +663,8 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     }
 
     // From test_3dof_svd fourier_test2
-    float q1 = qd(0);
-    float q2 = qd(1);
+    float q1 = q(0);
+    float q2 = q(1);
 
     float qd1 = x[0];
     float qd2 = x[1];
