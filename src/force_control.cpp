@@ -480,13 +480,15 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     name = nam;
     ctrl = ctrl_type;
 
-    desplot_x = n.advertise<std_msgs::Float64>("/d0", 10);
-    desplot_y = n.advertise<std_msgs::Float64>("/d1", 10);
-    desplot_z = n.advertise<std_msgs::Float64>("/d2", 10);
+    ROS_INFO_STREAM(name << " Control START");
 
-    plot_x = n.advertise<std_msgs::Float64>("/0", 10);
-    plot_y = n.advertise<std_msgs::Float64>("/1", 10);
-    plot_z = n.advertise<std_msgs::Float64>("/2", 10);
+    desplot_x = n.advertise<std_msgs::Float64>("/" + name + "/d0", 10);
+    desplot_y = n.advertise<std_msgs::Float64>("/" + name + "/d1", 10);
+    desplot_z = n.advertise<std_msgs::Float64>("/" + name + "/d2", 10);
+
+    plot_x = n.advertise<std_msgs::Float64>("/" + name + "/0", 10);
+    plot_y = n.advertise<std_msgs::Float64>("/" + name + "/1", 10);
+    plot_z = n.advertise<std_msgs::Float64>("/" + name + "/2", 10);
 
     joint_pub = n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint", 3);
     pose_pub  = n.advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_goal_cartesian", 3);
@@ -621,7 +623,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
-    deadband << 0.005, 0.01, 0.005;
+    deadband << 0.012, 0.015, 0.005;
 
     //Data Transform from cisst-saw, to matlab model
     data_trans << 0, 1, 0,
@@ -670,7 +672,7 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float qd2 = x[1];
     float qd3 = x[2];
 
-    float a = 6.0E2;
+    float a =5.0E2;
     float scale = 1;
 
 
@@ -684,19 +686,12 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
 
     //Impedance Controller
         float x_e = joint_des(2) - joint_act(2);
-        
-    /*
 
-
-    Fr(0) = q1*6.119063107247842E-1+qd1*5.121004410809419E-2+1.561585962952595E-1/(exp(qd1*-a)+1.0)-7.807929814762977E-2;
-    Fr(1) = q2*1.178371077512102+qd2*1.277466080900284E-1+2.91620349820475E-1/(exp(qd2*-a)+1.0)-1.458101749102375E-1;
-    Fr(2) = qd3*8.397843687710638E-1+1.117115567283898/(exp(qd3*-a)+1.0)-5.585577836419491E-1;
-*/
 
     if(name == "PSM1")
     {
-        Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-4.0E2)+1.0)-6.651153938642816E-2;
-        Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-6.0E2)+1.0)-9.67733653235759E-2;
+        Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a)+1.0)-6.651153938642816E-2;
+        Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a)+1.0)-9.67733653235759E-2;
 
         //Friction Compensation Stick Based on Position
         if(abs(qd(2)) < deadband(2))
@@ -768,8 +763,8 @@ void PsmForceControl::SetGainsInit()
     }
 
     //Real Coefficients
-    Kp.diagonal() << 70, 100, 300;
-    Kd.diagonal() << 10, 7, 15;
+    Kp.diagonal() << 30, 40, 150;
+    Kd.diagonal() << 10, 10, 15;
 
     //Wrist Coefficients;
     wrist_kp << 0.5, 0.5, 0.5;
@@ -916,7 +911,7 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
-    int fl = 5; //force limit
+    int fl = 7; //force limit
     ve = JaM*qd;
 
     if (interp==true)
@@ -982,7 +977,7 @@ void PsmForceControl::CalcU()
      //ROS_INFO_STREAM("he : "<< he <<endl);
 
 // ///// SAFETY ///////
-    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2.5)
+    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*3)
     {
         u<< 0, 0, 0;
     }
@@ -1058,10 +1053,16 @@ void PsmForceControl::output()
 
          pose_pub.publish(pose_msg);
 
-         ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
+         //ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
      }
 
+     dq0.data = qd(0);
+     dq1.data = qd(1);
+     dq2.data = qd(2);
 
+     desplot_x.publish(dq0);
+     desplot_y.publish(dq1);
+     desplot_z.publish(dq2);
 
   /* msg2.velocity[0] = qd(0);
    msg2.velocity[1] = qd(1);
@@ -1085,7 +1086,7 @@ void PsmForceControl::output()
      }*/
 
 // Check Joint Angles
-/*    dq0.data = joint_des(0);
+/*   dq0.data = joint_des(0);
     dq1.data = joint_des(1);
     dq2.data = joint_des(2);
 
@@ -1103,7 +1104,7 @@ void PsmForceControl::output()
 
 
     // Check Cartesian Positions
-    dq0.data = xd(0);
+/*    dq0.data = xd(0);
     dq1.data = xd(1);
     dq2.data = xd(2);
 
@@ -1117,7 +1118,7 @@ void PsmForceControl::output()
 
     plot_x.publish(mq0);
     plot_y.publish(mq1);
-    plot_z.publish(mq2);
+    plot_z.publish(mq2);*/
 
 
  }
