@@ -570,7 +570,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 2000;
+    rate = 2500;
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
@@ -623,7 +623,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
-    deadband << 0.012, 0.015, 0.005;
+    deadband << 0.0045, 0.005, 0.005;
 
     //Data Transform from cisst-saw, to matlab model
     data_trans << 0, 1, 0,
@@ -671,8 +671,8 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float qd1 = x[0];
     float qd2 = x[1];
     float qd3 = x[2];
-
-    float a =5.0E2;
+    float a1 =3.0E2;
+    float a2 =5.0E2;
     float scale = 1;
 
 
@@ -690,8 +690,16 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
 
     if(name == "PSM1")
     {
-        Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a)+1.0)-6.651153938642816E-2;
-        Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a)+1.0)-9.67733653235759E-2;
+        //Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a)+1.0)-6.651153938642816E-2;
+        //Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a)+1.0)-9.67733653235759E-2;
+
+        Fr(0) =  qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
+        Fr(1) = qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
+
+
+        //Fr(0) =  0;
+       // Fr(1) = 0;
+
 
         //Friction Compensation Stick Based on Position
         if(abs(qd(2)) < deadband(2))
@@ -755,7 +763,7 @@ void PsmForceControl::SetGainsInit()
 
     if(name == "PSM1")
     {
-        Mt.diagonal()<<0.35, 0.36, 0.3;
+        Mt.diagonal()<<0.35, 0.4, 0.5;
     }
     else if (name == "PSM2")
     {
@@ -763,15 +771,15 @@ void PsmForceControl::SetGainsInit()
     }
 
     //Real Coefficients
-    Kp.diagonal() << 30, 40, 150;
-    Kd.diagonal() << 10, 10, 15;
+    Kp.diagonal() << 100, 80, 120;
+    Kd.diagonal() << 7, 4, 6;
 
     //Wrist Coefficients;
     wrist_kp << 0.5, 0.5, 0.5;
     wrist_kd <<  0.5,  0.5,  0.5;
 
     //Test Damping
-    //Kp.diagonal()<<1, 1, 3;
+   // Kp.diagonal()<<1, 1, 3;
     //Kd.diagonal()<<5, 0.5, 10;
 }
 
@@ -853,9 +861,13 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 
  void PsmForceControl::CallbackForce(const geometry_msgs::Twist &msg)
  {
-     he(0) = msg.linear.x + he(0);
+  /*   he(0) = msg.linear.x + he(0);
      he(1) = msg.linear.y + he(1);
      he(2) = msg.linear.z + he(2);
+*/
+     xd(1)= msg.linear.x + xd(1);
+     xd(0)= msg.linear.y + xd(0);
+     xd(2)= msg.linear.z + xd(2);
  }
 
  void PsmForceControl::CallbackSetForce(const geometry_msgs::Pose &msg)
@@ -911,7 +923,7 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
-    int fl = 7; //force limit
+    int fl = 10; //force limit
     ve = JaM*qd;
 
     if (interp==true)
@@ -1056,13 +1068,13 @@ void PsmForceControl::output()
          //ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
      }
 
-     dq0.data = qd(0);
+/*     dq0.data = qd(0);
      dq1.data = qd(1);
      dq2.data = qd(2);
 
      desplot_x.publish(dq0);
      desplot_y.publish(dq1);
-     desplot_z.publish(dq2);
+     desplot_z.publish(dq2);*/
 
   /* msg2.velocity[0] = qd(0);
    msg2.velocity[1] = qd(1);
@@ -1104,7 +1116,7 @@ void PsmForceControl::output()
 
 
     // Check Cartesian Positions
-/*    dq0.data = xd(0);
+    dq0.data = xd(0);
     dq1.data = xd(1);
     dq2.data = xd(2);
 
@@ -1118,7 +1130,8 @@ void PsmForceControl::output()
 
     plot_x.publish(mq0);
     plot_y.publish(mq1);
-    plot_z.publish(mq2);*/
+    plot_z.publish(mq2);
+
 
 
  }
