@@ -4,11 +4,10 @@
 Psm::Psm(ros::NodeHandle n,const string nam, const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam, ctrl_type), type(typ)
 {
 
-    Rot.resize(3,3);
-    Pos.resize(3);
+    rot.resize(3,3);
 
-    Rot = Rotz;
-    Pos = Posz;
+    rot = Rotz;
+    pos = Posz;
 }
 
 void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
@@ -30,7 +29,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
     else if (type == "Slave")
     {
 
-        xs = Rot*xd;
+        xs = rot*xd;
 
         xd(0)= msg.linear.x + xs(0);
         xd(1)= msg.linear.y + xs(1);
@@ -58,7 +57,28 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
     t = 0;
     interp = true;
 
+}
 
+void Psm::CallbackForce(const geometry_msgs::Twist &msg)
+{
+    Eigen::Vector3d x;
+    x = object*msg.linear.x;
 
+    xd= xd + x;
 
+}
+
+void Psm::SetObject(const Eigen::Vector3d &set)
+
+{
+    if (type == "Master")
+    {
+       object = set;
+    }
+
+    else if (type == "Slave")
+    {
+
+        object = rot.inverse()*set;
+    }
 }

@@ -41,19 +41,25 @@ set(SRC_FILES
 		src/Interpolate.cpp
 		src/force_control.cpp
 		src/Psm.cpp
+		src/Cooperative.cpp
+		src/force_main.cpp
 		)
 set(HDR_FILES
 		include/psm_coop/Interpolate.h
 		include/psm_coop/force_control.h
-		include/psm_coop/Psm.h	
-		src/force_main.cpp	
-)
+		include/psm_coop/Psm.h
+		include/psm_coop/Cooperative.h
+		include/psm_coop/DataType.h)
 
 add_library(psm_coop  ${SRC_FILES} ${HDR_FILES})
 target_link_libraries(psm_coop ${catkin_LIBRARIES})
 
 add_executable(force_main src/force_main.cpp)
 target_link_libraries(force_main psm_coop)
+
+add_executable(Run src/Run.cpp)
+target_link_libraries(Run psm_coop)
+
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})

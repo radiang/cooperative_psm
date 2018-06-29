@@ -24,19 +24,11 @@
 
 #include "std_msgs/String.h"
 
+#include "psm_coop/DataType.h"
 
 using namespace std;
 
-struct traject {
-    Eigen::VectorXd x;
-    Eigen::VectorXd v;
-    Eigen::VectorXd a;
-    double ts;
-    double tf;
-    bool check;
-    bool check2;
-    Eigen::VectorXd qd;
-    };
+
 
 
 traject interpolate(traject des);

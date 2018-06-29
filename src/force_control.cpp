@@ -503,11 +503,12 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     //force_sub = n.subscribe("/psm_sense/" + name + "/tool_forces", 10, &PsmForceControl::CallbackForce, this);
 
     //temporary test
-    force_sub = n.subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
 
     setforce_sub = n.subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
     setpos_sub = n.subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
-    setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
+
+    //force_sub = n.subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
+    //setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 
 //Joint States and Pub data
     dof = 6;
@@ -522,8 +523,6 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     orient_cart.resize(4);
 
 //Cartesian States and data
-    xe.resize(3);
-    xd.resize(3);
     ve.resize(3);
     fd.resize(3);
     he.resize(3);

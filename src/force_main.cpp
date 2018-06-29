@@ -1,13 +1,6 @@
 #include "psm_coop/Psm.h"
+#include "psm_coop/DataType.h"
 
-struct initializer {
-    string name;
-    string type;
-    string ctrl_type;
-    Eigen::MatrixXd Rot;
-    Eigen::VectorXd Pos;
-    ros::NodeHandle n;
-};
 
 int main(int argc, char **argv)
 {
@@ -23,7 +16,7 @@ int main(int argc, char **argv)
 
     initializer psm1, psm2;
     initializer psm[2];
-    psm[0]= psm1; psm[1] = psm2;
+    //psm[0]= psm1; psm[1] = psm2;
 
 
     psm[0].name = "PSM1";

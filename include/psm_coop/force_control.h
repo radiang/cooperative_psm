@@ -62,7 +62,8 @@ public:
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
 
-    Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
+    Eigen::VectorXd q, qd, eff, ve, fd, he, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
+    Eigen::Vector3d xe, xd;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
 
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
