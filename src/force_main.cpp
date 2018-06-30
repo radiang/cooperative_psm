@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
     psm[0].name = "PSM1";
     psm[0].type = "Master";
-    psm[0].ctrl_type = choose[1];
+    psm[0].ctrl_type = choose[0];
     psm[0].Rot.resize(3,3);
     psm[0].Rot << 1, 0, 0,
             0, 1, 0,
@@ -34,13 +34,14 @@ int main(int argc, char **argv)
     psm[1].type = "Master";
     psm[1].ctrl_type = choose[0];
 
+    // Input Calibration Values from Calibration Files
     psm[1].Rot.resize(3,3);
-    psm[1].Rot << 1, 0, 0,
-            0, 1, 0,
-            0, 0, 1;
+    psm[1].Rot << 0.54285, 0.83962, -0.01636,
+            -0.83973, 0.54299, -0.0007727,
+            0.011334, 0.011856, .99991;
 
     psm[1].Pos.resize(3);
-    psm[1].Pos << 0, 0, 0;
+    psm[1].Pos << -0.24498, 0.0030182, 0.0026889;
 
     Psm obj(psm[0].n, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
     Psm obj2(psm[1].n, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
@@ -61,6 +62,8 @@ int main(int argc, char **argv)
         obj2.SetGainsInit();
         obj2.SetDesiredInit();
     }
+
+    ros::Duration(1).sleep();
 
     while(ros::ok())
     {

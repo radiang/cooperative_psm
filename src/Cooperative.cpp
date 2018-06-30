@@ -5,8 +5,8 @@
 
 Cooperative::Cooperative(std::vector<initializer> &psm, ros::NodeHandle n)
 {
-    force_sub = n.subscribe("/psm/cmd_force", 10, &Cooperative::CallbackForce, this);
-    setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &Cooperative::CallbackMove, this);
+    //force_sub = n.subscribe("/psm/cmd_force", 10, &Cooperative::CallbackForce, this);
+    //setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &Cooperative::CallbackMove, this);
 
     num = psm.size();
 

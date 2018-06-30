@@ -499,16 +499,12 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
                                 this);
 
 
-    //original plan
-    //force_sub = n.subscribe("/psm_sense/" + name + "/tool_forces", 10, &PsmForceControl::CallbackForce, this);
-
-    //temporary test
 
     setforce_sub = n.subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
     setpos_sub = n.subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
 
-    //force_sub = n.subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
-    //setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
+    force_sub = n.subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
+    setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 
 //Joint States and Pub data
     dof = 6;
