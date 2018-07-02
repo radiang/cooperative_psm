@@ -11,13 +11,12 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "PsmForceControl_node");
 
-    int num = 1;
+    int num = 2;
    // Options
 
     initializer psm1, psm2;
     initializer psm[2];
     //psm[0]= psm1; psm[1] = psm2;
-
 
     psm[0].name = "PSM1";
     psm[0].type = "Master";
@@ -31,7 +30,7 @@ int main(int argc, char **argv)
     psm[0].Pos << 0, 0, 0;
 
     psm[1].name = "PSM2";
-    psm[1].type = "Master";
+    psm[1].type = "Slave";
     psm[1].ctrl_type = choose[0];
 
     // Input Calibration Values from Calibration Files
