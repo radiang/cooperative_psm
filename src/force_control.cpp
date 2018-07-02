@@ -491,7 +491,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     plot_z = n.advertise<std_msgs::Float64>("/" + name + "/2", 10);
 
     joint_pub = n.advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint", 3);
-    pose_pub  = n.advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_goal_cartesian", 3);
+    pose_pub  = n.advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_cartesian", 3);
 
 //jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
     joint_sub = n.subscribe("/dvrk/" + name + "/state_joint_current", 10, &PsmForceControl::CallbackJoint, this);
@@ -565,7 +565,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 2500;
+    rate = 1500;
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
@@ -879,7 +879,7 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
     xd(2)=msg.linear.z;
  }
 
- void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
+void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
  {
      double arr[3];
 
@@ -891,6 +891,7 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
      xd(0)= msg.linear.x + xd(0);
      xd(1)= msg.linear.y + xd(1);
      xd(2)= msg.linear.z + xd(2);
+
 
      for (int i=0;i<3;i++)
      {
@@ -1047,7 +1048,15 @@ void PsmForceControl::output()
 
      else if(ctrl == "Cartesian")
      {   Eigen::Vector3d x;
+
+        if (interp==true)
+        {
+            x = data_trans.inverse()*x_int;
+        }
+        else
+        {
             x = data_trans.inverse()*xd;
+        }
 
          pose_msg.position.x = x(0);
          pose_msg.position.y = x(1);

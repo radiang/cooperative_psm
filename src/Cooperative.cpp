@@ -24,18 +24,23 @@ Cooperative::Cooperative(std::vector<initializer> &psm, ros::NodeHandle n)
     offset = Obj[0].pos-Obj[1].pos;
 
     Pos.push_back(Obj[0].xe);
-    Pos.push_back(offset-Obj[1].xe);
+    Pos.push_back(offset + Obj[1].xe);
 
 
-    object.push_back(Pos[0]-Pos[1]);
+    object.push_back(Pos[1]-Pos[0]);
     object.push_back(-object[0]);
 }
 
 void Cooperative::CalcObject()
 {
-    object[1] = Pos[0]-Pos[1];
-    object[0] = -object[1];
-    std::cout<<object[0];
+    object[0] = Pos[1]-Pos[0];
+    object[1] = -object[0];
+
+    //std::cout << object[0];
+    for(int i;i<num;i++)
+    {
+        //Obj[i].SetObject[0];
+    }
 }
 
 void Cooperative::CallbackMove(const geometry_msgs::Twist &msg)

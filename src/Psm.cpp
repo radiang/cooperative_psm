@@ -13,14 +13,16 @@ Psm::Psm(ros::NodeHandle n,const string nam, const string ctrl_type, const strin
 void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 {
 
-    double arr[3];
+    Eigen::Vector3d arr;
 
-    arr[0] = msg.linear.x;
-    arr[1] = msg.linear.y;
-    arr[2] = msg.linear.z;
+    //ROS_INFO_STREAM("M: this is Yan");
 
     if (type == "Master")
     {
+        arr(0) = msg.linear.x;
+        arr(1) = msg.linear.y;
+        arr(2) = msg.linear.z;
+
         xd(0)= msg.linear.x + xd(0);
         xd(1)= msg.linear.y + xd(1);
         xd(2)= msg.linear.z + xd(2);
@@ -28,11 +30,15 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 
     else if (type == "Slave")
     {
-        xs(0)= msg.linear.x ;
-        xs(1)= msg.linear.y ;
-        xs(2)= msg.linear.z ;
 
-        xd = xd + rot.inverse()*xs;
+        xs(0)= msg.linear.x;
+        xs(1)= msg.linear.y;
+        xs(2)= msg.linear.z;
+
+        arr = rot.inverse()*xs;
+
+        xd = xd + arr;
+
     }
 
     for (int i=0;i<3;i++)
@@ -77,7 +83,8 @@ void Psm::SetObject(const Eigen::Vector3d &set)
 
     else if (type == "Slave")
     {
-
         object = rot.inverse()*set;
     }
+
+    ROS_INFO_STREAM(name <<" object" << object);
 }

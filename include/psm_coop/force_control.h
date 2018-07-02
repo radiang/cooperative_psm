@@ -85,7 +85,7 @@ public:
   void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
   void CallbackForce(const geometry_msgs::Twist &msg);
   void CallbackSetForce(const geometry_msgs::Pose &msg);
-  void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
+  virtual void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetPosition(const geometry_msgs::Twist &msg);
 
   void CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
