@@ -503,6 +503,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
     setforce_sub = n.subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
     setpos_sub = n.subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
 
+    // Turn Off when using Cooperative
     force_sub = n.subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
     setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 

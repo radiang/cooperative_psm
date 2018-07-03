@@ -67,7 +67,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 void Psm::CallbackForce(const geometry_msgs::Twist &msg)
 {
     Eigen::Vector3d x;
-    x = object*msg.linear.x;
+    x = object*-msg.linear.x;
 
     xd= xd + x;
 

@@ -19,6 +19,7 @@ public:
     Cooperative(std::vector<initializer> &psm, ros::NodeHandle n);
 
     void CalcObject();
+    void Loopz();
     void CallbackMove(const geometry_msgs::Twist &msg);
     void CallbackForce(const geometry_msgs::Twist &msg);
 };

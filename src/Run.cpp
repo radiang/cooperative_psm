@@ -13,8 +13,6 @@ int main(int argc, char **argv)
     choose[0] = "Cartesian";
     choose[1] = "Impedance";
 
-    ros::init(argc, argv, "PsmForceControl_node");
-
     int num = 1;
 
     initializer psm[2];
@@ -49,7 +47,20 @@ int main(int argc, char **argv)
     m.push_back(psm[0]);
     m.push_back(psm[1]);
 
+
     Cooperative obj(m, n);
+    ros::Duration(1).sleep();
+
+    ros::Rate r(obj.Obj[0].rate);
+
+
     obj.CalcObject();
-    
+    while(ros::ok())
+    {
+        obj.Loopz();
+        ros::spinOnce();
+
+        r.sleep();
+    }
+    return 0;
 }

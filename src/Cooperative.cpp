@@ -27,8 +27,20 @@ Cooperative::Cooperative(std::vector<initializer> &psm, ros::NodeHandle n)
     Pos.push_back(offset + Obj[1].xe);
 
 
-    object.push_back(Pos[1]-Pos[0]);
-    object.push_back(-object[0]);
+    object.push_back(Pos[1]-Pos[0]); //Initiate Object
+    object.push_back(-object[0]);   // Initiate Object
+
+
+    //Set Gains and Initialize Controller
+
+    for(int i;i<num;i++)
+    {
+        Obj[i].SetGainsInit();
+        Obj[i].SetDesiredInit();
+    }
+
+    ros::Duration(1).sleep();
+
 }
 
 void Cooperative::CalcObject()
@@ -39,7 +51,17 @@ void Cooperative::CalcObject()
     //std::cout << object[0];
     for(int i;i<num;i++)
     {
-        //Obj[i].SetObject[0];
+        Obj[i].SetObject(object[i]);
+    }
+}
+
+void Cooperative::Loopz()
+{
+    this->CalcObject();
+
+    for(int i;i<num;i++)
+    {
+        Obj[i].Loop();
     }
 }
 

@@ -83,7 +83,7 @@ public:
   void CallbackJacobian(const std_msgs::Float64MultiArray &msg);
   void CallbackJoint(const sensor_msgs::JointState &msg);
   void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
-  void CallbackForce(const geometry_msgs::Twist &msg);
+  virtual void CallbackForce(const geometry_msgs::Twist &msg);
   void CallbackSetForce(const geometry_msgs::Pose &msg);
   virtual void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetPosition(const geometry_msgs::Twist &msg);
