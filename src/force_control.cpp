@@ -1070,7 +1070,9 @@ void PsmForceControl::output()
          pose_msg.orientation.z = orient_cart(2);
          pose_msg.orientation.w = orient_cart(3);
 
+         // --------------PUBLISHING -----------
          pose_pub.publish(pose_msg);
+         // ------------- publsih ----------
 
          //ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
      }
@@ -1145,6 +1147,9 @@ void PsmForceControl::output()
 
 void  PsmForceControl::Loop()
  {
+     //ROS_INFO_STREAM("xd"<< name << " " << xd);
+     //ROS_INFO_STREAM("orient"<< name << " " << orient_cart);
+
      this->joint_act = this->InverseKinematic(xe);
      this->joint_des = this->InverseKinematic(xd);
      this->CalcJaM(q, qd);

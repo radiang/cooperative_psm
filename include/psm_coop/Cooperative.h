@@ -15,9 +15,8 @@ public:
     long num;
     Eigen::Vector3d offset;
     std::vector<Eigen::Vector3d> Pos, object;
-    std::vector<Psm> Obj;
-    Psm obj1(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
-    Psm obj2(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
+    std::vector<std::shared_ptr<Psm>> Obj;
+    std::shared_ptr<Psm> obj1, obj2;
 
     Cooperative(std::vector<initializer> &psm);
 

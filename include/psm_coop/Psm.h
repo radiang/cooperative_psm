@@ -17,6 +17,7 @@ public:
    void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
    void CallbackForce(const geometry_msgs::Twist &msg);
    void SetObject(const Eigen::Vector3d &set);
+   Eigen::Vector3d GetPose();
 };
 
 

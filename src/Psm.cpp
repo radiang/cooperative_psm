@@ -67,9 +67,10 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 void Psm::CallbackForce(const geometry_msgs::Twist &msg)
 {
     Eigen::Vector3d x;
-    x = object*-msg.linear.x;
+    x = object/object.norm()*-msg.linear.x;
 
-    xd= xd + x;
+    //ROS_INFO_STREAM(name <<" object" << object);
+    xd= xd + data_trans*x;
 
 }
 
@@ -87,4 +88,9 @@ void Psm::SetObject(const Eigen::Vector3d &set)
     }
 
     ROS_INFO_STREAM(name <<" object" << object);
+}
+
+Eigen::Vector3d Psm::GetPose()
+{
+    return data_trans.inverse()*xe;
 }

@@ -49,17 +49,15 @@ int main(int argc, char **argv)
 
 
     Cooperative obj(m);
-    //ros::spinOnce();
     ros::Duration(1).sleep();
-    //ros::spinOnce();
-    ros::Rate r(obj.Obj[0].rate);
+    ros::Rate r(2000);
 
 
     //obj.CalcObject();
     while(ros::ok())
     {
         obj.Loopz();
-        //ros::spinOnce();
+        ros::spinOnce();
         r.sleep();
     }
     return 0;
