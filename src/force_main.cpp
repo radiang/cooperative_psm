@@ -41,10 +41,10 @@ int main(int argc, char **argv)
     psm[1].Pos.resize(3);
     psm[1].Pos << -0.24498, 0.0030182, 0.0026889;
 
-    ros::NodeHandle nandle;
+    std::shared_ptr<ros::NodeHandle> nhandle = std::make_shared<ros::NodeHandle>();
 
-    Psm obj(&nandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
-    Psm obj2(&nandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
+    Psm obj(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
+    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
 
     ros::Rate r(obj.rate);
     ROS_INFO("It started");

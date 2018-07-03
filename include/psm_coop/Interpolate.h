@@ -3,11 +3,10 @@
 
 #include <iostream>
 #include <ros/ros.h>
-#include <string.h>
+#include <string>
 #include <stdio.h>
 #include<vector>
 #include <stdlib.h>
-#include <boost/bind.hpp>
 #include <sstream>
 
 

@@ -5,7 +5,7 @@
 #ifndef PROJECT_DATATYPE_H
 #define PROJECT_DATATYPE_H
 
-#include <string.h>
+#include <string>
 
 using namespace std;
 

@@ -475,37 +475,39 @@ void PsmForceControl::CalcM(const Eigen::VectorXd &q) //Eigen::VectorXd qd)
 
 
 
-PsmForceControl::PsmForceControl(ros::NodeHandle *n, const string nam, const string ctrl_type) {
+PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const string nam, const string ctrl_type) {
+
+    nhandle = n;
 
     name = nam;
     ctrl = ctrl_type;
 
     ROS_INFO_STREAM(name << " Control START");
 
-    desplot_x = n->advertise<std_msgs::Float64>("/" + name + "/d0", 10);
-    desplot_y = n->advertise<std_msgs::Float64>("/" + name + "/d1", 10);
-    desplot_z = n->advertise<std_msgs::Float64>("/" + name + "/d2", 10);
+    desplot_x = nhandle->advertise<std_msgs::Float64>("/" + name + "/d0", 10);
+    desplot_y = nhandle->advertise<std_msgs::Float64>("/" + name + "/d1", 10);
+    desplot_z = nhandle->advertise<std_msgs::Float64>("/" + name + "/d2", 10);
 
-    plot_x = n->advertise<std_msgs::Float64>("/" + name + "/0", 10);
-    plot_y = n->advertise<std_msgs::Float64>("/" + name + "/1", 10);
-    plot_z = n->advertise<std_msgs::Float64>("/" + name + "/2", 10);
+    plot_x = nhandle->advertise<std_msgs::Float64>("/" + name + "/0", 10);
+    plot_y = nhandle->advertise<std_msgs::Float64>("/" + name + "/1", 10);
+    plot_z = nhandle->advertise<std_msgs::Float64>("/" + name + "/2", 10);
 
-    joint_pub = n->advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint", 3);
-    pose_pub  = n->advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_cartesian", 3);
+    joint_pub = nhandle->advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint", 3);
+    pose_pub  = nhandle->advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_cartesian", 3);
 
 //jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
-    joint_sub = n->subscribe("/dvrk/" + name + "/state_joint_current", 10, &PsmForceControl::CallbackJoint, this);
-    cartesian_sub = n->subscribe("/dvrk/" + name + "/position_cartesian_current", 10, &PsmForceControl::CallbackCartesian,
+    joint_sub = nhandle->subscribe("/dvrk/" + name + "/state_joint_current", 10, &PsmForceControl::CallbackJoint, this);
+    cartesian_sub = nhandle->subscribe("/dvrk/" + name + "/position_cartesian_current", 10, &PsmForceControl::CallbackCartesian,
                                 this);
 
 
 
-    setforce_sub = n->subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
-    setpos_sub = n->subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
+    setforce_sub = nhandle->subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
+    setpos_sub = nhandle->subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
 
     // Turn Off when using Cooperative
-    force_sub = n->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
-    setpos_sub2 = n->subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
+    force_sub = nhandle->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
+    setpos_sub2 = nhandle->subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 
 //Joint States and Pub data
     dof = 6;

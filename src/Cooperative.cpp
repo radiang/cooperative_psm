@@ -12,11 +12,11 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
 
     std::cout<< psm[0].name;
 
-    ros::NodeHandle nandle;
-    std::shared
+    std::shared_ptr<ros::NodeHandle> nhandle = std::make_shared<ros::NodeHandle>();
 
-    Psm obj1(&nandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
-    Psm obj2(&nandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
+
+    Psm obj1(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
+    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
 
     ros::spinOnce();
     ros::Duration(1).sleep();

@@ -8,6 +8,7 @@
 #include "psm_coop/Psm.h"
 #include "psm_coop/DataType.h"
 #include <memory>
+//#include <bits/shared_ptr.h>
 
 class Cooperative {
 public:
@@ -15,8 +16,8 @@ public:
     Eigen::Vector3d offset;
     std::vector<Eigen::Vector3d> Pos, object;
     std::vector<Psm> Obj;
-    Psm obj1(ros::NodeHandle *n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
-    Psm obj2(ros::NodeHandle *n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
+    Psm obj1(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
+    Psm obj2(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
 
     Cooperative(std::vector<initializer> &psm);
 

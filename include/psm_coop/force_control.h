@@ -8,8 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <memory>
+//#include <bits/shared_ptr.h>
 
-#include <boost/bind.hpp>
 #include <sstream>
 #include <queue>
 
@@ -23,9 +24,14 @@
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+//#include <bits/shared_ptr.h>
+
 #include "std_msgs/String.h"
 
+
 #include "psm_coop/Interpolate.h"
+
+
 
 using namespace std;
 
@@ -37,7 +43,9 @@ private:
 
   //std::vector<ros::Publisher> cartPub;
 public:
-    PsmForceControl(ros::NodeHandle *n, const string nam, const string ctrl_type);
+    PsmForceControl(shared_ptr<ros::NodeHandle> n, const string nam, const string ctrl_type);
+
+    shared_ptr<ros::NodeHandle> nhandle;
 
     double rate;
     int t;
