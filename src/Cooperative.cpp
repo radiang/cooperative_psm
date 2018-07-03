@@ -3,28 +3,35 @@
 //
 #include "psm_coop/Cooperative.h"
 
-Cooperative::Cooperative(std::vector<initializer> &psm, ros::NodeHandle n)
+Cooperative::Cooperative(std::vector<initializer> &psm)
 {
     //force_sub = n.subscribe("/psm/cmd_force", 10, &Cooperative::CallbackForce, this);
     //setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &Cooperative::CallbackMove, this);
 
     num = psm.size();
 
-    std::cout<< num;
+    std::cout<< psm[0].name;
 
     Psm obj1(psm[0].n, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
     Psm obj2(psm[1].n, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
 
+    ros::spinOnce();
+    ros::Duration(1).sleep();
+    ros::spinOnce();
+
     Obj.push_back(obj1);
     Obj.push_back(obj2);
 
-    Obj[0].xe <<2,1,3;
-    Obj[1].xe <<0,0,0;
+    //Obj[0].xe <<2,1,3;
+    //Obj[1].xe <<0,0,0;
 
     offset = Obj[0].pos-Obj[1].pos;
 
     Pos.push_back(Obj[0].xe);
     Pos.push_back(offset + Obj[1].xe);
+
+    //ROS_INFO_STREAM("Pos:" << Pos[1]);
+
 
 
     object.push_back(Pos[1]-Pos[0]); //Initiate Object
@@ -57,15 +64,18 @@ void Cooperative::CalcObject()
 
 void Cooperative::Loopz()
 {
-    this->CalcObject();
+    //this->CalcObject();
 
     for(int i;i<num;i++)
     {
+        //int x=0;
         Obj[i].Loop();
+
     }
+    ros::spinOnce();
 }
 
-void Cooperative::CallbackMove(const geometry_msgs::Twist &msg)
+void Cooperative::CallbackMovez(const geometry_msgs::Twist &msg)
 {
     for(int i;i<num;i++)
     {
@@ -73,7 +83,7 @@ void Cooperative::CallbackMove(const geometry_msgs::Twist &msg)
     }
 }
 
-void Cooperative::CallbackForce(const geometry_msgs::Twist &msg)
+void Cooperative::CallbackForcez(const geometry_msgs::Twist &msg)
 {
     for(int i;i<num;i++)
     {

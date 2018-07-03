@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 {
     string choose[2];
     ros::init(argc, argv, "PsmForceControl_node");
-    ros::NodeHandle n;
+
 
     choose[0] = "Cartesian";
     choose[1] = "Impedance";
@@ -48,18 +48,18 @@ int main(int argc, char **argv)
     m.push_back(psm[1]);
 
 
-    Cooperative obj(m, n);
+    Cooperative obj(m);
+    //ros::spinOnce();
     ros::Duration(1).sleep();
-
+    //ros::spinOnce();
     ros::Rate r(obj.Obj[0].rate);
 
 
-    obj.CalcObject();
+    //obj.CalcObject();
     while(ros::ok())
     {
         obj.Loopz();
-        ros::spinOnce();
-
+        //ros::spinOnce();
         r.sleep();
     }
     return 0;

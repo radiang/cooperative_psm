@@ -14,14 +14,14 @@ public:
     Eigen::Vector3d offset;
     std::vector<Eigen::Vector3d> Pos, object;
     std::vector<Psm> Obj;
+    //Psm p1, p2;
 
-    ros::Subscriber force_sub, setforce_sub, setpos_sub, setpos_sub2;
-    Cooperative(std::vector<initializer> &psm, ros::NodeHandle n);
+    Cooperative(std::vector<initializer> &psm);
 
     void CalcObject();
     void Loopz();
-    void CallbackMove(const geometry_msgs::Twist &msg);
-    void CallbackForce(const geometry_msgs::Twist &msg);
+    void CallbackMovez(const geometry_msgs::Twist &msg);
+    void CallbackForcez(const geometry_msgs::Twist &msg);
 };
 
 

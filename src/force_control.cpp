@@ -1153,6 +1153,7 @@ void  PsmForceControl::Loop()
      this->CalcU();
      this->WristPID();
      this->output();
+     //ros::spinOnce();
  }
 
 /*int main(int argc, char **argv)

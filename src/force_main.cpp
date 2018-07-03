@@ -14,7 +14,6 @@ int main(int argc, char **argv)
     int num = 2;
    // Options
 
-    initializer psm1, psm2;
     initializer psm[2];
     //psm[0]= psm1; psm[1] = psm2;
 
@@ -49,12 +48,16 @@ int main(int argc, char **argv)
     ROS_INFO("It started");
     // int i, j;
     int count = 0;
+
     ros::spinOnce();
     ros::Duration(1).sleep();
     ros::spinOnce();
 
     obj.SetGainsInit();
     obj.SetDesiredInit();
+
+
+    ROS_INFO_STREAM("v_int:" << obj.xe);
 
     if(num==2)
     {
