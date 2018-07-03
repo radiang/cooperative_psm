@@ -37,7 +37,7 @@ private:
 
   //std::vector<ros::Publisher> cartPub;
 public:
-    PsmForceControl(ros::NodeHandle n, const string nam, const string ctrl_type);
+    PsmForceControl(ros::NodeHandle *n, const string nam, const string ctrl_type);
 
     double rate;
     int t;

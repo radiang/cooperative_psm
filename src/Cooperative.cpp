@@ -12,8 +12,11 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
 
     std::cout<< psm[0].name;
 
-    Psm obj1(psm[0].n, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
-    Psm obj2(psm[1].n, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
+    ros::NodeHandle nandle;
+    std::shared
+
+    Psm obj1(&nandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
+    Psm obj2(&nandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
 
     ros::spinOnce();
     ros::Duration(1).sleep();
@@ -32,6 +35,7 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
 
     //ROS_INFO_STREAM("Pos:" << Pos[1]);
 
+    ros::Rate r(Obj[0].rate);
 
 
     object.push_back(Pos[1]-Pos[0]); //Initiate Object
