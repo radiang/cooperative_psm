@@ -8,15 +8,18 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
     //force_sub = n.subscribe("/psm/cmd_force", 10, &Cooperative::CallbackForce, this);
     //setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &Cooperative::CallbackMove, this);
 
+    count = 0;
+
     num = psm.size();
 
     std::cout<< psm[0].name;
 
     std::shared_ptr<ros::NodeHandle> nhandle = std::make_shared<ros::NodeHandle>();
+    std::shared_ptr<ros::NodeHandle> nhandle2 = std::make_shared<ros::NodeHandle>();
 
 
     obj1 = std::make_shared<Psm>(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].track, psm[0].Rot, psm[0].Pos);
-    obj2 = std::make_shared<Psm>(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].track, psm[1].Rot, psm[1].Pos);
+    obj2 = std::make_shared<Psm>(nhandle2, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].track, psm[1].Rot, psm[1].Pos);
 
 
     ros::spinOnce();
@@ -73,9 +76,16 @@ void Cooperative::Loopz() {
     {
         //int x=0;
         Obj[i]->Loop();
-        Obj[i]->ForceLoop();
+
+        if(count%4==0)
+        {
+            Obj[i]->ForceLoop();
+            count = 0;
+        }
+
     }
     //ros::spinOnce();
+    count = count + 1;
 }
 
 void Cooperative::CallbackMovez(const geometry_msgs::Twist &msg)

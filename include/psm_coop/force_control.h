@@ -15,6 +15,7 @@
 #include <queue>
 
 #include <std_msgs/Float64.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -38,7 +39,7 @@ using namespace std;
 class PsmForceControl{
 private:
   //std::vector<ros::Publisher> ecmPub, psm1Pub, psm2Pub, psm3Pub;
-    ros::Subscriber jacobian_sub, joint_sub, cartesian_sub, force_sub, setforce_sub, setpos_sub, setpos_sub2;
+    ros::Subscriber jacobian_sub, joint_sub, cartesian_sub, force_sub,force_sub2, setforce_sub, setpos_sub, setpos_sub2;
     ros::Publisher plot_x, plot_y, plot_z, joint_pub, pose_pub, desplot_x, desplot_y, desplot_z;
 
   //std::vector<ros::Publisher> cartPub;
@@ -102,7 +103,7 @@ public:
   void CallbackJacobian(const std_msgs::Float64MultiArray &msg);
   void CallbackJoint(const sensor_msgs::JointState &msg);
   void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
-  void CallbackForce(const std_msgs::Float64MultiArray &msg);
+  void CallbackForce(const std_msgs::Float32 &msg);
 
 
   virtual void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);

@@ -500,14 +500,14 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     //Data Subscribers
     joint_sub = nhandle->subscribe("/dvrk/" + name + "/state_joint_current", 10, &PsmForceControl::CallbackJoint, this);
     cartesian_sub = nhandle->subscribe("/dvrk/" + name + "/position_cartesian_current", 10, &PsmForceControl::CallbackCartesian, this);
-    force_sub = nhandle->subscribe("/Force/load_cell_data", 10, &PsmForceControl::CallbackForce,this);
+    force_sub = nhandle->subscribe("/force_data/load_cell", 10, &PsmForceControl::CallbackForce,this);
 
     //
     setforce_sub = nhandle->subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
     setpos_sub = nhandle->subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
 
     //Command Teleop Subscribers Turn Off when using Cooperative
-    force_sub = nhandle->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackSetForceIncrement, this);
+    force_sub2 = nhandle->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackSetForceIncrement, this);
     setpos_sub2 = nhandle->subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 
 //Joint States and Pub data
@@ -792,7 +792,8 @@ void PsmForceControl::SetGainsInit()
     //Kd.diagonal()<<5, 0.5, 10;
 
     //Force Stuff
-    force_increment = 0.0001; //meters at 200hz?
+    force_deadband = 0.5;
+    force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -830,7 +831,6 @@ for (int i=0;i<3;i++)
 
 void PsmForceControl::CallbackJoint(const sensor_msgs::JointState &msg)
 {
-
     // Filter
     for (int i=0;i<dof;i++)
     {
@@ -873,14 +873,11 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 
 }
 
-void PsmForceControl::CallbackForce(const std_msgs::Float64MultiArray &msg)
+void PsmForceControl::CallbackForce(const std_msgs::Float32 &msg)
 {
     // Filter
-    force_magnitude = msg.data[0];
-
-
-        f_myq.push_back(msg.data[0]);
-
+    //ROS_INFO_STREAM("potato");
+        f_myq.push_back(msg.data);
         if (f_index > filter_n-1)
         {
             f_myq.pop_front();
@@ -890,9 +887,8 @@ void PsmForceControl::CallbackForce(const std_msgs::Float64MultiArray &msg)
                 f_sum = f_sum + f_myq[j];
             }
             force_magnitude = f_sum/filter_n;
-
+            force_magnitude = -force_magnitude;
         }
-
     f_index = f_index + 1;
 
 
@@ -985,7 +981,7 @@ void PsmForceControl::CalcU()
             }
         }
 
-        //ROS_INFO_STREAM("v_int:" << v_int);
+
 
         // Impedance Controller
         //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
@@ -1072,7 +1068,7 @@ void PsmForceControl::WristPID()
     }
 }
 void PsmForceControl::output()
- {
+{
      if(ctrl == "Impedance")
      {
          for (int i=0;i<3;i++)

@@ -1,7 +1,7 @@
 #include "psm_coop/Psm.h"
 
 
-Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_type, const string typ, const bool trak, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam, ctrl_type), type(typ)
+Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_type, const string typ, bool trak, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam, ctrl_type), type(typ)
 {
 
     rot.resize(3,3);
@@ -9,6 +9,8 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     rot = Rotz;
     pos = Posz;
 
+    //type = typ;
+    //ctrl_typ = ctrl_type;
     track = trak;
 }
 
@@ -68,7 +70,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 
 void Psm::CallbackSetForceIncrement(const geometry_msgs::Twist &msg)
 {   Eigen::Vector3d x;
-
+    //ROS_INFO_STREAM(type<<track);
     if (type == "Slave") {
         if (track == false) {
 
@@ -80,7 +82,7 @@ void Psm::CallbackSetForceIncrement(const geometry_msgs::Twist &msg)
         else {
             int x = 0;
             force_set = force_set + msg.linear.x;
-            force_error = force_set-force_magnitude;
+
         }
     }
 
@@ -109,14 +111,17 @@ Eigen::Vector3d Psm::GetPose()
 
 void Psm::ForceLoop()
 {   Eigen::Vector3d x;
+    x << 0.0, 0.0, 0.0;
 
-    if(type=="Cartesian")
-    {
+    //ROS_INFO_STREAM(name <<"yeahh");
+    force_error = force_set-force_magnitude;
+    if(ctrl=="Cartesian" && track == true)
+    {  //ROS_INFO_STREAM(name <<"ugh yeahh");
         if(force_error>force_deadband)
         {
             x = object / object.norm() * -force_increment;
         }
-        else if (force_error<force_deadband)
+        else if (force_error<-force_deadband)
         {
             x = object / object.norm() * force_increment;
         }

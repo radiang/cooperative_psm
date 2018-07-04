@@ -13,6 +13,8 @@
 class Cooperative {
 public:
     long num;
+    int count;
+
     Eigen::Vector3d offset;
     std::vector<Eigen::Vector3d> Pos, object;
     std::vector<std::shared_ptr<Psm>> Obj;
