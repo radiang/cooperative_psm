@@ -87,7 +87,7 @@ void Psm::SetObject(const Eigen::Vector3d &set)
         object = rot.inverse()*set;
     }
 
-    ROS_INFO_STREAM(name <<" object" << object);
+    //ROS_INFO_STREAM(name <<" object" << object);
 }
 
 Eigen::Vector3d Psm::GetPose()

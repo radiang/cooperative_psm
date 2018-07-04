@@ -47,7 +47,7 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
     }
 
     ros::Duration(1).sleep();
-    ROS_INFO_STREAM("FAULT:" << Obj.size());
+    //ROS_INFO_STREAM("FAULT:" << Obj.size());
 
 }
 
