@@ -22,6 +22,7 @@ int main(int argc, char **argv)
     psm[0].name = "PSM1";
     psm[0].type = "Master";
     psm[0].ctrl_type = choose[0];
+    psm[0].track = false;
     psm[0].Rot.resize(3,3);
     psm[0].Rot << 1, 0, 0,
             0, 1, 0,
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
     psm[1].name = "PSM2";
     psm[1].type = "Slave";
     psm[1].ctrl_type = choose[0];
-
+    psm[1].track = true;
     psm[1].Rot.resize(3,3);
     psm[1].Rot << 0.54285, 0.83962, -0.01636,
             -0.83973, 0.54299, -0.0007727,

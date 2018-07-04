@@ -24,6 +24,7 @@ struct initializer {
     string name;
     string type;
     string ctrl_type;
+    bool track;
     Eigen::MatrixXd Rot;
     Eigen::VectorXd Pos;
     ros::NodeHandle n;

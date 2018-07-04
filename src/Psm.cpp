@@ -1,13 +1,15 @@
 #include "psm_coop/Psm.h"
 
 
-Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_type, const string typ, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam, ctrl_type), type(typ)
+Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_type, const string typ, const bool trak, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz):PsmForceControl(n, nam, ctrl_type), type(typ)
 {
 
     rot.resize(3,3);
 
     rot = Rotz;
     pos = Posz;
+
+    track = trak;
 }
 
 void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
@@ -65,12 +67,21 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 }
 
 void Psm::CallbackForce(const geometry_msgs::Twist &msg)
-{
-    Eigen::Vector3d x;
-    x = object/object.norm()*-msg.linear.x;
+{   Eigen::Vector3d x;
 
-    //ROS_INFO_STREAM(name <<" object" << object);
-    xd= xd + data_trans*x;
+    if (type == "Slave") {
+        if (track == false) {
+
+            Eigen::Vector3d x;
+            x = object / object.norm() * -msg.linear.x;
+
+            //ROS_INFO_STREAM(name <<" object" << object);
+            xd = xd + data_trans * x;
+        }
+        else {
+            int x = 0;
+        }
+    }
 
 }
 
