@@ -66,7 +66,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 
 }
 
-void Psm::CallbackForce(const geometry_msgs::Twist &msg)
+void Psm::CallbackSetForceIncrement(const geometry_msgs::Twist &msg)
 {   Eigen::Vector3d x;
 
     if (type == "Slave") {
@@ -75,11 +75,12 @@ void Psm::CallbackForce(const geometry_msgs::Twist &msg)
             Eigen::Vector3d x;
             x = object / object.norm() * -msg.linear.x;
 
-            //ROS_INFO_STREAM(name <<" object" << object);
             xd = xd + data_trans * x;
         }
         else {
             int x = 0;
+            force_set = force_set + msg.linear.x;
+            force_error = force_set-force_magnitude;
         }
     }
 
@@ -104,4 +105,22 @@ void Psm::SetObject(const Eigen::Vector3d &set)
 Eigen::Vector3d Psm::GetPose()
 {
     return data_trans.inverse()*xe;
+}
+
+void Psm::ForceLoop()
+{   Eigen::Vector3d x;
+
+    if(type=="Cartesian")
+    {
+        if(force_error>force_deadband)
+        {
+            x = object / object.norm() * -force_increment;
+        }
+        else if (force_error<force_deadband)
+        {
+            x = object / object.norm() * force_increment;
+        }
+
+        xd = xd + data_trans * x;
+    }
 }

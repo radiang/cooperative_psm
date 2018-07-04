@@ -73,10 +73,9 @@ void Cooperative::Loopz() {
     {
         //int x=0;
         Obj[i]->Loop();
+        Obj[i]->ForceLoop();
     }
     //ros::spinOnce();
-
-
 }
 
 void Cooperative::CallbackMovez(const geometry_msgs::Twist &msg)
@@ -91,6 +90,6 @@ void Cooperative::CallbackForcez(const geometry_msgs::Twist &msg)
 {
     for(int i;i<num;i++)
     {
-        Obj[i]->CallbackForce(msg);
+        Obj[i]->CallbackSetForceIncrement(msg);
     }
 }

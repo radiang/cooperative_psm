@@ -55,7 +55,6 @@ public:
     string name;
     string ctrl;
 
-
     int filter_n;
     int drop;
     int drop_p;
@@ -64,11 +63,16 @@ public:
 
     bool interp;
 
+
+    //Filter
     double sum[6];
     std::deque<double> myq[6];
     std::deque<double> que1, que2, que3, que4, que5, que6;
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
+
+    //Cartesian Controller Data
+    double force_magnitude, force_set, force_error, force_deadband, force_increment;
 
     Eigen::VectorXd q, qd, eff, ve, fd, he, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::Vector3d xe, xd;
@@ -91,7 +95,10 @@ public:
   void CallbackJacobian(const std_msgs::Float64MultiArray &msg);
   void CallbackJoint(const sensor_msgs::JointState &msg);
   void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
-  virtual void CallbackForce(const geometry_msgs::Twist &msg);
+  void CallbackForce(const std_msgs::Float64MultiArray &msg);
+
+
+  virtual void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetForce(const geometry_msgs::Pose &msg);
   virtual void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetPosition(const geometry_msgs::Twist &msg);

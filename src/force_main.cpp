@@ -43,8 +43,8 @@ int main(int argc, char **argv)
 
     std::shared_ptr<ros::NodeHandle> nhandle = std::make_shared<ros::NodeHandle>();
 
-    Psm obj(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].Rot, psm[0].Pos);
-    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].Rot, psm[1].Pos);
+    Psm obj(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type,psm[0].track, psm[0].Rot, psm[0].Pos);
+    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type,psm[1].track, psm[1].Rot, psm[1].Pos);
 
     ros::Rate r(obj.rate);
     ROS_INFO("It started");

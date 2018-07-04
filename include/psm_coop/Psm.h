@@ -16,9 +16,10 @@ public:
     Psm(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, const bool trak, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
 
    void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
-   void CallbackForce(const geometry_msgs::Twist &msg);
+   void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
    void SetObject(const Eigen::Vector3d &set);
    Eigen::Vector3d GetPose();
+   void ForceLoop();
 };
 
 

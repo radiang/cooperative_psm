@@ -496,17 +496,18 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     pose_pub  = nhandle->advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_cartesian", 3);
 
 //jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
+
+    //Data Subscribers
     joint_sub = nhandle->subscribe("/dvrk/" + name + "/state_joint_current", 10, &PsmForceControl::CallbackJoint, this);
-    cartesian_sub = nhandle->subscribe("/dvrk/" + name + "/position_cartesian_current", 10, &PsmForceControl::CallbackCartesian,
-                                this);
+    cartesian_sub = nhandle->subscribe("/dvrk/" + name + "/position_cartesian_current", 10, &PsmForceControl::CallbackCartesian, this);
+    force_sub = nhandle->subscribe("/Force/load_cell_data", 10, &PsmForceControl::CallbackForce,this);
 
-
-
+    //
     setforce_sub = nhandle->subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
     setpos_sub = nhandle->subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
 
-    // Turn Off when using Cooperative
-    force_sub = nhandle->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackForce, this);
+    //Command Teleop Subscribers Turn Off when using Cooperative
+    force_sub = nhandle->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackSetForceIncrement, this);
     setpos_sub2 = nhandle->subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 
 //Joint States and Pub data
@@ -779,6 +780,9 @@ void PsmForceControl::SetGainsInit()
     //Test Damping
    // Kp.diagonal()<<1, 1, 3;
     //Kd.diagonal()<<5, 0.5, 10;
+
+    //Force Stuff
+    force_increment = 0.0001; //meters at 200hz?
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -797,6 +801,8 @@ void PsmForceControl::SetDesiredInit()
 
  vd << 0, 0, 0;
  ad << 0, 0, 0;
+
+ force_set = 5;
 }
 
 
@@ -857,8 +863,12 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 
 }
 
- void PsmForceControl::CallbackForce(const geometry_msgs::Twist &msg)
- {
+void PsmForceControl::CallbackForce(const std_msgs::Float64MultiArray &msg)
+{
+    force_magnitude = msg.data[0];
+}
+
+ void PsmForceControl::CallbackSetForceIncrement(const geometry_msgs::Twist &msg){
   /*   he(0) = msg.linear.x + he(0);
      he(1) = msg.linear.y + he(1);
      he(2) = msg.linear.z + he(2);
