@@ -51,7 +51,7 @@ public:
     int t;
     double t0;
     double tf;
-    int index;
+
     string name;
     string ctrl;
 
@@ -65,9 +65,16 @@ public:
 
 
     //Filter
+    int index;
     double sum[6];
     std::deque<double> myq[6];
     std::deque<double> que1, que2, que3, que4, que5, que6;
+
+    //Force Filter
+    int f_index;
+    double f_sum;
+    std::deque<double> f_myq;
+    std::deque<double> f_que1;
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
 

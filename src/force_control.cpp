@@ -573,6 +573,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
+    f_index = 0;
 
     q1_traj.ts = 1 / rate;
     q2_traj.ts = 1 / rate;
@@ -633,6 +634,15 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 
     interp = false;
 
+    for (int i=0;i<dof;i++) {
+        for (int j = 0; j < filter_n; j++) {
+            myq[i].push_back(0.0);
+        }
+    }
+
+    for(int j = 0;j<filter_n;j++) {
+        f_myq.push_back(0.0);
+    }
 }
 
 void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd)
@@ -865,7 +875,27 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 
 void PsmForceControl::CallbackForce(const std_msgs::Float64MultiArray &msg)
 {
+    // Filter
     force_magnitude = msg.data[0];
+
+
+        f_myq.push_back(msg.data[0]);
+
+        if (f_index > filter_n-1)
+        {
+            f_myq.pop_front();
+            f_sum = 0;
+            for(int j = 0;j<filter_n;j++)
+            {
+                f_sum = f_sum + f_myq[j];
+            }
+            force_magnitude = f_sum/filter_n;
+
+        }
+
+    f_index = f_index + 1;
+
+
 }
 
  void PsmForceControl::CallbackSetForceIncrement(const geometry_msgs::Twist &msg){
@@ -1139,7 +1169,7 @@ void PsmForceControl::output()
 
 
     // Check Cartesian Positions
-    dq0.data = xd(0);
+/*    dq0.data = xd(0);
     dq1.data = xd(1);
     dq2.data = xd(2);
 
@@ -1153,10 +1183,11 @@ void PsmForceControl::output()
 
     plot_x.publish(mq0);
     plot_y.publish(mq1);
-    plot_z.publish(mq2);
+    plot_z.publish(mq2);*/
 
-
-
+// Fore Measure
+    dq0.data = force_magnitude;
+    desplot_x.publish(dq0);
  }
 
 void  PsmForceControl::Loop()
