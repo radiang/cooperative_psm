@@ -21,6 +21,7 @@ public:
    void SetObject(const Eigen::Vector3d &set);
    Eigen::Vector3d GetPose();
    void ForceLoop();
+   void ForceSet();
 };
 
 

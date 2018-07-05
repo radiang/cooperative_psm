@@ -526,6 +526,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     ve.resize(3);
     fd.resize(3);
     he.resize(3);
+    ha.resize(3);
     xf.resize(3);
     vd.resize(3);
     ad.resize(3);
@@ -889,9 +890,16 @@ void PsmForceControl::CallbackForce(const std_msgs::Float32 &msg)
             force_magnitude = f_sum/filter_n;
             force_magnitude = -force_magnitude;
         }
-    f_index = f_index + 1;
+        f_index = f_index + 1;
 
+    // Force Direction
+    this -> ForceSet();
 
+}
+
+void PsmForceControl::ForceSet()
+{
+    he(0) = force_magnitude;
 }
 
  void PsmForceControl::CallbackSetForceIncrement(const geometry_msgs::Twist &msg){
@@ -1013,7 +1021,7 @@ void PsmForceControl::CalcU()
     else
     {
         // Impedance Controller
-        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-ha);
 
         y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
 

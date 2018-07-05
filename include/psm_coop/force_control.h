@@ -82,7 +82,7 @@ public:
     //Cartesian Controller Data
     double force_magnitude, force_set, force_error, force_deadband, force_increment;
 
-    Eigen::VectorXd q, qd, eff, ve, fd, he, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
+    Eigen::VectorXd q, qd, eff, ve, fd, he, ha, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::Vector3d xe, xd;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
 
@@ -104,7 +104,7 @@ public:
   void CallbackJoint(const sensor_msgs::JointState &msg);
   void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
   void CallbackForce(const std_msgs::Float32 &msg);
-
+  virtual void ForceSet();
 
   virtual void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetForce(const geometry_msgs::Pose &msg);

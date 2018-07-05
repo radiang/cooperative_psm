@@ -76,8 +76,17 @@ P12_1
 
 T12 = [[R12, P12_1];[0 0 0 1]];
 
-savename = strcat(folder,testname,'_results.csv');
+T21 = inv(T12);
+
+savename = strcat(folder,testname,'_T12.csv');
 csvwrite(savename,T12);
+
+savename = strcat(folder,testname,'_T21.csv');
+csvwrite(savename,T21);
+
+
+
+
 %% Functions
 
 function [r] = get_rotation(r)

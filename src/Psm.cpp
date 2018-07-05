@@ -129,3 +129,8 @@ void Psm::ForceLoop()
         xd = xd + data_trans * x;
     }
 }
+
+void Psm::ForceSet()
+{
+    he = data_trans * object/object.norm()*force_magnitude;
+}
