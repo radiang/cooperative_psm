@@ -63,7 +63,7 @@ public:
     int cart_dof;
 
     bool interp;
-
+    Eigen::Vector3d arr;
 
     //Filter
     int index;
@@ -85,6 +85,7 @@ public:
     Eigen::VectorXd q, qd, eff, ve, fd, he, ha, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::Vector3d xe, xd;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
+    Eigen::Vector3d temp_x;
 
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;

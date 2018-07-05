@@ -570,7 +570,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 1500;
+    rate = 2000;
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
@@ -625,7 +625,12 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
+    // PSM2
     deadband << 0.0045, 0.005, 0.005;
+
+    // PSM1
+    //deadband << 0.01, 0.01, 0.005;
+
 
     //Data Transform from cisst-saw, to matlab model
     data_trans << 0, 1, 0,
@@ -682,8 +687,8 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float qd1 = x[0];
     float qd2 = x[1];
     float qd3 = x[2];
-    float a1 =3.0E2;
-    float a2 =5.0E2;
+    float a1 =4.0E2;
+    float a2 =4.0E2;
     float scale = 1;
 
 
@@ -701,16 +706,14 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
 
     if(name == "PSM1")
     {
-        //Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a)+1.0)-6.651153938642816E-2;
-        //Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a)+1.0)-9.67733653235759E-2;
+        //Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
+        //Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
 
-        Fr(0) =  qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
-        Fr(1) = qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
+        //Fr(0) =  qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
+        //Fr(1) =  qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
 
-
-        //Fr(0) =  0;
-       // Fr(1) = 0;
-
+         Fr(0) =  0;
+         Fr(1) = 0;
 
         //Friction Compensation Stick Based on Position
         if(abs(qd(2)) < deadband(2))
@@ -774,16 +777,19 @@ void PsmForceControl::SetGainsInit()
 
     if(name == "PSM1")
     {
-        Mt.diagonal()<<0.35, 0.4, 0.5;
+        Mt.diagonal()<<0.35, 0.4, 0.4;
+        Kp.diagonal() << 20, 30, 40;
+        Kd.diagonal() << 4, 4, 6;
     }
     else if (name == "PSM2")
     {
         Mt.diagonal()<<0.42, 0.44, 0.3123;
+        Kp.diagonal() << 100, 80, 120;
+        Kd.diagonal() << 7, 4, 6;
     }
 
     //Real Coefficients
-    Kp.diagonal() << 100, 80, 120;
-    Kd.diagonal() << 7, 4, 6;
+
 
     //Wrist Coefficients;
     wrist_kp << 0.5, 0.5, 0.5;
@@ -862,9 +868,9 @@ void PsmForceControl::CallbackJoint(const sensor_msgs::JointState &msg)
 
 void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 {
-    Eigen::Vector3d x;
-    x << msg.pose.position.x, msg.pose.position.y, msg.pose.position.z;
-    xe = data_trans*x;
+
+    temp_x << msg.pose.position.x, msg.pose.position.y, msg.pose.position.z;
+    xe = data_trans*temp_x;
 
     orient_cart << msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w;
 /*
@@ -929,11 +935,11 @@ void PsmForceControl::ForceSet()
 
 void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
  {
-     double arr[3];
 
-     arr[0] = msg.linear.x;
-     arr[1] = msg.linear.y;
-     arr[2] = msg.linear.z;
+
+     arr(0) = msg.linear.x;
+     arr(1) = msg.linear.y;
+     arr(2) = msg.linear.z;
 
      //Just for testing
      xd(0)= msg.linear.x + xd(0);
@@ -950,7 +956,7 @@ void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &m
          //q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
 
 
-         if (arr[i] != 0)
+         if (arr(i) != 0)
          {
              q_traj[i]=interpolate(q_traj[i]);
          }
@@ -967,7 +973,7 @@ void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &m
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
-    int fl = 10; //force limit
+    int fl = 12; //force limit
     ve = JaM*qd;
 
     if (interp==true)
@@ -1033,7 +1039,7 @@ void PsmForceControl::CalcU()
     //u = M*y + N +Fr +JaM.transpose()*he;
      u = M*y + N +Fr;
 
-    //ROS_INFO_STREAM("M: "<< M <<endl);
+    ROS_INFO_STREAM("M: "<< u <<endl);
     //ROS_INFO_STREAM("u_steady : "<< JaM.inverse()*Mt.inverse()*Kp*(xd-xe) <<endl);
      //ROS_INFO_STREAM("he : "<< he <<endl);
 
@@ -1175,7 +1181,7 @@ void PsmForceControl::output()
 
 
     // Check Cartesian Positions
-/*    dq0.data = xd(0);
+  /*  dq0.data = xd(0);
     dq1.data = xd(1);
     dq2.data = xd(2);
 
@@ -1191,9 +1197,27 @@ void PsmForceControl::output()
     plot_y.publish(mq1);
     plot_z.publish(mq2);*/
 
-// Fore Measure
-    dq0.data = force_magnitude;
+
+    // Check Joint velocities Positions
+      dq0.data =u(0);
+    dq1.data = u(1);
+    dq2.data = u(2);
+
     desplot_x.publish(dq0);
+    desplot_y.publish(dq1);
+    desplot_z.publish(dq2);
+
+    //mq0.data = xe(0);
+    //mq1.data = xe(1);
+    //mq2.data = xe(2);
+
+    //plot_x.publish(mq0);
+    //plot_y.publish(mq1);
+    //plot_z.publish(mq2);
+
+// Fore Measure
+ /*   dq0.data = force_magnitude;
+    desplot_x.publish(dq0);*/
  }
 
 void  PsmForceControl::Loop()
@@ -1209,9 +1233,9 @@ void  PsmForceControl::Loop()
      this->CalcN(q, qd);
      this->CalcM(q);
      this->CalcU();
-     this->WristPID();
+     //this->WristPID();
      this->output();
-     //ros::spinOnce();
+     ros::spinOnce();
  }
 
 /*int main(int argc, char **argv)

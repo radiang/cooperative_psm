@@ -9,6 +9,7 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     rot = Rotz;
     pos = Posz;
 
+    temp_x << 0.0, 0.0, 0.0;
     //type = typ;
     //ctrl_typ = ctrl_type;
     track = trak;
@@ -17,7 +18,7 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
 void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 {
 
-    Eigen::Vector3d arr;
+
 
     //ROS_INFO_STREAM("M: this is Yan");
 
@@ -110,23 +111,21 @@ Eigen::Vector3d Psm::GetPose()
 }
 
 void Psm::ForceLoop()
-{   Eigen::Vector3d x;
-    x << 0.0, 0.0, 0.0;
-
+{
     //ROS_INFO_STREAM(name <<"yeahh");
     force_error = force_set-force_magnitude;
     if(ctrl=="Cartesian" && track == true)
     {  //ROS_INFO_STREAM(name <<"ugh yeahh");
         if(force_error>force_deadband)
         {
-            x = object / object.norm() * -force_increment;
+            temp_x = object / object.norm() * -force_increment;
         }
         else if (force_error<-force_deadband)
         {
-            x = object / object.norm() * force_increment;
+            temp_x = object / object.norm() * force_increment;
         }
 
-        xd = xd + data_trans * x;
+        xd = xd + data_trans * temp_x;
     }
 }
 
