@@ -599,6 +599,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 // Initializers
     fd << 0.0, 0.0, 0.0;
     he << 0.0, 0.0, 0.0;
+    ha << 0.0, 0.0, 0.0;
 
     xd << 0.0, 0.0, 0.0;
     xe << 0.0, 0.0, 0.0;
@@ -1021,15 +1022,16 @@ void PsmForceControl::CalcU()
     else
     {
         // Impedance Controller
-        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-ha);
-
+       // y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
         y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
 
         // Computed Torque controller
         //y =  Kd*(vd-qd) + Kp*(xd-q);
     }
 
-    u = M*y + N +Fr +JaM.transpose()*he;
+
+    //u = M*y + N +Fr +JaM.transpose()*he;
+     u = M*y + N +Fr;
 
     //ROS_INFO_STREAM("M: "<< M <<endl);
     //ROS_INFO_STREAM("u_steady : "<< JaM.inverse()*Mt.inverse()*Kp*(xd-xe) <<endl);
