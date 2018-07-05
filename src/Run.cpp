@@ -24,12 +24,12 @@ int main(int argc, char **argv)
     psm[0].ctrl_type = choose[0];
     psm[0].track = false;
     psm[0].Rot.resize(3,3);
-    psm[0].Rot << 0.5430, -0.8397, 0.0083,
-            0.8396, 0.5431, 0.0140,
-            -0.0160, 0.0032, 0.9998;
+    psm[0].Rot << 0.5430, -0.8397, 0.0082,
+            0.8397, 0.5430, 0.0142,
+            -0.0161, 0.0031, 0.9998;
 
     psm[0].Pos.resize(3);
-    psm[0].Pos << 01373, 0.2122, -0.0055;
+    psm[0].Pos << 0.1353, 0.20372, -0.0308;
 
     psm[1].name = "PSM2";
     psm[1].type = "Master";

@@ -1,7 +1,7 @@
 clear all
 
 folder = './psm12_6.30/';
-testname = 'Take3';
+testname = 'Take1';
 csvname = strcat(folder, testname ,'.csv');
 
 M = csvread(csvname,7,2);
