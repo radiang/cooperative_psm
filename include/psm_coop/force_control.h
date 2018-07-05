@@ -97,6 +97,7 @@ public:
 
     geometry_msgs::Pose pose_msg;
 
+    float pos_deadband; // rad
 
   void SetGainsInit();
   void SetDesiredInit();

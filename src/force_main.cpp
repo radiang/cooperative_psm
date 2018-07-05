@@ -76,7 +76,7 @@ int main(int argc, char **argv)
         if(num==2) {
             obj2.Loop();
         }
-        //ros::spinOnce();
+        ros::spinOnce();
 
         //drop=0;
 

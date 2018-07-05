@@ -625,11 +625,6 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
-    // PSM2
-    deadband << 0.0045, 0.005, 0.005;
-
-    // PSM1
-    //deadband << 0.01, 0.01, 0.005;
 
 
     //Data Transform from cisst-saw, to matlab model
@@ -692,10 +687,12 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float scale = 1;
 
 
-    float pos_deadband = 0.003; // rad
 
     float Fs_pos = 0.6;
     float Fs_neg = -0.4;
+
+    //float Fs_pos = 0.4;
+    //float Fs_neg = -0.3;
 
     //Computed Torque
     //float x_e = xd(2)-q(2);
@@ -798,6 +795,14 @@ void PsmForceControl::SetGainsInit()
     //Test Damping
    // Kp.diagonal()<<1, 1, 3;
     //Kd.diagonal()<<5, 0.5, 10;
+
+    //Friction Compensation
+    pos_deadband = 0.005;
+    // PSM2
+    deadband << 0.0045, 0.005, 0.005;
+
+    // PSM1
+    //deadband << 0.001, 0.001, 0.01;
 
     //Force Stuff
     force_deadband = 0.5;
@@ -1235,9 +1240,10 @@ void  PsmForceControl::Loop()
      this->CalcU();
      //this->WristPID();
      this->output();
-     ros::spinOnce();
+     //ros::spinOnce();
  }
 
+/*int main(int argc, char **argv)
 /*int main(int argc, char **argv)
 {
   // Options
