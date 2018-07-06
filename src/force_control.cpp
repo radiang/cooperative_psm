@@ -1042,8 +1042,9 @@ void PsmForceControl::CalcU()
     //u = M*y + N +Fr +JaM.transpose()*he;
      u = M*y + N +Fr;
 
-    ROS_INFO_STREAM("M: "<< u <<endl);
-    //ROS_INFO_STREAM("u_steady : "<< JaM.inverse()*Mt.inverse()*Kp*(xd-xe) <<endl);
+    // ROS_INFO_STREAM("M: "<< y <<endl);
+   ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
+    //ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
      //ROS_INFO_STREAM("he : "<< he <<endl);
 
 // ///// SAFETY ///////
