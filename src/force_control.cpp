@@ -636,7 +636,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 
     interp = false;
 
-    for (int i=0;i<dof;i++) {
+/*    for (int i=0;i<dof;i++) {
         for (int j = 0; j < filter_n; j++) {
             myq[i].push_back(0.0);
         }
@@ -644,7 +644,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 
     for(int j = 0;j<filter_n;j++) {
         f_myq.push_back(0.0);
-    }
+    }*/
 }
 
 void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd)
@@ -676,8 +676,8 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     }
 
     // From test_3dof_svd fourier_test2
-    float q1 = q(0);
-    float q2 = q(1);
+    float q1 = qd(0);
+    float q2 = qd(1);
 
     float qd1 = x[0];
     float qd2 = x[1];
@@ -691,8 +691,6 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float Fs_pos = 0.6;
     float Fs_neg = -0.4;
 
-    //float Fs_pos = 0.4;
-    //float Fs_neg = -0.3;
 
     //Computed Torque
     //float x_e = xd(2)-q(2);
@@ -703,14 +701,14 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
 
     if(name == "PSM1")
     {
-        //Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
-        //Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
+        Fr(0) =  q1*(-3.374542425099348E-1)+qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
+        Fr(1) = q2*2.544692215878968+qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
 
         //Fr(0) =  qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
         //Fr(1) =  qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
 
-         Fr(0) =  0;
-         Fr(1) = 0;
+         //Fr(0) =  0;
+        // Fr(1) = 0;
 
         //Friction Compensation Stick Based on Position
         if(abs(qd(2)) < deadband(2))
@@ -774,9 +772,9 @@ void PsmForceControl::SetGainsInit()
 
     if(name == "PSM1")
     {
-        Mt.diagonal()<<0.35, 0.4, 0.4;
-        Kp.diagonal() << 20, 30, 40;
-        Kd.diagonal() << 4, 4, 6;
+        Mt.diagonal()<<0.35, 0.36, 0.3;
+        Kp.diagonal() << 70, 100, 200;
+        Kd.diagonal() << 10, 7, 15;
     }
     else if (name == "PSM2")
     {
@@ -797,12 +795,12 @@ void PsmForceControl::SetGainsInit()
     //Kd.diagonal()<<5, 0.5, 10;
 
     //Friction Compensation
-    pos_deadband = 0.005;
+    pos_deadband = 0.006;
     // PSM2
-    deadband << 0.0045, 0.005, 0.005;
+    //deadband << 0.0045, 0.005, 0.005;
 
     // PSM1
-    //deadband << 0.001, 0.001, 0.01;
+    deadband << 0.01, 0.01, 0.005;
 
     //Force Stuff
     force_deadband = 0.5;
@@ -978,7 +976,7 @@ void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &m
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
-    int fl = 12; //force limit
+    int fl = 5; //force limit
     ve = JaM*qd;
 
     if (interp==true)
