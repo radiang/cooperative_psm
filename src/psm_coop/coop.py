@@ -20,7 +20,8 @@ class psm(object):
     def __init__(self, name, gazebo_on,track_force,des_force): 
         self.name = name
         self.namedict = {'one':'PSM1', 'two':'PSM2', 'three':'PSM3', 'four':'PSM4'}
-        self.joint_names = [self.name + '_yaw_joint', self.name + '_pitch_back_joint', self.name + '_main_insertion_joint']
+        #self.joint_names = [self.name + '_yaw_joint', self.name + '_pitch_back_joint', self.name + '_main_insertion_joint']
+        self.joint_names = [self.name + '_outer_yaw_joint', self.name + '_outer_pitch_joint_1', self.name + '_outer_insertion_joint']
         self.p_rcm = []
         self.p_tool = []
         self.p_init = []
@@ -40,11 +41,12 @@ class psm(object):
         self.br = tf.TransformBroadcaster()
         self.listener = tf.TransformListener()
                     
-        while not self.p_rcm and self.p_tool:
+        while not (self.p_rcm and self.p_tool):
             try:
                 if gazebo_on == 0:
                     (self.p_rcm, self.rot_rcm) = self.listener.lookupTransform('/world','/' + self.name + '_remote_center_link', rospy.Time(0))
-                    (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_gripper1_link', rospy.Time(0))
+                    #(self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_gripper1_link', rospy.Time(0))
+                    (self.p_tool, self.rot_tool) = self.listener.lookupTransform('/' + self.name + '_remote_center_link','/' + self.name + '_tool_wrist_link', rospy.Time(0))
                 else: 
                     (self.p_rcm, self.rot_rcm) = self.gazebo_service_call(self.namedict[self.name]+'::remote_center_link','world')
                     (self.p_tool, self.rot_tool) = self.gazebo_service_call(self.namedict[self.name]+'::tool_wrist_sca_shaft_link',self.namedict[self.name]+'::remote_center_link')
