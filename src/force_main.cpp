@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
     psm[0].name = "PSM1";
     psm[0].type = "Master";
-    psm[0].ctrl_type = choose[1];
+    psm[0].ctrl_type = choose[0];
     psm[0].Rot.resize(3,3);
     psm[0].Rot << 1, 0, 0,
             0, 1, 0,
