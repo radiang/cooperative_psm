@@ -85,10 +85,10 @@ public:
     Eigen::VectorXd q, qd, eff, ve, fd, he, ha, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::Vector3d xe, xd;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
-    Eigen::Vector3d temp_x;
+    Eigen::Vector3d temp_x, fl;
 
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
-    Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
+    Eigen::MatrixXd Ja, JaM, JaInv, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
     Eigen::MatrixXd data_trans;
 
@@ -107,13 +107,14 @@ public:
   void CallbackCartesian(const geometry_msgs::PoseStamped &msg);
   void CallbackForce(const std_msgs::Float32 &msg);
   virtual void ForceSet();
-
   virtual void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetForce(const geometry_msgs::Pose &msg);
   virtual void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetPosition(const geometry_msgs::Twist &msg);
 
   void CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
+  void CalcJaInv(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
+
   void CalcDiffJacobian(const Eigen::VectorXd &q, const Eigen::VectorXd  &qd);
 
   void CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
