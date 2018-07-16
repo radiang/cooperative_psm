@@ -64,11 +64,13 @@ public:
 
     Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
+    Eigen::Vector3d fl;
 
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
     Eigen::MatrixXd data_trans;
+
 
     std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;

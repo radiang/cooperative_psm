@@ -570,7 +570,7 @@ PsmForceControl::PsmForceControl(ros::NodeHandle n, const string nam, const stri
 
     rate = 2000;
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
-    filter_n = 20;
+    filter_n = 15;
     index = 0;
 
     q1_traj.ts = 1 / rate;
@@ -676,14 +676,17 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
 
     float pos_deadband = 0.003; // rad
 
-    float Fs_pos = 0.6;
-    float Fs_neg = -0.4;
+    //float Fs_pos = 0.6;
+    //float Fs_neg = -0.4;
+
+    float Fs_pos = 1;
+    float Fs_neg = -1;
 
     //Computed Torque
-    //float x_e = xd(2)-q(2);
+    float x_e = xd(2)-q(2);
 
     //Impedance Controller
-        float x_e = joint_des(2) - joint_act(2);
+    //    float x_e = joint_des(2) - joint_act(2);
         
     /*
 
@@ -768,8 +771,11 @@ void PsmForceControl::SetGainsInit()
     }
 
     //Real Coefficients
-    Kp.diagonal() << 70, 100, 300;
-    Kd.diagonal() << 10, 7, 15;
+    //Kp.diagonal() << 70, 110, 200;
+
+    //Computed Torque Controller 
+     Kp.diagonal() << 25, 20, 75;
+    Kd.diagonal() << 10, 11, 15;
 
     //Wrist Coefficients;
     wrist_kp << 0.5, 0.5, 0.5;
@@ -778,6 +784,8 @@ void PsmForceControl::SetGainsInit()
     //Test Damping
     //Kp.diagonal()<<1, 1, 3;
     //Kd.diagonal()<<5, 0.5, 10;
+
+    fl << 10, 10, 10;
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -789,10 +797,10 @@ void PsmForceControl::SetDesiredInit()
  fd << 0, 0, 0;
 
  //Impedance Controller
- xd << incre[0] + x0(0), incre[1] + x0(1), incre[2] + x0(2) ;
+ //xd << incre[0] + x0(0), incre[1] + x0(1), incre[2] + x0(2) ;
 
  // Computed Torque Controller
- //xd << incre[0] + q0(0),incre[1] + q0(1) ,incre[2] + q0(2) ;
+ xd << incre[0] + q0(0),incre[1] + q0(1) ,incre[2] + q0(2) ;
 
  vd << 0, 0, 0;
  ad << 0, 0, 0;
@@ -893,10 +901,10 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
      for (int i=0;i<3;i++)
      {
          // Impedance Controller
-         q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
+         //q_traj[i].qd << xe(i), 0, 0, xd(i),0,0;
 
          // Computed Torque controller
-         //q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
+         q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
 
 
          if (arr[i] != 0)
@@ -916,7 +924,7 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
 
-    int fl = 5; //force limit
+   //force limit
     ve = JaM*qd;
 
     if (interp==true)
@@ -942,10 +950,10 @@ void PsmForceControl::CalcU()
         //ROS_INFO_STREAM("v_int:" << v_int);
 
         // Impedance Controller
-        y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
         //Computed Torque Controller
-        //y =  Kd*(v_int-qd) + Kp*(x_int-q);
+        y =  Kd*(v_int-qd) + Kp*(x_int-q);
         t = t + 1;
 
    /*   ROS_INFO_STREAM("u_int 1 at time" << t << " : " << u(0));
@@ -959,20 +967,15 @@ void PsmForceControl::CalcU()
             q_traj[1].check = false;
             q_traj[2].check = false;
             interp = false;
-
-
         }
-
-        fl = fl*3;
-
     }
     else
     {
         // Impedance Controller
-        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
 
         // Computed Torque controller
-        //y =  Kd*(vd-qd) + Kp*(xd-q);
+        y =  Kd*(vd-qd) + Kp*(xd-q);
     }
 
     u = M*y + N +Fr +JaM.transpose()*he;
@@ -982,11 +985,12 @@ void PsmForceControl::CalcU()
      //ROS_INFO_STREAM("he : "<< he <<endl);
 
 // ///// SAFETY ///////
-    if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*2.5)
-    {
-        u<< 0, 0, 0;
+    for (int i=0;i<3;i++) {
+        if (std::abs(u(i)) > fl(i)) {
+            u << 0, 0, 0;
+        }
+        //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
     }
-    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
 
  }
 Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
@@ -1111,9 +1115,9 @@ void PsmForceControl::output()
     desplot_y.publish(dq1);
     desplot_z.publish(dq2);
 
-    mq0.data = xe(0);
-    mq1.data = xe(1);
-    mq2.data = xe(2);
+    mq0.data = q(0);
+    mq1.data = q(1);
+    mq2.data = q(2);
 
     plot_x.publish(mq0);
     plot_y.publish(mq1);

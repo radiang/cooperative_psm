@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "PsmForceControl_node");
 
-    int num = 2;
+    int num = 1;
    // Options
 
     initializer psm1, psm2;
@@ -26,9 +26,9 @@ int main(int argc, char **argv)
     psm[0]= psm1; psm[1] = psm2;
 
 
-    psm[0].name = "PSM2";
+    psm[0].name = "PSM1";
     psm[0].type = "Master";
-    psm[0].ctrl_type = choose[0];
+    psm[0].ctrl_type = choose[1];
     psm[0].Rot.resize(3,3);
     psm[0].Rot << 1, 0, 0,
             0, 1, 0,
