@@ -1134,7 +1134,7 @@ void PsmForceControl::CalcU()
         // Impedance Controller
         //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
-                y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
+                y = JaInv*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
 
         //Computed Torque Controller
         //y =  Kd*(v_int-qd) + Kp*(x_int-q);
@@ -1162,7 +1162,7 @@ void PsmForceControl::CalcU()
     {
         // Impedance Controller
        // y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
+        y = JaInv*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
 
         // Computed Torque controller
         //y =  Kd*(vd-qd) + Kp*(xd-q);

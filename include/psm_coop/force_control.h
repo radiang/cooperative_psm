@@ -115,7 +115,7 @@ public:
   void CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
   void CalcJaInv(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
 
-  void CalcDiffJacobian(const Eigen::VectorXd &q, const Eigen::VectorXd  &qd);
+  void CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd  &qd);
 
   void CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
   void CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
