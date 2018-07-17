@@ -427,7 +427,7 @@ void PsmForceControl::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float qd3 = qd(2);
 
     // Dynamics
-    /*float t2 = 3.141592653589793*(1.0/2.0);
+    float t2 = 3.141592653589793*(1.0/2.0);
     float t3 = -q2+t2+2.908373974667121E-1;
     float t4 = q2-2.908373974667121E-1;
     float t5 = cos(t4);
@@ -486,27 +486,27 @@ void PsmForceControl::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     Jd(1,2) = t49;
     Jd(2,0) = t12*t36*(-1.68E2/6.25E2)-t12*t38*(4.3E1/1.0E3)-t16*t36*(4.3E1/1.0E3)+t16*t38*(1.68E2/6.25E2)-t20*t49-qd3*(t12*t44-t16*t41)+qd1*t5*t19*(3.0/2.0E1)+qd2*t7*t21*(3.0/2.0E1)+qd2*t12*t41*(1.68E2/6.25E2)-qd2*t12*t44*(4.3E1/1.0E3)+qd2*t16*t41*(4.3E1/1.0E3)+qd2*t16*t44*(1.68E2/6.25E2)+qd1*t5*t6*t19*(1.29E2/2.5E2)-qd1*t7*t8*t19*(1.29E2/2.5E2);
     Jd(2,1) = -t20*(t12*t31+t16*t29-qd2*t12*t24+qd2*t16*t26)-t12*t29*(4.3E1/1.0E3)+t12*t31*(1.68E2/6.25E2)+t16*t29*(1.68E2/6.25E2)+t16*t31*(4.3E1/1.0E3)-qd3*(t12*t26+t16*t24)+qd2*t5*t19*(3.0/2.0E1)+qd1*t7*t21*(3.0/2.0E1)-qd2*t12*t24*(1.68E2/6.25E2)-qd2*t12*t26*(4.3E1/1.0E3)-qd2*t16*t24*(4.3E1/1.0E3)+qd2*t16*t26*(1.68E2/6.25E2);
-    Jd(2,2) = -t50-t51-t52+t16*t31;*/
+    Jd(2,2) = -t50-t51-t52+t16*t31;
 
     // ROS_INFO_STREAM("Jd: "<<Jd);
 
     // Kinematic Jd
-    float t2 = 3.141592653589793*(1.0/2.0);
-    float t3 = q2+t2;
-    float t4 = sin(t3);
-    float t5 = q1-t2;
-    float t6 = q3+3.7E-3;
-    float t7 = cos(t3);
-    float t8 = sin(t5);
-    float t9 = cos(t5);
-    Jd(0,1) = -qd3*t4-qd2*t6*t7;
-    Jd(0,2) = -qd2*t4;
-    Jd(1,0) = qd3*t4*t8+qd1*t4*t6*t9+qd2*t6*t7*t8;
-    Jd(1,1) = -qd3*t7*t9+qd2*t4*t6*t9+qd1*t6*t7*t8;
-    Jd(1,2) = qd1*t4*t8-qd2*t7*t9;
-    Jd(2,0) = qd3*t4*t9-qd1*t4*t6*t8+qd2*t6*t7*t9;
-    Jd(2,1) = qd3*t7*t8-qd2*t4*t6*t8+qd1*t6*t7*t9;
-    Jd(2,2) = qd1*t4*t9+qd2*t7*t8;
+    /*f2 = 3.141592653589793*(1.0/2.0);
+    f3 = q2+f2;
+    f4 = sin(f3);
+    f5 = q1-f2;
+    f6 = q3+3.7E-3;
+    f7 = cos(f3);
+    f8 = sin(f5);
+    f9 = cos(f5);
+    Jd(0,1) = -qd3*f4-qd2*f6*f7;
+    Jd(0,2) = -qd2*f4;
+    Jd(1,0) = qd3*f4*f8+qd1*f4*f6*f9+qd2*f6*f7*f8;
+    Jd(1,1) = -qd3*f7*f9+qd2*f4*f6*f9+qd1*f6*f7*f8;
+    Jd(1,2) = qd1*f4*f8-qd2*f7*f9;
+    Jd(2,0) = qd3*f4*f9-qd1*f4*f6*f8+qd2*f6*f7*f9;
+    Jd(2,1) = qd3*f7*f8-qd2*f4*f6*f8+qd1*f6*f7*f9;
+    Jd(2,2) = qd1*f4*f9+qd2*f7*f8;*/
 
 }
 void PsmForceControl::CalcM(const Eigen::VectorXd &q) //Eigen::VectorXd qd)
@@ -689,7 +689,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 2000;
+    rate = 1000;
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
@@ -995,6 +995,7 @@ void PsmForceControl::CallbackJoint(const sensor_msgs::JointState &msg)
     }
     index = index + 1;
 
+    //ROS_INFO_STREAM("myq : "<< myq[0].size() <<endl); its good
     drop = msg.header.seq-drop_p;
     drop_p = msg.header.seq;
 }
@@ -1155,7 +1156,6 @@ void PsmForceControl::CalcU()
 
         }
 
-        fl = fl*3;
 
     }
     else
@@ -1170,20 +1170,21 @@ void PsmForceControl::CalcU()
 
 
     //u = M*y + N +Fr +JaM.transpose()*he;
-     u = M*y + N +Fr;
+      u = M*y + N +Fr;
+
+
+
+    //test = Kp*(xd-xe)+Kd*(vd-ve); NO PROBLEM
+    test =JaInv*Mt.inverse()*( Kp*(xd-xe)+Kd*(vd-ve)-Mt*Jd*qd); //PROBLEM
+    //test = JaInv*Jd*qd; // THIS IS A PROBLEM
+    // test = Jd*qd; // NOT REALLY A PROBLEM
+
+    // Conclusion: the JaINv* Jd interaction is a problem!!
 
     // ROS_INFO_STREAM("M: "<< y <<endl);
-   ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
-    //ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
-     //ROS_INFO_STREAM("he : "<< he <<endl);
-
-// ///// SAFETY ///////
-
-  /*  if (std::abs(u(0))>fl|std::abs(u(1))>fl|std::abs(u(2))>fl*3)
-    {
-        u<< 0, 0, 0;
-    }*/
-    //ROS_INFO_STREAM("  xd: "<< xd << endl <<" xe[]: " << xe << endl);
+    // ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
+    // ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
+     // ROS_INFO_STREAM("he : "<< u <<endl);
 
  }
 Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
@@ -1241,7 +1242,7 @@ void PsmForceControl::output()
          }
 
          // ----------------------- IMPORTANT---This runs Robot-----------------
-         joint_pub.publish(joint_msg);
+         //joint_pub.publish(joint_msg);
          // ------------------------------------------------------
      }
 
@@ -1267,7 +1268,7 @@ void PsmForceControl::output()
          pose_msg.orientation.w = orient_cart(3);
 
          // --------------PUBLISHING -----------
-         pose_pub.publish(pose_msg);
+         //pose_pub.publish(pose_msg);
          // ------------- publsih ----------
 
          //ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
@@ -1339,9 +1340,9 @@ void PsmForceControl::output()
 
 
     // Check Joint velocities Positions
-      dq0.data =u(0);
-    dq1.data = u(1);
-    dq2.data = u(2);
+    dq0.data = test(0);
+    dq1.data = test(1);
+    dq2.data = test(2);
 
     desplot_x.publish(dq0);
     desplot_y.publish(dq1);
@@ -1376,7 +1377,7 @@ void  PsmForceControl::Loop()
      this->CalcU();
      //this->WristPID();
      this->output();
-     //ros::spinOnce();
+     ros::spinOnce();
  }
 
 /*int main(int argc, char **argv)

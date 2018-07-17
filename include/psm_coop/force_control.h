@@ -83,7 +83,7 @@ public:
     double force_magnitude, force_set, force_error, force_deadband, force_increment;
 
     Eigen::VectorXd q, qd, eff, ve, fd, he, ha, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
-    Eigen::Vector3d xe, xd;
+    Eigen::Vector3d xe, xd, test;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
     Eigen::Vector3d temp_x, fl;
 
@@ -98,6 +98,10 @@ public:
     geometry_msgs::Pose pose_msg;
 
     float pos_deadband; // rad
+
+    //TEMP
+
+    float f2, f3, f4, f5, f6, f7, f8, f9;
 
   void SetGainsInit();
   void SetDesiredInit();

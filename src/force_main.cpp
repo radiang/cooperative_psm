@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
     psm[0].name = "PSM1";
     psm[0].type = "Master";
-    psm[0].ctrl_type = choose[0];
+    psm[0].ctrl_type = choose[1];
     psm[0].Rot.resize(3,3);
     psm[0].Rot << 1, 0, 0,
             0, 1, 0,
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     std::shared_ptr<ros::NodeHandle> nhandle2 = std::make_shared<ros::NodeHandle>();
 
     Psm obj(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type,psm[0].track, psm[0].Rot, psm[0].Pos);
-    Psm obj2(nhandle2, psm[1].name, psm[1].ctrl_type , psm[1].type,psm[1].track, psm[1].Rot, psm[1].Pos);
+    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type,psm[1].track, psm[1].Rot, psm[1].Pos);
 
     ros::Rate r(obj.rate);
     ROS_INFO("It started");
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
         if(num==2) {
             obj2.Loop();
         }
-        ros::spinOnce();
+        //ros::spinOnce();
 
         //drop=0;
 
