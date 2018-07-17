@@ -773,7 +773,7 @@ void PsmForceControl::SetGainsInit()
     //Real Coefficients
     //Kp.diagonal() << 70, 110, 200;
 
-    //Computed Torque Controller 
+    //Computed Torque Controller
      Kp.diagonal() << 25, 20, 75;
     Kd.diagonal() << 10, 11, 15;
 
