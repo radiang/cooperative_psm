@@ -64,7 +64,7 @@ public:
 
     Eigen::VectorXd q, qd, eff,xe, ve, fd, he, xf, xd, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
-    Eigen::Vector3d fl;
+    Eigen::Vector3d fl, test;
 
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     Eigen::MatrixXd Ja, JaM, Jd, Jmin , C;

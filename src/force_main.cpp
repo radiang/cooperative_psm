@@ -37,9 +37,9 @@ int main(int argc, char **argv)
     psm[0].Pos.resize(3);
     psm[0].Pos << 0, 0, 0;
 
-    psm[1].name = "PSM1";
+    psm[1].name = "PSM2";
     psm[1].type = "Master";
-    psm[1].ctrl_type = choose[1];
+    psm[1].ctrl_type = choose[0];
 
     psm[1].Rot.resize(3,3);
     psm[1].Rot << 1, 0, 0,
