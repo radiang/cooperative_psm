@@ -11,7 +11,7 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     float qd2 = qd(1);
     float qd3 = qd(2);
 
- /*   // Jacobian from matlab
+    // Jacobian from matlab dynamic
     float t2 = q2-2.908373974667121E-1;
     float t3 = cos(t2);
     float t4 = 3.141592653589793*(1.0/2.0);
@@ -57,8 +57,8 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     JaM(2,0) = t3*t27*(-3.0/2.0E1)+t10*t30*(4.3E1/1.0E3)-t10*t32*(1.68E2/6.25E2)+t16*t30*(1.68E2/6.25E2)+t16*t32*(4.3E1/1.0E3)-t26*t35-t3*t8*t27*(1.29E2/2.5E2)+t7*t9*t27*(1.29E2/2.5E2);
     JaM(2,1) = t9*t19*(3.0/2.0E1)+t10*t22*(1.68E2/6.25E2)+t10*t24*(4.3E1/1.0E3)-t16*t22*(4.3E1/1.0E3)+t16*t24*(1.68E2/6.25E2)-t26*(t10*t22+t16*t24);
     JaM(2,2) = t37;
-*/
-    float t2 = 3.141592653589793*(1.0/2.0);
+
+   /* float t2 = 3.141592653589793*(1.0/2.0);
     float t3 = q2+t2;
     float t4 = sin(t3);
     float t5 = q3+3.7E-3;
@@ -74,7 +74,7 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     JaM(1,2) = -t4*t8;
     JaM(2,0) = t4*t5*t8;
     JaM(2,1) = t5*t7*t9;
-    JaM(2,2) = t4*t9;
+    JaM(2,2) = t4*t9;*/
 
 }
 
@@ -629,7 +629,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     setpos_sub2 = nhandle->subscribe("/psm/cmd_vel", 10, &PsmForceControl::CallbackSetPositionIncrement, this);
 
 //Joint States and Pub data
-    dof = 6;
+    dof = 3;
     cart_dof = 3;
     q.resize(dof);
     qd.resize(dof);
@@ -726,8 +726,8 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     x0 << 0.0, 0.0, 0.0;
     q0 << 0.0, 0.0, 0.0;
 
-    q << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-    qd << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    q << 0.0, 0.0, 0.0;
+    qd << 0.0, 0.0, 0.0;
     u << 0.0, 0.0, 0.0;
 
     C << 0, 0, 0, 0, 0, 0, 0, 0, 0;
@@ -1172,12 +1172,18 @@ void PsmForceControl::CalcU()
     //u = M*y + N +Fr +JaM.transpose()*he;
       u = M*y + N +Fr;
 
-
+     test = u;
 
     //test = Kp*(xd-xe)+Kd*(vd-ve); NO PROBLEM
-    test =JaInv*Mt.inverse()*( Kp*(xd-xe)+Kd*(vd-ve)-Mt*Jd*qd); //PROBLEM
-    //test = JaInv*Jd*qd; // THIS IS A PROBLEM
-    // test = Jd*qd; // NOT REALLY A PROBLEM
+
+    //test =JaM.inverse()*Mt.inverse()*( Kp*(xd-xe)+Kd*(vd-ve)-Mt*Jd*qd);//PROBLEM
+     //test =JaInv*Mt.inverse()*( Kp*(xd-xe)+Kd*(vd-ve)-Mt*Jd*qd);
+    //test = JaM.inverse()*Jd*qd; // THIS IS A PROBLEM
+     //test = Jd*qd; // NOT REALLY A PROBLEM
+
+     if(std::fabs(test(0))>fl(0)|std::fabs(test(1))>fl(1)|std::fabs(test(2))>fl(2)){
+         ROS_INFO_STREAM("Jaminv: "<< JaM.inverse()<<endl << "Jd: "<< Jd<< endl<< "qd:" << qd<< endl<<"test:" << test<< endl);
+     }
 
     // Conclusion: the JaINv* Jd interaction is a problem!!
 
@@ -1205,7 +1211,7 @@ Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
 
 void PsmForceControl::WristPID()
 {
-    for (int i=0;i<3;i++)
+   /* for (int i=0;i<3;i++)
     {
         wrist_eq(i)= 0.5 - q(i+3);
         wrist_eqd(i) = 0.0 - qd(i+3);
@@ -1217,7 +1223,7 @@ void PsmForceControl::WristPID()
         //ROS_INFO_STREAM("  wrist_u: "<< wrist_u<< endl<< "wrist_eq: "<< wrist_eq << endl<< "wrist_eqd: "<< wrist_eqd<<endl);
 
         //wrist_u(i) = 0;
-    }
+    }*/
 }
 void PsmForceControl::output()
 {
@@ -1228,7 +1234,7 @@ void PsmForceControl::output()
 
              if(i>=3)
              {
-                 joint_msg.effort[i] = -wrist_u(i-3);
+                // joint_msg.effort[i] = -wrist_u(i-3);
                  //ROS_INFO_STREAM(endl<<joint_msg.effort[i]);
              }
              else if(std::abs(u(i))>fl(i))
