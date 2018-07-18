@@ -12,7 +12,7 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     float qd3 = qd(2);
 
     // Jacobian from matlab dynamic
-    float t2 = q2-2.908373974667121E-1;
+    /*float t2 = q2-2.908373974667121E-1;
     float t3 = cos(t2);
     float t4 = 3.141592653589793*(1.0/2.0);
     float t5 = -q2+t4+2.908373974667121E-1;
@@ -57,8 +57,8 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     JaM(2,0) = t3*t27*(-3.0/2.0E1)+t10*t30*(4.3E1/1.0E3)-t10*t32*(1.68E2/6.25E2)+t16*t30*(1.68E2/6.25E2)+t16*t32*(4.3E1/1.0E3)-t26*t35-t3*t8*t27*(1.29E2/2.5E2)+t7*t9*t27*(1.29E2/2.5E2);
     JaM(2,1) = t9*t19*(3.0/2.0E1)+t10*t22*(1.68E2/6.25E2)+t10*t24*(4.3E1/1.0E3)-t16*t22*(4.3E1/1.0E3)+t16*t24*(1.68E2/6.25E2)-t26*(t10*t22+t16*t24);
     JaM(2,2) = t37;
-
-   /* float t2 = 3.141592653589793*(1.0/2.0);
+*/
+    float t2 = 3.141592653589793*(1.0/2.0);
     float t3 = q2+t2;
     float t4 = sin(t3);
     float t5 = q3+3.7E-3;
@@ -74,7 +74,7 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     JaM(1,2) = -t4*t8;
     JaM(2,0) = t4*t5*t8;
     JaM(2,1) = t5*t7*t9;
-    JaM(2,2) = t4*t9;*/
+    JaM(2,2) = t4*t9;
 
 }
 
@@ -427,7 +427,7 @@ void PsmForceControl::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float qd3 = qd(2);
 
     // Dynamics
-    float t2 = 3.141592653589793*(1.0/2.0);
+  /*  float t2 = 3.141592653589793*(1.0/2.0);
     float t3 = -q2+t2+2.908373974667121E-1;
     float t4 = q2-2.908373974667121E-1;
     float t5 = cos(t4);
@@ -486,12 +486,12 @@ void PsmForceControl::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     Jd(1,2) = t49;
     Jd(2,0) = t12*t36*(-1.68E2/6.25E2)-t12*t38*(4.3E1/1.0E3)-t16*t36*(4.3E1/1.0E3)+t16*t38*(1.68E2/6.25E2)-t20*t49-qd3*(t12*t44-t16*t41)+qd1*t5*t19*(3.0/2.0E1)+qd2*t7*t21*(3.0/2.0E1)+qd2*t12*t41*(1.68E2/6.25E2)-qd2*t12*t44*(4.3E1/1.0E3)+qd2*t16*t41*(4.3E1/1.0E3)+qd2*t16*t44*(1.68E2/6.25E2)+qd1*t5*t6*t19*(1.29E2/2.5E2)-qd1*t7*t8*t19*(1.29E2/2.5E2);
     Jd(2,1) = -t20*(t12*t31+t16*t29-qd2*t12*t24+qd2*t16*t26)-t12*t29*(4.3E1/1.0E3)+t12*t31*(1.68E2/6.25E2)+t16*t29*(1.68E2/6.25E2)+t16*t31*(4.3E1/1.0E3)-qd3*(t12*t26+t16*t24)+qd2*t5*t19*(3.0/2.0E1)+qd1*t7*t21*(3.0/2.0E1)-qd2*t12*t24*(1.68E2/6.25E2)-qd2*t12*t26*(4.3E1/1.0E3)-qd2*t16*t24*(4.3E1/1.0E3)+qd2*t16*t26*(1.68E2/6.25E2);
-    Jd(2,2) = -t50-t51-t52+t16*t31;
+    Jd(2,2) = -t50-t51-t52+t16*t31;*/
 
     // ROS_INFO_STREAM("Jd: "<<Jd);
 
     // Kinematic Jd
-    /*f2 = 3.141592653589793*(1.0/2.0);
+    f2 = 3.141592653589793*(1.0/2.0);
     f3 = q2+f2;
     f4 = sin(f3);
     f5 = q1-f2;
@@ -506,7 +506,7 @@ void PsmForceControl::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     Jd(1,2) = qd1*f4*f8-qd2*f7*f9;
     Jd(2,0) = qd3*f4*f9-qd1*f4*f6*f8+qd2*f6*f7*f9;
     Jd(2,1) = qd3*f7*f8-qd2*f4*f6*f8+qd1*f6*f7*f9;
-    Jd(2,2) = qd1*f4*f9+qd2*f7*f8;*/
+    Jd(2,2) = qd1*f4*f9+qd2*f7*f8;
 
 }
 void PsmForceControl::CalcM(const Eigen::VectorXd &q) //Eigen::VectorXd qd)
@@ -689,7 +689,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 1000;
+    rate = 2000;
     tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
@@ -901,8 +901,8 @@ void PsmForceControl::SetGainsInit()
     if(name == "PSM1")
     {
         Mt.diagonal()<<0.35, 0.36, 0.3;
-        Kp.diagonal() << 70, 100, 200;
-        Kd.diagonal() << 10, 7, 15;
+        Kp.diagonal() << 10, 10, 70;
+        Kd.diagonal() << 3, 3, 3;
     }
     else if (name == "PSM2")
     {
@@ -934,7 +934,7 @@ void PsmForceControl::SetGainsInit()
     force_deadband = 0.5;
     force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
 
-    fl << 8, 8, 20; // Nm, Nm, N
+    fl << 6, 6, 8; // Nm, Nm, N
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -1155,8 +1155,6 @@ void PsmForceControl::CalcU()
 
 
         }
-
-
     }
     else
     {
@@ -1172,14 +1170,7 @@ void PsmForceControl::CalcU()
     //u = M*y + N +Fr +JaM.transpose()*he;
       u = M*y + N +Fr;
 
-     test = u;
-
-    //test = Kp*(xd-xe)+Kd*(vd-ve); NO PROBLEM
-
-    //test =JaM.inverse()*Mt.inverse()*( Kp*(xd-xe)+Kd*(vd-ve)-Mt*Jd*qd);//PROBLEM
-     //test =JaInv*Mt.inverse()*( Kp*(xd-xe)+Kd*(vd-ve)-Mt*Jd*qd);
-    //test = JaM.inverse()*Jd*qd; // THIS IS A PROBLEM
-     //test = Jd*qd; // NOT REALLY A PROBLEM
+     test = y;
 
      if(std::fabs(test(0))>fl(0)|std::fabs(test(1))>fl(1)|std::fabs(test(2))>fl(2)){
          ROS_INFO_STREAM("Jaminv: "<< JaM.inverse()<<endl << "Jd: "<< Jd<< endl<< "qd:" << qd<< endl<<"test:" << test<< endl);
@@ -1187,7 +1178,7 @@ void PsmForceControl::CalcU()
 
     // Conclusion: the JaINv* Jd interaction is a problem!!
 
-    // ROS_INFO_STREAM("M: "<< y <<endl);
+     ROS_INFO_STREAM("Jinv: "<< JaInv <<endl);
     // ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
     // ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
      // ROS_INFO_STREAM("he : "<< u <<endl);
@@ -1248,7 +1239,7 @@ void PsmForceControl::output()
          }
 
          // ----------------------- IMPORTANT---This runs Robot-----------------
-         //joint_pub.publish(joint_msg);
+         joint_pub.publish(joint_msg);
          // ------------------------------------------------------
      }
 
