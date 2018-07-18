@@ -76,6 +76,8 @@ void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd
     JaM(2,1) = t5*t7*t9;
     JaM(2,2) = t4*t9;
 
+    JaM = JaM*St;
+
 }
 
 void PsmForceControl::CalcJaInv(const Eigen::VectorXd &q,const Eigen::VectorXd &qd){
@@ -670,6 +672,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     Kd.resize(3, 3);
     Cp.resize(3, 3);
     Ci.resize(3, 3);
+    St.resize(3,3);
 
 // Wrist PID Controller Data
     wrist_u.resize(3), wrist_eq.resize(3), wrist_eqd.resize(3), wrist_kp.resize(3), wrist_kd.resize(3);
@@ -740,6 +743,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     Ja << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     JaM << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Jd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
+    St << 0, 0, 0, 0, 0, 0, 0, 0, 0;
 
     Kd << 0, 0, 0, 0, 0, 0, 0, 0, 0;
     Kp << 0, 0, 0, 0, 0, 0, 0, 0, 0;
@@ -901,7 +905,7 @@ void PsmForceControl::SetGainsInit()
     if(name == "PSM1")
     {
         Mt.diagonal()<<0.35, 0.36, 0.3;
-        Kp.diagonal() << 10, 10, 70;
+        Kp.diagonal() << 10, 10, 10;
         Kd.diagonal() << 3, 3, 3;
     }
     else if (name == "PSM2")
@@ -934,7 +938,9 @@ void PsmForceControl::SetGainsInit()
     force_deadband = 0.5;
     force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
 
-    fl << 6, 6, 8; // Nm, Nm, N
+    fl << 6, 6, 15; // Nm, Nm, N
+    St.diagonal()<< 1, 1, 0.2;
+    //St<< 1, 0, 0, 0 , 1, 0, 0 , 0, 1/6;
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -1160,7 +1166,8 @@ void PsmForceControl::CalcU()
     {
         // Impedance Controller
        // y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-        y = JaInv*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
+        //y = JaInv*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
+        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
 
         // Computed Torque controller
         //y =  Kd*(vd-qd) + Kp*(xd-q);
@@ -1178,7 +1185,7 @@ void PsmForceControl::CalcU()
 
     // Conclusion: the JaINv* Jd interaction is a problem!!
 
-     ROS_INFO_STREAM("Jinv: "<< JaInv <<endl);
+     ROS_INFO_STREAM("Jinv: "<< Mt.inverse() <<endl);
     // ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
     // ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
      // ROS_INFO_STREAM("he : "<< u <<endl);

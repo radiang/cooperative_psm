@@ -90,7 +90,7 @@ public:
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     Eigen::MatrixXd Ja, JaM, JaInv, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
-    Eigen::MatrixXd data_trans;
+    Eigen::MatrixXd data_trans, St;
 
     std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;
