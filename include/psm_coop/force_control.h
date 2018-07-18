@@ -65,6 +65,7 @@ public:
     bool interp;
     Eigen::Vector3d arr;
 
+
     //Filter
     int index;
     double sum[6];
@@ -79,7 +80,10 @@ public:
 
     traject q_traj[3], q1_traj, q2_traj, q3_traj;
 
+
+
     //Cartesian Controller Data
+    float pos_deadband; // rad
     double force_magnitude, force_set, force_error, force_deadband, force_increment;
 
     Eigen::VectorXd q, qd, eff, ve, fd, he, ha, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
@@ -88,16 +92,21 @@ public:
     Eigen::Vector3d temp_x, fl;
 
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
+    
+    // Matrix Calculation Data
     Eigen::MatrixXd Ja, JaM, JaInv, Jd, Jmin , C;
     Eigen::MatrixXd M, Mt, Kp, Kd, Cp, Ci;
     Eigen::MatrixXd data_trans, St;
 
+    float q1, q2, q3, qd1, qd2, qd3;
+
+    // outputs
     std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;
 
     geometry_msgs::Pose pose_msg;
 
-    float pos_deadband; // rad
+  
 
     //TEMP
 
