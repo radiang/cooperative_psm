@@ -460,7 +460,9 @@ void PsmForceControl::CalcM(const Eigen::VectorXd &q) //Eigen::VectorXd qd)
 
 }
 
-
+void PsmForceControl::Calche(){
+    he(1) = Ke*(x_init(1)-xd(1));
+}
 
 PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const string nam, const string ctrl_type) {
 
@@ -813,6 +815,13 @@ void PsmForceControl::SetGainsInit()
     //jacobian scaling factor
     St.diagonal()<< 1, 1, 0.16;
     //St<< 1, 0, 0, 0 , 1, 0, 0 , 0, 1/6;
+
+    // Force Stuff
+    x_init = xd;
+    Ke = 2450; // N/m Spring that is used
+
+    //
+
 }
 
 void PsmForceControl::SetDesiredInit()
@@ -1018,9 +1027,9 @@ void PsmForceControl::CalcU()
 
 
         // Impedance Controller
-        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
+        y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
-                y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
 
         //Computed Torque Controller
         //y =  Kd*(v_int-qd) + Kp*(x_int-q);
@@ -1044,17 +1053,16 @@ void PsmForceControl::CalcU()
     else
     {
         // Impedance Controller
-       // y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-        //y = JaInv*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
-        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
+        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
 
         // Computed Torque controller
         //y =  Kd*(vd-qd) + Kp*(xd-q);
     }
 
 
-    //u = M*y + N +Fr +JaM.transpose()*he;
-      u = M*y + N +Fr;
+    u = M*y + N +Fr +JaM.transpose()*he;
+    //u = M*y + N +Fr;
 
      test = u;
 
