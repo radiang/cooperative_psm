@@ -674,8 +674,11 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
 
 
 
-    float Fs_pos = 0.6;
-    float Fs_neg = -0.4;
+    //float Fs_pos = 0.6;
+    //float Fs_neg = -0.4;
+
+    float Fs_pos = 1;
+    float Fs_neg = -1;
 
 
     //Computed Torque
@@ -772,7 +775,7 @@ void PsmForceControl::SetGainsInit()
     if(name == "PSM1")
     {
         Mt.diagonal()<<0.35, 0.36, 0.3;
-        Kp.diagonal() << 10, 10, 10;
+        Kp.diagonal() << 15, 15, 15;
         Kd.diagonal() << 3, 3, 3;
     }
     else if (name == "PSM2")
@@ -805,8 +808,10 @@ void PsmForceControl::SetGainsInit()
     force_deadband = 0.5;
     force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
 
-    fl << 6, 6, 15; // Nm, Nm, N
-    St.diagonal()<< 1, 1, 0.2;
+    fl << 10, 10, 20; // Nm, Nm, N
+
+    //jacobian scaling factor
+    St.diagonal()<< 1, 1, 0.16;
     //St<< 1, 0, 0, 0 , 1, 0, 0 , 0, 1/6;
 }
 
@@ -1015,7 +1020,7 @@ void PsmForceControl::CalcU()
         // Impedance Controller
         //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
-                y = JaInv*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
+                y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
 
         //Computed Torque Controller
         //y =  Kd*(v_int-qd) + Kp*(x_int-q);
@@ -1051,7 +1056,7 @@ void PsmForceControl::CalcU()
     //u = M*y + N +Fr +JaM.transpose()*he;
       u = M*y + N +Fr;
 
-     test = y;
+     test = u;
 
      if(std::fabs(test(0))>fl(0)|std::fabs(test(1))>fl(1)|std::fabs(test(2))>fl(2)){
          ROS_INFO_STREAM("Jaminv: "<< JaM.inverse()<<endl << "Jd: "<< Jd<< endl<< "qd:" << qd<< endl<<"test:" << test<< endl);
@@ -1059,7 +1064,7 @@ void PsmForceControl::CalcU()
 
     // Conclusion: the JaINv* Jd interaction is a problem!!
 
-     ROS_INFO_STREAM("Jinv: "<< Mt.inverse() <<endl);
+     //ROS_INFO_STREAM("Jinv: "<< Mt.inverse() <<endl);
     // ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
     // ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
      // ROS_INFO_STREAM("he : "<< u <<endl);
