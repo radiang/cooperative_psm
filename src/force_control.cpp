@@ -808,7 +808,7 @@ void PsmForceControl::SetGainsInit()
     force_deadband = 0.5;
     force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
 
-    fl << 10, 10, 20; // Nm, Nm, N
+    fl << 20, 20, 40; // Nm, Nm, N
 
     //jacobian scaling factor
     St.diagonal()<< 1, 1, 0.16;
@@ -1205,7 +1205,7 @@ void PsmForceControl::output()
 
 
     // Check Cartesian Positions
-  /*  dq0.data = xd(0);
+    dq0.data = xd(0);
     dq1.data = xd(1);
     dq2.data = xd(2);
 
@@ -1219,10 +1219,11 @@ void PsmForceControl::output()
 
     plot_x.publish(mq0);
     plot_y.publish(mq1);
-    plot_z.publish(mq2);*/
+    plot_z.publish(mq2);
 
 
     // Check Joint velocities Positions
+/*
     dq0.data = test(0);
     dq1.data = test(1);
     dq2.data = test(2);
@@ -1238,6 +1239,7 @@ void PsmForceControl::output()
     //plot_x.publish(mq0);
     //plot_y.publish(mq1);
     //plot_z.publish(mq2);
+*/
 
 // Fore Measure
  /*   dq0.data = force_magnitude;
