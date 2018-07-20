@@ -121,9 +121,10 @@ public:
   void CallbackForce(const std_msgs::Float32 &msg);
   virtual void ForceSet();
 
-  void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
+  //void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
+  virtual void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
 
-  //virtual void CallbackSetForceIncrement(const geometry_msgs::Twist &msg);
+
   void CallbackSetForce(const geometry_msgs::Pose &msg);
   virtual void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
   void CallbackSetPosition(const geometry_msgs::Twist &msg);

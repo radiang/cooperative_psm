@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     choose[0] = "Cartesian";
     choose[1] = "Impedance";
 
-    int num = 1;
+    int num = 2;
 
     initializer psm[2];
     //psm[0]= psm1; psm[1] = psm2;
@@ -36,7 +36,9 @@ int main(int argc, char **argv)
     psm[1].type = "Slave";
     psm[1].ctrl_type = choose[1];
     psm[1].track = false;
+
     psm[1].Rot.resize(3,3);
+    //PSM1
     psm[1].Rot << 0.5430, -0.8397, 0.0082,
             0.8397, 0.5430, 0.0142,
             -0.0161, 0.0031, 0.9998;
@@ -45,8 +47,8 @@ int main(int argc, char **argv)
     psm[1].Pos << 0.1353, 0.20372, -0.0308;
 
 
-
- /*   psm[1].Rot << 0.54285, 0.83962, -0.01636,
+    //PSM2
+/*    psm[1].Rot << 0.54285, 0.83962, -0.01636,
             -0.83973, 0.54299, -0.0007727,
             0.011334, 0.011856, .99991;
 

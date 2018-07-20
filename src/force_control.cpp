@@ -814,7 +814,8 @@ void PsmForceControl::SetGainsInit()
 
     //jacobian scaling factor
     St.diagonal()<< 1, 1, 0.16;
-    //St<< 1, 0, 0, 0 , 1, 0, 0 , 0, 1/6;
+    //St.diagonal()<< 1, 1, 1;
+
 
     // Force Stuff
     x_init = xd;
@@ -1027,9 +1028,9 @@ void PsmForceControl::CalcU()
 
 
         // Impedance Controller
-        y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
 
-        //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
+        y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd);
 
         //Computed Torque Controller
         //y =  Kd*(v_int-qd) + Kp*(x_int-q);
@@ -1053,16 +1054,16 @@ void PsmForceControl::CalcU()
     else
     {
         // Impedance Controller
-        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
+        //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
+        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
 
         // Computed Torque controller
         //y =  Kd*(vd-qd) + Kp*(xd-q);
     }
 
 
-    u = M*y + N +Fr +JaM.transpose()*he;
-    //u = M*y + N +Fr;
+    //u = M*y + N +Fr +JaM.transpose()*he;
+    u = M*y + N +Fr;
 
      test = u;
 
@@ -1073,9 +1074,11 @@ void PsmForceControl::CalcU()
     // Conclusion: the JaINv* Jd interaction is a problem!!
 
      //ROS_INFO_STREAM("Jinv: "<< Mt.inverse() <<endl);
-    // ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
-    // ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
-     // ROS_INFO_STREAM("he : "<< u <<endl);
+     //ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
+     //ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
+
+     //ROS_INFO_STREAM("he : "<< he <<endl);
+     //ROS_INFO_STREAM("x : "<< x_init<< endl<<xd <<endl);
 
  }
 Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
@@ -1159,7 +1162,7 @@ void PsmForceControl::output()
          pose_msg.orientation.w = orient_cart(3);
 
          // --------------PUBLISHING -----------
-         //pose_pub.publish(pose_msg);
+         pose_pub.publish(pose_msg);
          // ------------- publsih ----------
 
          //ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
@@ -1231,14 +1234,13 @@ void PsmForceControl::output()
 
 
     // Check Joint velocities Positions
-/*
-    dq0.data = test(0);
+/*    dq0.data = test(0);
     dq1.data = test(1);
     dq2.data = test(2);
 
     desplot_x.publish(dq0);
     desplot_y.publish(dq1);
-    desplot_z.publish(dq2);
+    desplot_z.publish(dq2);*/
 
     //mq0.data = xe(0);
     //mq1.data = xe(1);
@@ -1247,7 +1249,6 @@ void PsmForceControl::output()
     //plot_x.publish(mq0);
     //plot_y.publish(mq1);
     //plot_z.publish(mq2);
-*/
 
 // Fore Measure
  /*   dq0.data = force_magnitude;
@@ -1267,6 +1268,7 @@ void  PsmForceControl::Loop()
      this->CalcFr(q, qd);
      this->CalcN(q, qd);
      this->CalcM(q);
+     //this->Calche();
      this->CalcU();
      //this->WristPID();
      this->output();
