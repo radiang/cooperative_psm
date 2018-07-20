@@ -116,7 +116,7 @@ void Psm::ForceLoop()
 {
     //ROS_INFO_STREAM(name <<"yeahh");
     force_error = force_set-force_magnitude;
-    if(ctrl=="Cartesian" && track == true)
+    if(track == true)
     {  //ROS_INFO_STREAM(name <<"ugh yeahh");
         if(force_error>force_deadband)
         {
@@ -133,5 +133,5 @@ void Psm::ForceLoop()
 
 void Psm::ForceSet()
 {
-    he = data_trans * object/object.norm()*force_magnitude;
+   // he = data_trans * object/object.norm()*force_magnitude;
 }
