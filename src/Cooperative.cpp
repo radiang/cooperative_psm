@@ -77,11 +77,14 @@ void Cooperative::Loopz() {
         //int x=0;
         Obj[i]->Loop();
 
-        if(count%4==0)
+/*        if(count%4==0)
         {
             Obj[i]->ForceLoop();
             count = 0;
-        }
+        }*/
+
+        Obj[i]->ForceLoop();
+        count = 0;
 
     }
     //ros::spinOnce();

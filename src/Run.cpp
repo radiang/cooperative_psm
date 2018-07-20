@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     psm[1].name = "PSM1";
     psm[1].type = "Slave";
     psm[1].ctrl_type = choose[1];
-    psm[1].track = false;
+    psm[1].track = true;
 
     psm[1].Rot.resize(3,3);
     //PSM1
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
     Cooperative obj(m);
     ros::Duration(1).sleep();
-    ros::Rate r(2000);
+    ros::Rate r(obj.Obj[0]->rate);
 
 
     //obj.CalcObject();

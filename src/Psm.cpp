@@ -48,6 +48,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 
     }
 
+/*
     for (int i=0;i<3;i++)
     {
         // Impedance Controller
@@ -68,6 +69,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
     t0 = ros::Time::now().toSec();
     t = 0;
     interp = true;
+*/
 
 }
 
@@ -125,6 +127,9 @@ void Psm::ForceLoop()
         else if (force_error<-force_deadband)
         {
             temp_x = object / object.norm() * force_increment;
+        }
+        else {
+            temp_x << 0.0, 0.0, 0.0;
         }
 
         xd = xd + data_trans * temp_x;

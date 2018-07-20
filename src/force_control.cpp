@@ -561,8 +561,8 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 2000;
-    tf = 1; // moving 0.001 m in 0.2 s is pretty good for u values.
+    rate = 500;
+    tf = 4; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
     f_index = 0;
@@ -806,9 +806,16 @@ void PsmForceControl::SetGainsInit()
     // PSM1
     deadband << 0.01, 0.01, 0.005;
 
-    //Force Stuff
-    force_deadband = 0.5;
-    force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
+    //Force Stuff position
+    force_deadband = 0.3;
+    //force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
+    //force_increment = 0.000002;
+
+    // Force Stuff Impedance spring
+    //force_increment = 0.00003;
+
+    //impedance string
+    force_increment = 0.00001;
 
     fl << 20, 20, 40; // Nm, Nm, N
 
