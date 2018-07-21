@@ -127,7 +127,7 @@ public:
 
   void CallbackSetForce(const geometry_msgs::Pose &msg);
   virtual void CallbackSetPositionIncrement(const geometry_msgs::Twist &msg);
-  void CallbackSetPosition(const geometry_msgs::Twist &msg);
+  virtual void CallbackSetPosition(const geometry_msgs::Twist &msg);
 
   void CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
   void CalcJaInv(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);

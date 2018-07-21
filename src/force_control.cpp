@@ -493,7 +493,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 
     //
     setforce_sub = nhandle->subscribe("/psm_sense/setforce", 10, &PsmForceControl::CallbackSetForce, this);
-    setpos_sub = nhandle->subscribe("/psm/cmd_vel2", 10, &PsmForceControl::CallbackSetPosition, this);
+    setpos_sub = nhandle->subscribe("/psm/cmd_pos", 10, &PsmForceControl::CallbackSetPosition, this);
 
     //Command Teleop Subscribers Turn Off when using Cooperative
     force_sub2 = nhandle->subscribe("/psm/cmd_force", 10, &PsmForceControl::CallbackSetForceIncrement, this);

@@ -15,6 +15,37 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     track = trak;
 }
 
+void Psm::CallbackSetPosition(const geometry_msgs::Twist &msg) {
+
+    Eigen::Vector3d error;
+    double inc_limit = 0.002;
+
+    error(0) = xd(0) - msg.linear.x;
+    error(1) = xd(1) - msg.linear.y;
+    error(2) = xd(2) - msg.linear.z;
+
+    if(error.norm()<inc_limit) {
+
+        if (type == "Master") {
+
+            xd(0) = msg.linear.x;
+            xd(1) = msg.linear.y;
+            xd(2) = msg.linear.z;
+
+        } else if (type == "Slave") {
+
+            xs(0) = msg.linear.x;
+            xs(1) = msg.linear.y;
+            xs(2) = msg.linear.z;
+
+            xd = rot.inverse() * xs;
+        }
+        else
+        {
+            ROS_INFO_STREAM("Increment too large");
+        }
+    }
+}
 void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 {
 
