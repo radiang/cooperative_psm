@@ -6,6 +6,8 @@
 #define PROJECT_DATATYPE_H
 
 #include <string>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
 
 using namespace std;
 
@@ -28,6 +30,16 @@ struct initializer {
     Eigen::MatrixXd Rot;
     Eigen::VectorXd Pos;
     ros::NodeHandle n;
+    double rate;
+};
+
+struct Path {
+
+
+    std::vector<Eigen::Vector3d> set_points;
+    std::vector<double> set_times;
+    int num_points;
+
 };
 
 #endif //PROJECT_DATATYPE_H
