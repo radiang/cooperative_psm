@@ -44,13 +44,14 @@ set(SRC_FILES
 		src/Psm.cpp
 		src/Cooperative.cpp
 		src/force_main.cpp
-		)
+        src/path_planner.cpp)
 set(HDR_FILES
 		include/psm_coop/Interpolate.h
 		include/psm_coop/force_control.h
 		include/psm_coop/Psm.h
 		include/psm_coop/Cooperative.h
-		include/psm_coop/DataType.h)
+		include/psm_coop/DataType.h
+		include/psm_coop/path_planner.h)
 
 add_library(psm_coop  ${SRC_FILES} ${HDR_FILES})
 target_link_libraries(psm_coop ${catkin_LIBRARIES})
