@@ -10,6 +10,9 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     pos = Posz;
 
     temp_x << 0.0, 0.0, 0.0;
+    Kf = .00001; //  [ m/N ];
+    mag = 0;
+    delta_mag = 0;
     //type = typ;
     //ctrl_typ = ctrl_type;
     track = trak;
@@ -113,12 +116,10 @@ void Psm::CallbackSetForceIncrement(const geometry_msgs::Twist &msg)
             Eigen::Vector3d x;
             x = object / object.norm() * -msg.linear.x;
 
-            xd = xd + data_trans * x;
+            xf = xf + data_trans * x;
         }
         else {
-            int x = 0;
-            force_set = force_set + msg.linear.x;
-
+            force_set = force_set + 100*msg.linear.x;
         }
     }
 
@@ -151,19 +152,23 @@ void Psm::ForceLoop()
     force_error = force_set-force_magnitude;
     if(track == true)
     {  //ROS_INFO_STREAM(name <<"ugh yeahh");
-        if(force_error>force_deadband)
+        if(std::abs(force_error)>force_deadband)
         {
-            temp_x = object / object.norm() * -force_increment;
+            //temp_x = object / object.norm() * -Kf*(force_error);
+            delta_mag =  -Kf*(force_error);
         }
-        else if (force_error<-force_deadband)
+      /*  else if (force_error<-force_deadband)
         {
             temp_x = object / object.norm() * force_increment;
-        }
+        }*/
         else {
             temp_x << 0.0, 0.0, 0.0;
+            delta_mag = 0;
         }
 
-        xd = xd + data_trans * temp_x;
+        mag = mag + delta_mag;
+
+        xf = data_trans *object / object.norm() * mag;
     }
 }
 

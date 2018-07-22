@@ -15,6 +15,8 @@ public:
     Eigen::Vector3d xs;
     Eigen::Vector3d temp_x;
 
+    double Kf, mag, delta_mag;
+
 
 
     Psm(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, bool trak, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);

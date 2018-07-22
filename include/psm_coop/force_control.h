@@ -86,11 +86,10 @@ public:
     float pos_deadband; // rad
     double force_magnitude, force_set, force_error, force_deadband, force_increment;
 
-    Eigen::VectorXd q, qd, eff, ve, fd, he, ha, xf, vd,ad, y, u, x0, q0, N, x_int, v_int, a_int, G, Fr, deadband;
-    Eigen::Vector3d xe, xd, test;
+    Eigen::VectorXd q, qd, eff, ve, fd, he, ha, vd,ad, y, u, q0, N, x_int, v_int, a_int, G, Fr, deadband;
+    Eigen::Vector3d xe, xd, xf,xt, x0  ,test;
     Eigen::VectorXd joint_act, joint_des, orient_cart;
     Eigen::Vector3d temp_x, fl, x_init;
-
     Eigen::VectorXd wrist_u, wrist_eq, wrist_eqd, wrist_kp, wrist_kd;
     
     // Matrix Calculation Data
@@ -131,15 +130,14 @@ public:
 
   void CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
   void CalcJaInv(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
-
   void CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd  &qd);
-
   void CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd);
   void CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
   void CalcC(const Eigen::VectorXd &q, const Eigen::VectorXd &qd);
   void CalcG(const Eigen::VectorXd &q);
   void CalcM(const Eigen::VectorXd &q);
   void CalcU();
+  virtual void CalcTotalDesired(const Eigen::Vector3d &x);
 
   void Calche();
   void WristPID();

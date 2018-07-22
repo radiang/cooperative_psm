@@ -516,11 +516,9 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     fd.resize(3);
     he.resize(3);
     ha.resize(3);
-    xf.resize(3);
     vd.resize(3);
     ad.resize(3);
     y.resize(3);
-    x0.resize(3);
     x_int.resize(3);
     v_int.resize(3);
     a_int.resize(3), deadband.resize(3),
@@ -594,6 +592,8 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 
     xd << 0.0, 0.0, 0.0;
     xe << 0.0, 0.0, 0.0;
+    xf << 0.0, 0.0, 0.0;
+    xt << 0.0, 0.0, 0.0;
 
     x0 << 0.0, 0.0, 0.0;
     q0 << 0.0, 0.0, 0.0;
@@ -843,6 +843,7 @@ void PsmForceControl::SetDesiredInit()
  //Impedance Controller
  xd << incre[0] + x0(0), incre[1] + x0(1), incre[2] + x0(2) ;
 
+ this->CalcTotalDesired(xd);
  // Computed Torque Controller
  //xd << incre[0] + q0(0),incre[1] + q0(1) ,incre[2] + q0(2) ;
 
@@ -950,9 +951,9 @@ void PsmForceControl::ForceSet()
      he(1) = msg.linear.y + he(1);
      he(2) = msg.linear.z + he(2);
 */
-     xd(1)= msg.linear.x + xd(1);
-     xd(0)= msg.linear.y + xd(0);
-     xd(2)= msg.linear.z + xd(2);
+     xf(1)= msg.linear.x + xf(1);
+     xf(0)= msg.linear.y + xf(0);
+     xf(2)= msg.linear.z + xf(2);
  }
 
  void PsmForceControl::CallbackSetForce(const geometry_msgs::Pose &msg)
@@ -971,7 +972,6 @@ void PsmForceControl::ForceSet()
 
 void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
  {
-
 
      arr(0) = msg.linear.x;
      arr(1) = msg.linear.y;
@@ -1004,7 +1004,11 @@ void PsmForceControl::CallbackSetPositionIncrement(const geometry_msgs::Twist &m
      t = 0;
      interp = true;
  }
+void PsmForceControl::CalcTotalDesired(const Eigen::Vector3d &x){
 
+    xt = x + xf;
+
+}
 
 void PsmForceControl::CalcU()
  {    // This is parallel/position/force
@@ -1032,7 +1036,7 @@ void PsmForceControl::CalcU()
             }
         }
 
-
+        this->CalcTotalDesired(x_int);
 
         // Impedance Controller
         //y = JaM.inverse()*Mt.inverse()*(Mt*a_int+Kd*(v_int-ve)+Kp*(x_int-xe)-Mt*Jd*qd-he);
@@ -1059,10 +1063,10 @@ void PsmForceControl::CalcU()
         }
     }
     else
-    {
+    {   this->CalcTotalDesired(xd);
         // Impedance Controller
         //y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd-he);
-        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xd-xe)-Mt*Jd*qd);
+        y = JaM.inverse()*Mt.inverse()*(Mt*ad+Kd*(vd-ve)+Kp*(xt-xe)-Mt*Jd*qd);
 
         // Computed Torque controller
         //y =  Kd*(vd-qd) + Kp*(xd-q);
@@ -1150,14 +1154,7 @@ void PsmForceControl::output()
      else if(ctrl == "Cartesian")
      {   Eigen::Vector3d x;
 
-        if (interp==true)
-        {
-            x = data_trans.inverse()*x_int;
-        }
-        else
-        {
-            x = data_trans.inverse()*xd;
-        }
+         x = data_trans.inverse()*xt;
 
          pose_msg.position.x = x(0);
          pose_msg.position.y = x(1);
@@ -1268,9 +1265,8 @@ void  PsmForceControl::Loop()
      //ROS_INFO_STREAM("orient"<< name << " " << orient_cart);
 
      this->joint_act = this->InverseKinematic(xe);
-     this->joint_des = this->InverseKinematic(xd);
+     this->joint_des = this->InverseKinematic(xt);
      this->CalcJaM(q, qd);
-     //this->CalcJaInv(q, qd);
      this->CalcJd(q, qd);
      this->CalcFr(q, qd);
      this->CalcN(q, qd);
