@@ -37,7 +37,7 @@ public:
     void DesiredPath();
     int Loop();
     void SaveHistory();
-    void Write();
+    void Write(string &file_name, vector<Eigen::Vector3d> *v_j);
 
 };
 

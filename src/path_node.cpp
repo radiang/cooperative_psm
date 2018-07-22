@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         check = obj.Loop();
 
         if (check==1){
-            obj.Write();
+            //obj.Write();
         }
         r.sleep();
     }
