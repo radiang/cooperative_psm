@@ -484,6 +484,11 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     joint_pub = nhandle->advertise<sensor_msgs::JointState>("/dvrk/" + name + "/set_effort_joint", 3);
     pose_pub  = nhandle->advertise<geometry_msgs::Pose>("/dvrk/" + name + "/set_position_cartesian", 3);
 
+    //Data Publishing
+    Pub_xe = nhandle->advertise<geometry_msgs::Pose>("/psm_sense/" + name + "/actual_pose", 3);
+    Pub_xd = nhandle->advertise<geometry_msgs::Pose>("/psm_sense/" + name + "/desired_pose", 3);
+    Pub_xf = nhandle->advertise<geometry_msgs::Pose>("/psm_sense/" + name + "/desired_force_pose", 3);
+
 //jacobian_sub=n.subscribe("/dvrk/"+ name + "/jacobian_body", 200, &PsmForceControl::CallbackJacobian,this);
 
     //Data Subscribers
@@ -1258,6 +1263,26 @@ void PsmForceControl::output()
  /*   dq0.data = force_magnitude;
     desplot_x.publish(dq0);*/
  }
+void PsmForceControl::DataPublishing() {
+    msg_xe.position.x = xe(0);
+    msg_xe.position.y = xe(1);
+    msg_xe.position.z = xe(2);
+
+    Pub_xe.publish(msg_xe);
+
+    msg_xd.position.x = xd(0);
+    msg_xd.position.y = xd(1);
+    msg_xd.position.z = xd(2);
+
+    Pub_xd.publish(msg_xd);
+
+    msg_xf.position.x = xf(0);
+    msg_xf.position.y = xf(1);
+    msg_xf.position.z = xf(2);
+
+    Pub_xf.publish(msg_xf);
+    //This kind of Hard coding you should understand how to fix by message making templates and such.
+}
 
 void  PsmForceControl::Loop()
  {
@@ -1275,6 +1300,9 @@ void  PsmForceControl::Loop()
      this->CalcU();
      //this->WristPID();
      this->output();
+     this->DataPublishing();
+
+     //Spin once in base class?
      ros::spinOnce();
  }
 

@@ -38,11 +38,12 @@ using namespace std;
 
 class PsmForceControl{
 private:
-  //std::vector<ros::Publisher> ecmPub, psm1Pub, psm2Pub, psm3Pub;
+
     ros::Subscriber jacobian_sub, joint_sub, cartesian_sub, force_sub,force_sub2, setforce_sub, setpos_sub, setpos_sub2;
     ros::Publisher plot_x, plot_y, plot_z, joint_pub, pose_pub, desplot_x, desplot_y, desplot_z;
 
-  //std::vector<ros::Publisher> cartPub;
+    ros::Publisher Pub_xe,Pub_xd,Pub_xf;
+
 public:
     PsmForceControl(shared_ptr<ros::NodeHandle> n, const string nam, const string ctrl_type);
 
@@ -103,7 +104,7 @@ public:
     std_msgs::Float64 mq0, mq1, mq2, dq0, dq1, dq2;
     sensor_msgs::JointState joint_msg, msg2;
 
-    geometry_msgs::Pose pose_msg;
+    geometry_msgs::Pose pose_msg, msg_xd, msg_xf, msg_xe;
 
     //Force stuff
     double Ke;
@@ -138,6 +139,7 @@ public:
   void CalcM(const Eigen::VectorXd &q);
   void CalcU();
   virtual void CalcTotalDesired(const Eigen::Vector3d &x);
+  void DataPublishing();
 
   void Calche();
   void WristPID();

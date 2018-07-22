@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
     ros::init(argc, argv, "PsmForceControl_node");
 
-    int num = 2;
+    int num = 1;
    // Options
 
     initializer psm[2];
