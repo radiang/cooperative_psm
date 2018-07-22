@@ -13,6 +13,7 @@
 
 #include <psm_coop/DataType.h>
 #include <psm_coop/psm_sub.h>
+#include <psm_coop/csv_writer.h>
 
 class PathPlanner {
 private:
@@ -35,6 +36,8 @@ public:
     void RotatePath();
     void DesiredPath();
     int Loop();
+    void SaveHistory();
+    void Write();
 
 };
 

@@ -44,7 +44,8 @@ set(SRC_FILES
 		src/Psm.cpp
 		src/Cooperative.cpp
 		src/force_main.cpp
-        src/path_planner.cpp src/psm_coop/psm_sub.cpp)
+        src/path_planner.cpp
+		src/psm_sub.cpp)
 set(HDR_FILES
 		include/psm_coop/Interpolate.h
 		include/psm_coop/force_control.h
@@ -52,6 +53,7 @@ set(HDR_FILES
 		include/psm_coop/Cooperative.h
 		include/psm_coop/DataType.h
 		include/psm_coop/path_planner.h
+		include/psm_coop/csv_writer.h
 		include/psm_coop/psm_sub.h)
 
 add_library(psm_coop  ${SRC_FILES} ${HDR_FILES})
@@ -63,6 +65,8 @@ target_link_libraries(force_main psm_coop)
 add_executable(Run src/Run.cpp)
 target_link_libraries(Run psm_coop)
 
+add_executable(path_node src/path_node.cpp)
+target_link_libraries(path_node psm_coop)
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})

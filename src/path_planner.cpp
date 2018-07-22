@@ -98,6 +98,11 @@ int PathPlanner::Loop() {
     for(int i;i<Psm_num;i++) {
         Psm[i]->PublishXd();
     }
+
+    //
+    this->SaveHistory();
+
+
     t = t + 1/rate;
 
     if(t == path.set_times[path.checkpoint+1]){
@@ -112,5 +117,13 @@ int PathPlanner::Loop() {
     }
 }
 
+void PathPlanner::SaveHistory() {
+
+
+}
+
+void PathPlanner::Write(){
+
+}
 
 
