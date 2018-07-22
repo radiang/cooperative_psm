@@ -39,6 +39,8 @@ struct Path {
     std::vector<Eigen::Vector3d> set_points;
     std::vector<double> set_times;
     int num_points;
+    std::vector<Eigen::Vector3d> delta;
+    int checkpoint;
 
 };
 

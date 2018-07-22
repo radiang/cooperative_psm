@@ -26,11 +26,15 @@ private:
 
     Path path;
 
+    double t;
+    double rate;
+
 public:
     PathPlanner(std::vector<initializer> &psm);
     void CalculatePath();
+    void RotatePath();
     void DesiredPath();
-    void Loop();
+    int Loop();
 
 };
 

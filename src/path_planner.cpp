@@ -29,6 +29,13 @@ PathPlanner::PathPlanner(std::vector<initializer> &psm){
     path.set_points.push_back(x);
     path.set_times.push_back(0);
 
+    t = 0;
+
+    rate = psm_data[0].rate;
+
+    this->DesiredPath();
+    this->CalculatePath();
+
 }
 
 void PathPlanner::DesiredPath(){
@@ -56,26 +63,52 @@ void PathPlanner::DesiredPath(){
     path.set_times.push_back(ts);
 
     path.num_points = path.set_points.size();
+    path.checkpoint = 0;
+    path.delta.resize(path.num_points);
 }
 
-void PathPlanner::CalculatePath() {
-
-    
-
-    for(int i;i<Psm_num;i++) {
-        if (psm_data[i].type == "Master"){
-            Psm[i]->xd = Psm[i]->xd;
-        }
-        else if (psm_data[i].type =="Slave")
-        {
-            Psm[i]->xd = psm_data[i].Rot.inverse() * Psm[i]->xd;
-        }
+void PathPlanner::CalculatePath(){
+    for(int i;i<(path.num_points-1);i++) {
+        path.delta[i] = (path.set_points[i+1]-path.set_points[i])/rate;
     }
 }
 
-void PathPlanner::Loop() {
+void PathPlanner::RotatePath() {
+
+    int iter= path.checkpoint;
+
+    for(int i;i<Psm_num;i++) {
+
+
+        if (psm_data[i].type == "Master"){
+            Psm[i]->xd = path.delta[iter] + Psm[i]->xd;
+        }
+        else if (psm_data[i].type =="Slave")
+        {
+            Psm[i]->xd = psm_data[i].Rot.inverse()*path.delta[iter] + Psm[i]->xd;
+        }
+
+    }
+}
+
+int PathPlanner::Loop() {
+
+    this->RotatePath();
+
     for(int i;i<Psm_num;i++) {
         Psm[i]->PublishXd();
+    }
+    t = t + 1/rate;
+
+    if(t == path.set_times[path.checkpoint+1]){
+        path.checkpoint =+1;
+
+        if(path.checkpoint==path.num_points){
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
 }
 
