@@ -10,9 +10,13 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     pos = Posz;
 
     temp_x << 0.0, 0.0, 0.0;
+
+    //Force Stuff
     Kf = .00001; //  [ m/N ];
     mag = 0;
     delta_mag = 0;
+    force_deadband = 0.3;
+
     //type = typ;
     //ctrl_typ = ctrl_type;
     track = trak;
@@ -155,7 +159,7 @@ void Psm::ForceLoop()
         if(std::abs(force_error)>force_deadband)
         {
             //temp_x = object / object.norm() * -Kf*(force_error);
-            delta_mag =  -Kf*(force_error);
+            delta_mag =  Kf*(force_error);
         }
       /*  else if (force_error<-force_deadband)
         {
@@ -168,7 +172,7 @@ void Psm::ForceLoop()
 
         mag = mag + delta_mag;
 
-        xf = data_trans *object / object.norm() * mag;
+        xf = data_trans * -object / object.norm() * mag;
     }
 }
 

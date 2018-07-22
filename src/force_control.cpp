@@ -807,7 +807,7 @@ void PsmForceControl::SetGainsInit()
     deadband << 0.01, 0.01, 0.005;
 
     //Force Stuff position
-    force_deadband = 0.3;
+
     //force_increment = 0.00002; //meters a t( 2000 / 4 )hz?
     //force_increment = 0.000002;
 
