@@ -56,10 +56,6 @@ void Psm::CallbackSetPosition(const geometry_msgs::Twist &msg) {
 void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 {
 
-
-
-    //ROS_INFO_STREAM("M: this is Yan");
-
     if (type == "Master")
     {
         arr(0) = msg.linear.x;
@@ -86,7 +82,6 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
 
     }
 
-/*
     for (int i=0;i<3;i++)
     {
         // Impedance Controller
@@ -96,7 +91,7 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
         //q_traj[i].qd << q(i), 0, 0, xd(i),0,0;
 
 
-        if (arr[i] != 0)
+        if (arr(i) != 0)
         {
             q_traj[i]=interpolate(q_traj[i]);
         }
@@ -107,7 +102,6 @@ void Psm::CallbackSetPositionIncrement(const geometry_msgs::Twist &msg)
     t0 = ros::Time::now().toSec();
     t = 0;
     interp = true;
-*/
 
 }
 
