@@ -106,3 +106,17 @@ void Cooperative::CallbackForcez(const geometry_msgs::Twist &msg)
         Obj[i]->CallbackSetForceIncrement(msg);
     }
 }
+
+void Cooperative::Write(string &file_name, vector<Eigen::Vector3d> *v_j)
+{
+    CSVWriter writer(file_name);
+    vector<double> v3 = {0, 0, 0};
+
+    for(auto it = v_j->begin(); it != v_j->end(); ++it)
+    {
+        v3[0] = it->data()[0];
+        v3[1] = it->data()[1];
+        v3[2] = it->data()[2];
+        writer.addDatainRow(v3.begin(), v3.end());
+    }
+}

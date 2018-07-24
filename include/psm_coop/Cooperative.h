@@ -7,6 +7,7 @@
 
 #include "psm_coop/Psm.h"
 #include "psm_coop/DataType.h"
+#include "psm_coop/csv_writer.h"
 #include <memory>
 //#include <bits/shared_ptr.h>
 
@@ -26,6 +27,7 @@ public:
     void Loopz();
     void CallbackMovez(const geometry_msgs::Twist &msg);
     void CallbackForcez(const geometry_msgs::Twist &msg);
+    void Write(string &file_name, vector<Eigen::Vector3d> *v_j);
 };
 
 
