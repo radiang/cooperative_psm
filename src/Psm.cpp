@@ -20,6 +20,11 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     //type = typ;
     //ctrl_typ = ctrl_type;
     track = trak;
+
+    //Init record data
+    vector_xd.resize(sampling_num);
+    vector_xf.resize(sampling_num);
+    vector_xe.resize(sampling_num);
 }
 
 void Psm::CallbackSetPosition(const geometry_msgs::Twist &msg) {
@@ -173,4 +178,52 @@ void Psm::ForceLoop()
 void Psm::ForceSet()
 {
    // he = data_trans * object/object.norm()*force_magnitude;
+}
+
+void Psm::Write(string file_name, vector<Eigen::Vector3d> *v_j)
+{
+    CSVWriter writer(file_name);
+    vector<double> v3 = {0, 0, 0};
+
+    for(auto it = v_j->begin(); it != v_j->end(); ++it)
+    {
+        v3[0] = it->data()[0];
+        v3[1] = it->data()[1];
+        v3[2] = it->data()[2];
+        writer.addDatainRow(v3.begin(), v3.end());
+    }
+}
+
+void Psm::DataCollect() {
+    if(interp=true){
+        sampling_start = true;
+    }
+    if(sampling_start)
+    {
+        int sampling_cnt_base = round(rate/sampling_freq);
+        if(joint_state_cnt%sampling_cnt_base == 0)
+        {
+            if(sampling_cnt < sampling_num)
+            {
+                vector_xd[sampling_cnt] = xd;
+                vector_xe[sampling_cnt] = xe;
+                vector_xf[sampling_cnt] = xf;
+            }
+            else if(sampling_cnt == sampling_num)
+            {
+                //write data into files
+                string filename = name + "_xd.csv";
+                Write(filename, &vector_xd);
+
+                filename = name + "_xe.csv";
+                Write(filename, &vector_xe);
+
+                filename = name + "_xf.csv";
+                Write(filename, &vector_xf);
+            }
+            sampling_cnt++;
+        }
+        joint_state_cnt++;
+    }
+
 }
