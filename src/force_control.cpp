@@ -564,7 +564,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 500;
+    rate = 600;
     tf = 4; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;

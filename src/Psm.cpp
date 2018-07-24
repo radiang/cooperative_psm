@@ -25,6 +25,7 @@ Psm::Psm(std::shared_ptr<ros::NodeHandle> n,const string nam, const string ctrl_
     vector_xd.resize(sampling_num);
     vector_xf.resize(sampling_num);
     vector_xe.resize(sampling_num);
+    vector_f.resize(sampling_num);
 }
 
 void Psm::CallbackSetPosition(const geometry_msgs::Twist &msg) {
@@ -200,7 +201,7 @@ void Psm::DataCollect() {
     }
     if(sampling_start)
     {
-        int sampling_cnt_base = round(rate/sampling_freq);
+        int sampling_cnt_base = round(600/sampling_freq);
         if(joint_state_cnt%sampling_cnt_base == 0)
         {
             if(sampling_cnt < sampling_num)
@@ -208,6 +209,8 @@ void Psm::DataCollect() {
                 vector_xd[sampling_cnt] = xd;
                 vector_xe[sampling_cnt] = xe;
                 vector_xf[sampling_cnt] = xf;
+                he(0) = force_magnitude;
+                vector_f[sampling_cnt] = he;
             }
             else if(sampling_cnt == sampling_num)
             {
@@ -220,6 +223,9 @@ void Psm::DataCollect() {
 
                 filename = name + "_xf.csv";
                 Write(filename, &vector_xf);
+
+                filename = name + "_f.csv";
+                Write(filename, &vector_f);
             }
             sampling_cnt++;
         }

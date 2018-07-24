@@ -18,14 +18,14 @@ public:
 
     double Kf, mag, delta_mag;
 
-    double sampling_freq = 200;
+    double sampling_freq = 600;
     bool sampling_start = false;
     double sampling_start_time = 20;//start sampling after 10s
     int sampling_num = (int)sampling_freq*30; //sample for 10s
     int sampling_cnt = 0;
     int joint_state_cnt = 0;
 
-    std::vector<Eigen::Vector3d> vector_xd, vector_xe, vector_xf;
+    std::vector<Eigen::Vector3d> vector_xd, vector_xe, vector_xf, vector_f;
 
     Psm(std::shared_ptr<ros::NodeHandle> n, const string nam,const string ctrl_type, const string typ, bool trak, const Eigen::MatrixXd Rotz, const Eigen::VectorXd Posz);
 
