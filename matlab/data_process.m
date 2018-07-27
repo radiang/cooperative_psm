@@ -1,7 +1,7 @@
 clear all 
 close all
 
-foldername = 'data/test1/';
+foldername = 'data/test2/';
 psm = 'PSM1';
 
 
@@ -61,7 +61,10 @@ plot3(xf(:,1,2),xf(:,2,2),xf(:,3,2));
 hold off
 legend('PSM2 xe','PSM2 xd','PSM2 xf');
 grid on
-pbaspect([1 1 1])
+pbaspect([1.5 1.5 1.5])
+zlabel('z [m]');
+ylabel('y [m]');
+xlabel('x [m]');
 
 subplot(1,2,1);
 plot3(xe(:,1,1),xe(:,2,1),xe(:,3,1));
@@ -70,12 +73,18 @@ plot3(xd(:,1,1),xd(:,2,1),xd(:,3,1));
 hold on
 plot3(xf(:,1,1),xf(:,2,1),xf(:,3,1));
 hold off
+zlabel('z [m]');
+ylabel('y [m]');
+xlabel('x [m]');
 
 legend('PSM1 xe','PSM1 xd','PSM1 xf');
 grid on
-pbaspect([1 1 1])
+pbaspect([1.5 1.5 1.5])
 
 figure()
 plot(t,f(:,1,1)');
+
+ylabel('[N]');
+xlabel('[s]');
 
 
