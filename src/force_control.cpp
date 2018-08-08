@@ -564,7 +564,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 600;
+    rate = 30;
     tf = 4; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
@@ -825,8 +825,8 @@ void PsmForceControl::SetGainsInit()
     fl << 20, 20, 40; // Nm, Nm, N
 
     //jacobian scaling factor
-    St.diagonal()<< 1, 1, 0.16;
-    //St.diagonal()<< 1, 1, 1;
+    //St.diagonal()<< 1, 1, 0.16;
+    St.diagonal()<< 1, 1, 1;
 
 
     // Force Stuff
@@ -1080,16 +1080,22 @@ void PsmForceControl::CalcU()
     u = M*y + N +Fr;
 
      test = u;
+/*     ROS_INFO_STREAM("everything : /n"<<endl<< M*JaM.inverse()*Mt.inverse() <<endl);
+
+     ROS_INFO_STREAM("Jacobian singularity : /n"<<endl<< JaM.inverse().transpose() <<endl);
+
+     ROS_INFO_STREAM("Mass : "<<endl<< M<<endl);
+
+     ROS_INFO_STREAM("Mass desired : "<<endl<< Mt <<endl);*/
 
      if(std::fabs(test(0))>fl(0)|std::fabs(test(1))>fl(1)|std::fabs(test(2))>fl(2)){
-         ROS_INFO_STREAM("Jaminv: "<< JaM.inverse()<<endl << "Jd: "<< Jd<< endl<< "qd:" << qd<< endl<<"test:" << test<< endl);
+        ROS_INFO_STREAM("Jaminv: "<< JaM.inverse()<<endl << "Jd: "<< Jd<< endl<< "qd:" << qd<< endl<<"test:" << test<< endl);
      }
 
     // Conclusion: the JaINv* Jd interaction is a problem!!
 
      //ROS_INFO_STREAM("Jinv: "<< Mt.inverse() <<endl);
      //ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
-     //ROS_INFO_STREAM("Jacobian singularity : "<< JaM.inverse()*Mt.inverse() <<endl);
 
      //ROS_INFO_STREAM("he : "<< he <<endl);
      //ROS_INFO_STREAM("x : "<< x_init<< endl<<xd <<endl);
