@@ -133,6 +133,9 @@ class psm(object):
         joint_angle[0] = -math.atan(x/z)
         joint_angle[1] = -math.atan(y/math.sqrt(math.pow(x,2)+math.pow(z,2))) 
         joint_angle[2] = math.sqrt(math.pow(x,2)+math.pow(y,2)+math.pow(z,2))+0.006
+        #joint_angle[0] = -math.atan(y/z)
+        #joint_angle[1] = -math.atan(x/math.sqrt(math.pow(y,2)+math.pow(z,2)))
+        #joint_angle[2] = math.sqrt(math.pow(y,2)+math.pow(x,2)+math.pow(z,2))+0.006
 
         return joint_angle
 

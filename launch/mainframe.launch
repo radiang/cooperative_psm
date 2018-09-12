@@ -1,9 +1,6 @@
 <launch>
-<arg name="rvizconfig" default="$(find psm_coop)/rviz/PSM2s.rviz" />
-
-
+<arg name="rvizconfig" default="$(find psm_coop)/rviz/PSM2s.rviz"/>
 <!-- Set the number of PSMs and the names, the nodes psm_controller and psm_listener uses these parameters -->
-
 <!-- <rosparam param="number">2</rosparam>
 <rosparam param="name">['one','two']</rosparam>
 <rosparam param="gazebo_on">1</rosparam> -->
@@ -12,13 +9,11 @@
 
     <node pkg="psm_coop" type="mainframe.py"
           name="psm_controller" output="screen">
-         
      </node>
 
      <node pkg="psm_coop" type="psm_tf_listener.py"
           name="psm_listener" output="screen" >
      </node>
-
      <!--node
        name="rviz"
        pkg="rviz"

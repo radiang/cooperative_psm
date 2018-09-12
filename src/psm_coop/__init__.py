@@ -3,6 +3,3 @@
 
 __all__ = ["coop", "tracker"]
 
-# arm classes
-#from bullshit_library import bullshit_library
-
