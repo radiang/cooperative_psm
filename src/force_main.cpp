@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     initializer psm[2];
     //psm[0]= psm1; psm[1] = psm2;
 
-    psm[0].name = "PSM1";
+    psm[0].name = "PSM2";
     psm[0].type = "Master";
     psm[0].ctrl_type = choose[1];
     psm[0].Rot.resize(3,3);
