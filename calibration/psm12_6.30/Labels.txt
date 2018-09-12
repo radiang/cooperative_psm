@@ -1,5 +1,0 @@
-Rigid Body 1: Fix PSM1 (left)
-Rigid Body 2: Fix PSM2 (right)
-
-Rigid Body 3: Move PSM1
-Rigid Body 4: Move PSM2 
