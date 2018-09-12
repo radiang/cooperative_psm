@@ -1,0 +1,37 @@
+<launch>
+  <node name="force_plot"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/PSM1/tool_forces/wrench/force/x /psm_sense/PSM2/tool_forces/wrench/force/x" />
+
+  <node name="force_plot_y"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/PSM1/tool_forces/wrench/force/y /psm_sense/PSM2/tool_forces/wrench/force/y" />
+
+  <node name="force_plot_z"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/PSM1/tool_forces/wrench/force/z /psm_sense/PSM2/tool_forces/wrench/force/z" />
+
+  <node name="force_plot_magnitude"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/PSM1/tool_forces/wrench/torque/x /psm_sense/PSM2/tool_forces/wrench/torque/x" />
+
+  <node name="plot_worldpose_x"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/one/worldpose/position/x /psm_sense/two/worldpose/position/x" />
+
+  <node name="plot_worldpose_y"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/one/worldpose/position/y /psm_sense/two/worldpose/position/y" />
+
+  <node name="plot_worldpose_z"
+        pkg="rqt_plot"
+        type="rqt_plot"
+        args="/psm_sense/one/worldpose/position/z /psm_sense/two/worldpose/position/z" />
+
+</launch>
