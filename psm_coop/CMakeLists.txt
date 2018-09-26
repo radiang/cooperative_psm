@@ -68,8 +68,8 @@ target_link_libraries(Run psm_coop)
 add_executable(path_node src/path_node.cpp)
 target_link_libraries(path_node psm_coop)
 
-add_executable(talker src/talker.cpp)
-target_link_libraries(talker ${catkin_LIBRARIES})
+#add_executable(talker src/talker.cpp)
+#target_link_libraries(talker ${catkin_LIBRARIES})
 
 #add_executable(force_control src/force_control.cpp)
 #target_link_libraries(force_control ${catkin_LIBRARIES})
