@@ -4,54 +4,7 @@
 
 void PsmForceControl::CalcJaM(const Eigen::VectorXd &q,const Eigen::VectorXd &qd)
 {
-  
-    // Jacobian from matlab dynamic
-    /*float t2 = q2-2.908373974667121E-1;
-    float t3 = cos(t2);
-    float t4 = 3.141592653589793*(1.0/2.0);
-    float t5 = -q2+t4+2.908373974667121E-1;
-    float t6 = q2-t4;
-    float t7 = sin(t5);
-    float t8 = cos(t5);
-    float t9 = sin(t2);
-    float t10 = cos(t6);
-    float t11 = t3*t7;
-    float t12 = t8*t9;
-    float t13 = t11+t12;
-    float t14 = t3*t8;
-    float t17 = t7*t9;
-    float t15 = t14-t17;
-    float t16 = sin(t6);
-    float t18 = q1-t4;
-    float t19 = sin(t18);
-    float t20 = t3*t7*t19;
-    float t21 = t8*t9*t19;
-    float t22 = t20+t21;
-    float t23 = t3*t8*t19;
-    float t25 = t7*t9*t19;
-    float t24 = t23-t25;
-    float t26 = q3+4.162E-1;
-    float t27 = cos(t18);
-    float t28 = t3*t7*t27;
-    float t29 = t8*t9*t27;
-    float t30 = t28+t29;
-    float t31 = t3*t8*t27;
-    float t33 = t7*t9*t27;
-    float t32 = t31-t33;
-    float t34 = t16*t30;
-    float t35 = t34-t10*t32;
-    float t36 = t10*t24;
-    float t37 = t36-t16*t22;
 
-    JaM(0,1) = t3*(3.0/2.0E1)-t10*t13*(4.3E1/1.0E3)+t10*t15*(1.68E2/6.25E2)-t13*t16*(1.68E2/6.25E2)-t15*t16*(4.3E1/1.0E3)-t26*(t10*t15-t13*t16);
-    JaM(0,2) = -t10*t13-t15*t16;
-    JaM(1,0) = t3*t19*(-3.0/2.0E1)+t10*t22*(4.3E1/1.0E3)-t10*t24*(1.68E2/6.25E2)+t16*t22*(1.68E2/6.25E2)+t16*t24*(4.3E1/1.0E3)+t26*t37-t3*t8*t19*(1.29E2/2.5E2)+t7*t9*t19*(1.29E2/2.5E2);
-    JaM(1,1) = t9*t27*(-3.0/2.0E1)-t10*t30*(1.68E2/6.25E2)-t10*t32*(4.3E1/1.0E3)+t16*t30*(4.3E1/1.0E3)-t16*t32*(1.68E2/6.25E2)+t26*(t10*t30+t16*t32);
-    JaM(1,2) = t35;
-    JaM(2,0) = t3*t27*(-3.0/2.0E1)+t10*t30*(4.3E1/1.0E3)-t10*t32*(1.68E2/6.25E2)+t16*t30*(1.68E2/6.25E2)+t16*t32*(4.3E1/1.0E3)-t26*t35-t3*t8*t27*(1.29E2/2.5E2)+t7*t9*t27*(1.29E2/2.5E2);
-    JaM(2,1) = t9*t19*(3.0/2.0E1)+t10*t22*(1.68E2/6.25E2)+t10*t24*(4.3E1/1.0E3)-t16*t22*(4.3E1/1.0E3)+t16*t24*(1.68E2/6.25E2)-t26*(t10*t22+t16*t24);
-    JaM(2,2) = t37;
-*/
     float t2 = 3.141592653589793*(1.0/2.0);
     float t3 = q2+t2;
     float t4 = sin(t3);
@@ -123,50 +76,6 @@ void PsmForceControl::CalcJaInv(const Eigen::VectorXd &q,const Eigen::VectorXd &
 
 void PsmForceControl::CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd) {
     if (name == "PSM1") {
- 
-        // Try without KE fourier test 2
-       /*   float t2 = q1-q2;
-          float t3 = q1+q2-2.908373974667121E-1;
-          float t4 = q1-q2+2.908373974667121E-1;
-          float t5 = q1+q2;
-          float t6 = qd2*qd2;
-          float t7 = sin(t4);
-          float t8 = sin(t5);
-          float t9 = sin(t2);
-          float t10 = sin(t3);
-          float t11 = sin(q2);
-          float t12 = q2-2.908373974667121E-1;
-          float t13 = cos(t12);
-          float t14 = q2*2.0;
-          float t15 = t14-5.816747949334241E-1;
-          float t16 = cos(t15);
-          float t17 = t14-2.908373974667121E-1;
-          float t18 = cos(t17);
-          float t19 = sin(t15);
-          float t20 = cos(q2);
-          float t21 = cos(t14);
-          float t22 = sin(t14);
-          float t23 = q3*q3;
-          float t24 = sin(t17);
-          float t25 = cos(t2);
-          float t26 = cos(t3);
-          float t27 = t10*3.017526851309462;
-          float t28 = cos(t4);
-          float t29 = t28*7.320145176142429E-1;
-          float t30 = t7*3.017526851309462;
-          float t31 = cos(t5);
-          float t32 = t31*1.499393709809464;
-          float t33 = qd1*qd1;
-          float t34 = q3*t8*2.448643206032768;
-          float t35 = q3*t9*2.448643206032768;
-          float t36 = q2-5.816747949334241E-1;
-          float t37 = sin(t36);
-          float t38 = cos(2.908373974667121E-1);
-          
-          N(0) =  q1*6.119063107247842E-1-t8*3.344751175535797-t9*3.344751175535797-t25*1.499393709809464-t26*7.320145176142429E-1+t27+t29+t30+t32+t34+t35-sin(q1-2.908373974667121E-1)*3.512986425818344E-1-sin(q1+2.908373974667121E-1)*3.512986425818344E-1-cos(q1)*4.704437037389851E-2+sin(q1)*1.185584490767175-qd1*qd3*2.69507168036979E-1-q3*t7*2.34295976006465-q3*t10*2.34295976006465-t6*t11*1.366589184398208E-4+t6*t13*1.261218951123317E-1-t6*t20*1.308102487121939E-1+qd2*qd3*sin(t12)*2.064848982586517E-1+q3*qd1*qd3*1.575623045498661-qd1*qd2*t11*2.150808015807149E-2-qd2*qd3*t11*6.356228764642827E-3+qd1*qd2*t16*1.13991403679422-qd1*qd3*t16*8.323902276159846E-1+qd1*qd2*t18*1.835992297725874E-1+qd1*qd2*t19*1.197266709321526-qd1*qd3*t18*1.49916930981598E-1-qd1*qd3*t19*1.800158150459516E-1-qd1*qd2*t21*3.934770614322237E-1-qd1*qd2*t22*2.03284026406765+qd1*qd3*t21*5.628830595790056E-1+qd1*qd3*t22*8.098713700747587E-1+qd1*qd2*t24*1.688649178737017E-1-qd1*qd2*t37*2.150808015807149E-2-qd1*qd3*t38*1.49916930981598E-1+q3*t6*t13*1.032424491293259E-1-q3*t6*t20*3.178114382321413E-3-q3*qd1*qd2*t16*3.600316300919032E-1+q3*qd1*qd3*t16*5.76176838954674E-1+q3*qd1*qd2*t19*1.664780455231969+q3*qd1*qd2*t21*1.619742740149517-q3*qd1*qd2*t22*1.125766119158011+q3*qd1*qd3*t21*9.994462065439869E-1+q3*qd1*qd2*t24*2.998338619631961E-1-qd1*qd2*t19*t23*5.76176838954674E-1-qd1*qd2*t22*t23*9.994462065439869E-1;
-          N(1) = q2*1.178371077512102-t8*3.344751175535797+t9*3.344751175535797+t25*1.499393709809464-t26*7.320145176142429E-1+t27-t29-t30+t32+t34-t35-qd2*qd3*5.390143360739581E-1+q3*t7*2.34295976006465-q3*t10*2.34295976006465+t11*t33*1.075404007903575E-2-t16*t33*5.699570183971099E-1-t18*t33*9.179961488629371E-2-t19*t33*5.986333546607628E-1+t21*t33*1.967385307161119E-1+t22*t33*1.016420132033825-t24*t33*8.443245893685084E-2+t33*t37*1.075404007903575E-2+q3*qd2*qd3*3.151246090997322-qd2*qd3*t38*2.998338619631961E-1+q3*t16*t33*1.800158150459516E-1-q3*t19*t33*8.323902276159846E-1-q3*t21*t33*8.098713700747587E-1+q3*t22*t33*5.628830595790056E-1-q3*t24*t33*1.49916930981598E-1+t19*t23*t33*2.88088419477337E-1+t22*t23*t33*4.997231032719934E-1;
-          N(2) = t6*2.69507168036979E-1-t25*2.448643206032768+t26*2.34295976006465+t28*2.34295976006465-t31*2.448643206032768+t33*1.347535840184895E-1-q3*t6*1.575623045498661-q3*t33*7.878115227493304E-1+t6*t38*1.49916930981598E-1+t16*t33*4.161951138079923E-1+t18*t33*7.495846549079901E-2+t19*t33*9.000790752297579E-2-t21*t33*2.814415297895028E-1-t22*t33*4.049356850373793E-1+t33*t38*7.495846549079901E-2-q3*t16*t33*2.88088419477337E-1-q3*t21*t33*4.997231032719934E-1;
-*/
 
           // New MidJuly_3dof with fourier test 3
           float t2 = q1-q2;
@@ -267,70 +176,6 @@ void PsmForceControl::CalcN(const Eigen::VectorXd &q,const Eigen::VectorXd &qd) 
 
 void PsmForceControl::CalcJd(const Eigen::VectorXd &q, const Eigen::VectorXd &qd)
 {
-  
-    // Dynamics
-  /*  float t2 = 3.141592653589793*(1.0/2.0);
-    float t3 = -q2+t2+2.908373974667121E-1;
-    float t4 = q2-2.908373974667121E-1;
-    float t5 = cos(t4);
-    float t6 = cos(t3);
-    float t7 = sin(t4);
-    float t8 = sin(t3);
-    float t9 = q2-t2;
-    float t10 = t5*t6;
-    float t17 = t7*t8;
-    float  t11 = t10-t17;
-    float  t12 = sin(t9);
-    float  t13 = t5*t8;
-    float  t14 = t6*t7;
-    float  t15 = t13+t14;
-    float  t16 = cos(t9);
-    float  t18 = q1-t2;
-    float  t19 = sin(t18);
-    float  t20 = q3+4.162E-1;
-    float  t21 = cos(t18);
-    float  t22 = t5*t8*t19;
-    float t23 = t6*t7*t19;
-    float  t24 = t22+t23;
-    float  t25 = t5*t6*t19;
-    float  t33 = t7*t8*t19;
-    float  t26 = t25-t33;
-    float  t27 = qd1*t5*t8*t21;
-    float t28 = qd1*t6*t7*t21;
-    float  t29 = t27+t28;
-    float  t30 = qd1*t5*t6*t21;
-    float  t32 = qd1*t7*t8*t21;
-    float  t31 = t30-t32;
-    float  t34 = qd1*t5*t8*t19;
-    float  t35 = qd1*t6*t7*t19;
-    float  t36 = t34+t35;
-    float  t37 = qd1*t5*t6*t19;
-    float  t39 = qd1*t7*t8*t19;
-    float  t38 = t37-t39;
-    float  t40 = t5*t6*t21;
-    float  t45 = t7*t8*t21;
-    float  t41 = t40-t45;
-    float  t42 = t5*t8*t21;
-    float  t43 = t6*t7*t21;
-    float  t44 = t42+t43;
-    float  t46 = t16*t38;
-    float  t47 = qd2*t16*t44;
-    float  t48 = qd2*t12*t41;
-    float  t49 = t46+t47+t48-t12*t36;
-    float  t50 = t12*t29;
-    float  t51 = qd2*t16*t24;
-    float  t52 = qd2*t12*t26;
-
-    Jd(0,1) = t20*(qd2*t15*cos(q2-3.141592653589793*(1.0/2.0))+qd2*t11*t12)-qd2*t7*(3.0/2.0E1)-qd3*(t11*t16-t12*t15)-qd2*t11*t12*(1.68E2/6.25E2)-qd2*t11*t16*(4.3E1/1.0E3)+qd2*t12*t15*(4.3E1/1.0E3)-qd2*t15*t16*(1.68E2/6.25E2);
-    Jd(0,2) = -qd2*t11*t16+qd2*t12*t15;
-    Jd(1,0) = t12*t29*(1.68E2/6.25E2)+t12*t31*(4.3E1/1.0E3)+t16*t29*(4.3E1/1.0E3)-t16*t31*(1.68E2/6.25E2)-qd3*(t12*t24-t16*t26)-t20*(t50+t51+t52-t16*t31)-qd1*t5*t21*(3.0/2.0E1)+qd2*t7*t19*(3.0/2.0E1)-qd2*t12*t24*(4.3E1/1.0E3)+qd2*t12*t26*(1.68E2/6.25E2)+qd2*t16*t24*(1.68E2/6.25E2)+qd2*t16*t26*(4.3E1/1.0E3)-qd1*t5*t6*t21*(1.29E2/2.5E2)+qd1*t7*t8*t21*(1.29E2/2.5E2);
-    Jd(1,1) = -t20*(t12*t38+t16*t36+qd2*t12*t44-qd2*t16*t41)-t12*t36*(4.3E1/1.0E3)+t12*t38*(1.68E2/6.25E2)+t16*t36*(1.68E2/6.25E2)+t16*t38*(4.3E1/1.0E3)+qd3*(t12*t41+t16*t44)+qd1*t7*t19*(3.0/2.0E1)-qd2*t5*t21*(3.0/2.0E1)+qd2*t12*t41*(4.3E1/1.0E3)+qd2*t12*t44*(1.68E2/6.25E2)-qd2*t16*t41*(1.68E2/6.25E2)+qd2*t16*t44*(4.3E1/1.0E3);
-    Jd(1,2) = t49;
-    Jd(2,0) = t12*t36*(-1.68E2/6.25E2)-t12*t38*(4.3E1/1.0E3)-t16*t36*(4.3E1/1.0E3)+t16*t38*(1.68E2/6.25E2)-t20*t49-qd3*(t12*t44-t16*t41)+qd1*t5*t19*(3.0/2.0E1)+qd2*t7*t21*(3.0/2.0E1)+qd2*t12*t41*(1.68E2/6.25E2)-qd2*t12*t44*(4.3E1/1.0E3)+qd2*t16*t41*(4.3E1/1.0E3)+qd2*t16*t44*(1.68E2/6.25E2)+qd1*t5*t6*t19*(1.29E2/2.5E2)-qd1*t7*t8*t19*(1.29E2/2.5E2);
-    Jd(2,1) = -t20*(t12*t31+t16*t29-qd2*t12*t24+qd2*t16*t26)-t12*t29*(4.3E1/1.0E3)+t12*t31*(1.68E2/6.25E2)+t16*t29*(1.68E2/6.25E2)+t16*t31*(4.3E1/1.0E3)-qd3*(t12*t26+t16*t24)+qd2*t5*t19*(3.0/2.0E1)+qd1*t7*t21*(3.0/2.0E1)-qd2*t12*t24*(1.68E2/6.25E2)-qd2*t12*t26*(4.3E1/1.0E3)-qd2*t16*t24*(4.3E1/1.0E3)+qd2*t16*t26*(1.68E2/6.25E2);
-    Jd(2,2) = -t50-t51-t52+t16*t31;*/
-
-    // ROS_INFO_STREAM("Jd: "<<Jd);
 
     // Kinematic Jd
     f2 = 3.141592653589793*(1.0/2.0);
@@ -467,7 +312,6 @@ void PsmForceControl::Calche(){
 PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const string nam, const string ctrl_type) {
 
     nhandle = n;
-
     name = nam;
     ctrl = ctrl_type;
 
@@ -549,14 +393,14 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 // Wrist PID Controller Data
     wrist_u.resize(3), wrist_eq.resize(3), wrist_eqd.resize(3), wrist_kp.resize(3), wrist_kd.resize(3);
 
-//JointMsgs
+// JointMsgs
     joint_msg.name.push_back("Joint Publisher");
     for (int j = 0; j < 6; j++) {
         joint_msg.effort.push_back(0.0);
         msg2.velocity.push_back(0.0);
     }
 
-
+// Filter Data
     myq[0] = que1;
     myq[1] = que2;
     myq[2] = que3;
@@ -564,12 +408,14 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     myq[4] = que5;
     myq[5] = que6;
 
-    rate = 30;
-    tf = 4; // moving 0.001 m in 0.2 s is pretty good for u values.
     filter_n = 20;
     index = 0;
-    f_index = 0;
 
+// Control Loop Rate
+    rate = 30;
+
+// Interpolate values
+    tf = 4; // moving 0.001 m in 0.2 s is pretty good for u values.
     q1_traj.ts = 1 / rate;
     q2_traj.ts = 1 / rate;
     q3_traj.ts = 1 / rate;
@@ -590,6 +436,11 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     q_traj[1] = q2_traj;
     q_traj[2] = q3_traj;
 
+    interp = false;
+
+// Set Force variables
+    f_index = 0;
+
 // Initializers
     fd << 0.0, 0.0, 0.0;
     he << 0.0, 0.0, 0.0;
@@ -606,8 +457,6 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
     q << 0.0, 0.0, 0.0;
     qd << 0.0, 0.0, 0.0;
     u << 0.0, 0.0, 0.0;
-
-
 
     Fr << 0, 0, 0;
     N << 0, 0, 0;
@@ -631,7 +480,7 @@ PsmForceControl::PsmForceControl(std::shared_ptr<ros::NodeHandle> n, const strin
 
     orient_cart << 0 , 0, 0, 0;
 
-    interp = false;
+
 
 /*    for (int i=0;i<dof;i++) {
         for (int j = 0; j < filter_n; j++) {
@@ -679,14 +528,11 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
     float a2 =4.0E2;
     float scale = 1;
 
-
-
     //float Fs_pos = 0.6;
     //float Fs_neg = -0.4;
 
     float Fs_pos = 1;
     float Fs_neg = -1;
-
 
     //Computed Torque
     //float x_e = xd(2)-q(2);
@@ -706,7 +552,6 @@ void PsmForceControl::CalcFr(const Eigen::VectorXd &q, const Eigen::VectorXd &qd
         Fr(0) = x[0]*9.542485682180182E-2+1.0897508499757E-1/(exp(x[0]*-4.0E2)+1.0)+2.751172483473256E-1;
         Fr(1) = x[1]*1.63259829973678E-1+1.631162536205055E-1/(exp(x[1]*-4.0E2)+1.0)+1.937201881157299E-1;
    
-
 
         //Fr(0) =  qd1*8.857790114534859E-2+1.330230787728563E-1/(exp(qd1*-a1)+1.0)-6.651153938642816E-2;
         //Fr(1) =  qd2*1.585859192149214E-1+1.935467306471518E-1/(exp(qd2*-a2)+1.0)-9.67733653235759E-2;
@@ -781,13 +626,13 @@ void PsmForceControl::SetGainsInit()
 
     if(name == "PSM1")
     {
-        Mt.diagonal()<<0.35, 0.36, 0.3;
+        Mt.diagonal() << 0.35, 0.36, 0.3;
         Kp.diagonal() << 15, 15, 15;
         Kd.diagonal() << 3, 3, 3;
     }
     else if (name == "PSM2")
     {
-        Mt.diagonal()<<0.42, 0.44, 0.3123;
+        Mt.diagonal() << 0.42, 0.44, 0.3123;
         Kp.diagonal() << 100, 80, 120;
         Kd.diagonal() << 7, 4, 6;
     }
@@ -805,6 +650,7 @@ void PsmForceControl::SetGainsInit()
 
     //Friction Compensation
     pos_deadband = 0.006;
+
     // PSM2
     //deadband << 0.0045, 0.005, 0.005;
 
@@ -827,7 +673,6 @@ void PsmForceControl::SetGainsInit()
     //jacobian scaling factor
     //St.diagonal()<< 1, 1, 0.16;
     St.diagonal()<< 1, 1, 1;
-
 
     // Force Stuff
     x_init = xd;
@@ -903,9 +748,6 @@ void PsmForceControl::CallbackJoint(const sensor_msgs::JointState &msg)
     qd2 = qd(1);
     qd3 = qd(2);
 
-    //ROS_INFO_STREAM("myq : "<< myq[0].size() <<endl); its good
-    //drop = msg.header.seq-drop_p;
-    //drop_p = msg.header.seq;
 }
 
 void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
@@ -926,7 +768,6 @@ void PsmForceControl::CallbackCartesian(const geometry_msgs::PoseStamped &msg)
 void PsmForceControl::CallbackForce(const std_msgs::Float32 &msg)
 {
     // Filter
-    //ROS_INFO_STREAM("potato");
         f_myq.push_back(msg.data);
         if (f_index > filter_n-1)
         {
@@ -943,7 +784,6 @@ void PsmForceControl::CallbackForce(const std_msgs::Float32 &msg)
 
     // Force Direction
     this -> ForceSet();
-
 }
 
 void PsmForceControl::ForceSet()
@@ -1076,29 +916,16 @@ void PsmForceControl::CalcU()
     }
 
 
-    //u = M*y + N +Fr +JaM.transpose()*he;
+    // u = M*y + N +Fr +JaM.transpose()*he;
     u = M*y + N +Fr;
 
      test = u;
-/*     ROS_INFO_STREAM("everything : /n"<<endl<< M*JaM.inverse()*Mt.inverse() <<endl);
-
-     ROS_INFO_STREAM("Jacobian singularity : /n"<<endl<< JaM.inverse().transpose() <<endl);
-
-     ROS_INFO_STREAM("Mass : "<<endl<< M<<endl);
-
-     ROS_INFO_STREAM("Mass desired : "<<endl<< Mt <<endl);*/
 
      if(std::fabs(test(0))>fl(0)|std::fabs(test(1))>fl(1)|std::fabs(test(2))>fl(2)){
         ROS_INFO_STREAM("Jaminv: "<< JaM.inverse()<<endl << "Jd: "<< Jd<< endl<< "qd:" << qd<< endl<<"test:" << test<< endl);
      }
 
     // Conclusion: the JaINv* Jd interaction is a problem!!
-
-     //ROS_INFO_STREAM("Jinv: "<< Mt.inverse() <<endl);
-     //ROS_INFO_STREAM("Kd*(vd-ve): "<< Kd*(vd-ve) <<endl);
-
-     //ROS_INFO_STREAM("he : "<< he <<endl);
-     //ROS_INFO_STREAM("x : "<< x_init<< endl<<xd <<endl);
 
  }
 Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
@@ -1119,19 +946,7 @@ Eigen::VectorXd PsmForceControl::InverseKinematic(const Eigen::VectorXd &fed)
 
 void PsmForceControl::WristPID()
 {
-   /* for (int i=0;i<3;i++)
-    {
-        wrist_eq(i)= 0.5 - q(i+3);
-        wrist_eqd(i) = 0.0 - qd(i+3);
-    }
 
-    for (int i=0;i<3;i++)
-    {
-        wrist_u(i) = wrist_eq(i) * wrist_kp(i) + wrist_eqd(i) * wrist_kd(i);
-        //ROS_INFO_STREAM("  wrist_u: "<< wrist_u<< endl<< "wrist_eq: "<< wrist_eq << endl<< "wrist_eqd: "<< wrist_eqd<<endl);
-
-        //wrist_u(i) = 0;
-    }*/
 }
 void PsmForceControl::output()
 {
@@ -1176,7 +991,7 @@ void PsmForceControl::output()
 
          // --------------PUBLISHING -----------
          pose_pub.publish(pose_msg);
-         // ------------- publsih ----------
+         // ------------- publish ----------
 
          //ROS_INFO_STREAM(name<<" POSE : "<< x <<endl);
      }
@@ -1266,6 +1081,7 @@ void PsmForceControl::output()
 // Fore Measure
  /*   dq0.data = force_magnitude;
     desplot_x.publish(dq0);*/
+
  }
 void PsmForceControl::DataPublishing() {
     msg_xe.position.x = xe(0);
@@ -1285,14 +1101,10 @@ void PsmForceControl::DataPublishing() {
     msg_xf.position.z = xf(2);
 
     Pub_xf.publish(msg_xf);
-    //This kind of Hard coding you should understand how to fix by message making templates and such.
 }
 
 void  PsmForceControl::Loop()
  {
-     //ROS_INFO_STREAM("xd"<< name << " " << xd);
-     //ROS_INFO_STREAM("orient"<< name << " " << orient_cart);
-
      this->joint_act = this->InverseKinematic(xe);
      this->joint_des = this->InverseKinematic(xt);
      this->CalcJaM(q, qd);
@@ -1306,41 +1118,6 @@ void  PsmForceControl::Loop()
      this->output();
      this->DataPublishing();
 
-     //Spin once in base class?
      ros::spinOnce();
  }
 
-/*int main(int argc, char **argv)
-/*int main(int argc, char **argv)
-{
-  // Options
-    string name = "PSM1";
-
-  ros::init(argc, argv, "PsmForceControl_node");
-  ros::NodeHandle n;
-  ROS_INFO("It started");
-
-  PsmForceControl obj(n,name);
-  ros::Rate r(obj.rate);
-
-  // int i, j;
-  int count = 0;
-  ros::spinOnce();
-  ros::Duration(1).sleep();
-  ros::spinOnce();
-
-  obj.SetGainsInit();
-  obj.SetDesiredInit();
-
-  while(ros::ok())
-  {
-    obj.Loop();
-    ros::spinOnce();
-
-  //drop=0;
-
-  r.sleep();
-  }
-//ros::spin();
-
-}*/

@@ -43,7 +43,7 @@ set(SRC_FILES
 		src/force_control.cpp
 		src/Psm.cpp
 		src/Cooperative.cpp
-		src/force_main.cpp
+		src/run_force_control.cpp
         src/path_planner.cpp
 		src/psm_sub.cpp)
 set(HDR_FILES
@@ -59,11 +59,11 @@ set(HDR_FILES
 add_library(psm_coop  ${SRC_FILES} ${HDR_FILES})
 target_link_libraries(psm_coop ${catkin_LIBRARIES})
 
-add_executable(force_main src/force_main.cpp)
-target_link_libraries(force_main psm_coop)
+add_executable(run_force_control src/run_force_control.cpp)
+target_link_libraries(run_force_control psm_coop)
 
-add_executable(Run src/Run.cpp)
-target_link_libraries(Run psm_coop)
+add_executable(run_cooperative src/run_cooperative.cpp)
+target_link_libraries(run_cooperative psm_coop)
 
 add_executable(path_node src/path_node.cpp)
 target_link_libraries(path_node psm_coop)

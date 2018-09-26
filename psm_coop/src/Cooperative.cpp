@@ -5,9 +5,6 @@
 
 Cooperative::Cooperative(std::vector<initializer> &psm)
 {
-    //force_sub = n.subscribe("/psm/cmd_force", 10, &Cooperative::CallbackForce, this);
-    //setpos_sub2 = n.subscribe("/psm/cmd_vel", 10, &Cooperative::CallbackMove, this);
-
     count = 0;
 
     num = psm.size();
@@ -34,15 +31,12 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
     Pos.push_back(Obj[0]->GetPose());
     Pos.push_back(offset + Obj[1]->rot*Obj[1]->GetPose());
 
-    //ROS_INFO_STREAM("FAULT:" << Obj[0]->xe);
 
-    //ros::Rate r(2000);
 
     object.push_back(Pos[1]-Pos[0]); //Initiate Object
     object.push_back(-object[0]);   // Initiate Object
 
     //Set Gains and Initialize Controller
-
     for(int i;i<num;i++)
     {
         Obj[i]->SetGainsInit();
@@ -50,7 +44,6 @@ Cooperative::Cooperative(std::vector<initializer> &psm)
     }
 
     ros::Duration(1).sleep();
-    //ROS_INFO_STREAM("FAULT:" << Obj.size());
 
 }
 
@@ -62,7 +55,6 @@ void Cooperative::CalcObject()
     object[0] = Pos[1]-Pos[0];
     object[1] = Pos[0]-Pos[1];
 
-    //std::cout << object[0];
     for(int i;i<num;i++)
     {
         Obj[i]->SetObject(object[i]);
@@ -74,7 +66,6 @@ void Cooperative::Loopz() {
 
     for (int i; i < num; i++)
     {
-        //int x=0;
         Obj[i]->Loop();
 
 /*        if(count%4==0)
@@ -88,7 +79,6 @@ void Cooperative::Loopz() {
         count = 0;
 
     }
-    //ros::spinOnce();
     count = count + 1;
 }
 

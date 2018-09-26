@@ -16,8 +16,6 @@ int main(int argc, char **argv)
     int num = 2;
 
     initializer psm[2];
-    //psm[0]= psm1; psm[1] = psm2;
-
 
     psm[0].name = "PSM2";
     psm[0].type = "Master";
@@ -59,7 +57,6 @@ int main(int argc, char **argv)
 
     m.push_back(psm[0]);
     m.push_back(psm[1]);
-
 
     Cooperative obj(m);
     ros::Duration(1).sleep();

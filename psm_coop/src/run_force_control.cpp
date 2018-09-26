@@ -15,7 +15,6 @@ int main(int argc, char **argv)
    // Options
 
     initializer psm[2];
-    //psm[0]= psm1; psm[1] = psm2;
 
     psm[0].name = "PSM2";
     psm[0].type = "Master";
@@ -44,8 +43,8 @@ int main(int argc, char **argv)
     std::shared_ptr<ros::NodeHandle> nhandle = std::make_shared<ros::NodeHandle>();
     std::shared_ptr<ros::NodeHandle> nhandle2 = std::make_shared<ros::NodeHandle>();
 
-    Psm obj(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type,psm[0].track, psm[0].Rot, psm[0].Pos);
-    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type,psm[1].track, psm[1].Rot, psm[1].Pos);
+    Psm obj(nhandle, psm[0].name, psm[0].ctrl_type , psm[0].type, psm[0].track, psm[0].Rot, psm[0].Pos);
+    Psm obj2(nhandle, psm[1].name, psm[1].ctrl_type , psm[1].type, psm[1].track, psm[1].Rot, psm[1].Pos);
 
     ros::Rate r(obj.rate);
     ROS_INFO("It started");
@@ -58,7 +57,6 @@ int main(int argc, char **argv)
 
     obj.SetGainsInit();
     obj.SetDesiredInit();
-
 
     ROS_INFO_STREAM("v_int:" << obj.xe);
 
@@ -76,12 +74,10 @@ int main(int argc, char **argv)
         if(num==2) {
             obj2.Loop();
         }
-        //ros::spinOnce();
 
-        //drop=0;
 
         r.sleep();
     }
-//ros::spin();
+
 return 0;
 }
